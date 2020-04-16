@@ -1,0 +1,11 @@
+{
+    "name": "jrsaunders/shard-matrix",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "John Saunders",
+            "email": "john@yettimedia.co.uk"
+        }
+    ],
+    "require": {}
+}
