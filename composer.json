@@ -7,5 +7,12 @@
             "email": "john@yettimedia.co.uk"
         }
     ],
-    "require": {}
+    "require": {
+        "php": "^7.4.3"
+    },
+    "autoload": {
+        "psr-4": {
+            "ShardMatrix\\": "src/"
+        }
+    }
 }
