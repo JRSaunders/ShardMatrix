@@ -1,0 +1,44 @@
+table_groups:
+  user:
+    - users
+    - payments
+    - offers
+  tracking:
+    - visitors
+    - sign_ups
+  published:
+    - published_offers
+
+
+nodes:
+  DB0001:
+    dsn: pdo://root:password@db_one?char_set=utf8&cache_on=false&pconnect=false
+    table_groups:
+      - user
+      - published
+  DB0002:
+    dsn: pdo://root:password@db_two?char_set=utf8&cache_on=false&pconnect=false
+    table_groups:
+      - user
+      - published
+  DB0003:
+    dsn: pdo://root:password@db_three?char_set=utf8&cache_on=false&pconnect=false
+    table_groups:
+      - user
+      - published
+  DB0004:
+    dsn: pdo://root:password@db_four?char_set=utf8&cache_on=false&pconnect=false
+    table_groups:
+      - published
+  DB0005:
+    dsn: pdo://root:password@db_five?char_set=utf8&cache_on=false&pconnect=false
+    table_groups:
+      - tracking
+  DB0006:
+    dsn: pdo://root:password@db_six?char_set=utf8&cache_on=false&pconnect=false
+    table_groups:
+      - tracking
+
+#hashes:
+
+
