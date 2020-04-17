@@ -15,7 +15,7 @@ class TableGroup {
 	}
 
 	public function setTables( array $tables ) {
-		$this->tables = new Tables( $tables);
+		$this->tables = new Tables( $tables );
 	}
 
 	public function containsTableName( $tableName ): bool {
@@ -28,6 +28,15 @@ class TableGroup {
 		return false;
 	}
 
+	public function getTableByTableHash( $hash ): ?Table {
+		foreach ( $this->getTables() as $table ) {
+			if ( $table->getHash() == $hash ) {
+				return $table;
+			}
+		}
+
+		return null;
+	}
 
 	public function getName() {
 		return $this->name;

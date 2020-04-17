@@ -4,44 +4,80 @@ namespace ShardMatrix;
 
 use Ramsey\Uuid\Type\Hexadecimal;
 use Ramsey\Uuid\Uuid as Ruuid;
+use Ramsey\Uuid\UuidInterface;
 
 class Uuid {
 	protected ?string $uuid = null;
 	protected Table $table;
+	protected Node $node;
+	protected ?UuidInterface $ramseyUuid = null;
 
 	public function __construct( ?string $uuid = null ) {
-
-
+		$this->uuid = $uuid;
 	}
 
-	public function create() {
+	/**
+	 * @param Node $node
+	 * @param Table $table
+	 *
+	 * @return Uuid
+	 */
+	public static function make( Node $node, Table $table ): Uuid {
 
-		$node = new Hexadecimal( bin2hex( "DB0003" ) );
-		$uuid = Ruuid::uuid6( $node );
+		$ramseyUuid = Ruuid::uuid6( new Hexadecimal( bin2hex( $node->getName() ) ) );
 
-		var_dump(
-			$this->table->getHash(),
-			hex2bin( $uuid->getNodeHex() ),
-			$uuid->toString(),
-			$uuid->getFields()->getVersion()
-		);
+		return new static( $table->getHash() . '-' . $ramseyUuid->toString() );
+	}
 
 
+	protected function stripToRamseyUuidString(): string {
+		$parts = $this->getParts();
+		array_shift( $parts );
+
+		return join( '-', $parts );
+	}
+
+	protected function getParts(): array {
+		return explode( '-', $this->uuid );
+	}
+
+	protected function getTableHash(): string {
+		return $this->getParts()[0];
+	}
+
+
+	protected function getRamseyUuid(): ?UuidInterface {
+		if ( is_string( $this->uuid ) ) {
+			return $this->ramseyUuid ?? ( $this->ramseyUuid = Ruuid::fromString( $this->stripToRamseyUuidString() ) );
+		}
+
+		return null;
+	}
+
+	public function getNode(): ?Node {
+
+		return $this->node ??
+		       (
+		       $this->node = ShardMatrix::getConfig()->getNodes()->getNodeByName(
+			       hex2bin( $this->getRamseyUuid()->getFields()->getNode() )
+		       )
+		       );
 	}
 
 	/**
 	 * @return Table|null
 	 */
-	public function getTable(): Table {
-		return $this->table;
+	public function getTable(): ?Table {
+		return $this->table ??
+		       (
+		       $this->table = ShardMatrix::getConfig()->getTableGroups()->getTableByHash(
+			       $this->getTableHash()
+		       )
+		       );
 	}
 
-	/**
-	 * @param Table|null $table
-	 */
-	public function setTable( string $table ): Uuid {
-		$this->table = new Table( $table );
-		return $this;
+	public function __toString() {
+		return $this->uuid;
 	}
 
 }

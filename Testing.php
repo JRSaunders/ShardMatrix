@@ -6,8 +6,12 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 
+$node = ShardMatrix::getConfig()->getNodes()->getNodes()[0];
 
-//(new \ShardMatrix\Uuid())->setTable( 'user')->create();
-var_dump(
-	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0006')->getTableGroups()->getTableGroupByTableName( 'visitors')->getTables()
-);
+$table = new \ShardMatrix\Table( 'users');
+
+$uuid = \ShardMatrix\Uuid::make( $node, $table);
+
+echo $uuid->getNode()->getName();
+echo $uuid->getTable()->getName();
+echo $uuid;

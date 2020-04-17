@@ -66,7 +66,6 @@ class TableGroups implements \Iterator {
 	}
 
 
-
 	/**
 	 * @param array $tableGroups
 	 *
@@ -133,5 +132,17 @@ class TableGroups implements \Iterator {
 
 	public function valid() {
 		return isset( $this->tableGroups[ $this->position ] );
+	}
+
+	public function getTableByHash( string $hash ): ?Table {
+		foreach ( $this->getTableGroups() as $group ) {
+			foreach ( $group->getTables() as $table ) {
+				if ( $table->getHash() == $hash ) {
+					return $table;
+				}
+			}
+		}
+
+		return null;
 	}
 }
