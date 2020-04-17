@@ -6,9 +6,9 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 
-$node = ShardMatrix::getConfig()->getNodes()->getNodes()[0];
-
-$table = new \ShardMatrix\Table( 'users');
+$node = ShardMatrix::getConfig()->getNodes()->getNodes()[4];
+//make NODE distributer
+$table = new \ShardMatrix\Table( 'visitors');
 
 $uuid = \ShardMatrix\Uuid::make( $node, $table);
 

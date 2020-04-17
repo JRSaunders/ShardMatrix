@@ -31,6 +31,18 @@ class Node {
 		return $this->tableGroups ?? ( $this->tableGroups = new TableGroups( $nodeGroups ) );
 	}
 
+	public function containsTableName( $tableName ): bool {
+
+		foreach ( $this->getTableGroups() as $group ) {
+			if ( $group->containsTableName( $tableName ) ) {
+				return true;
+			}
+		}
+
+
+		return false;
+	}
+
 	/**
 	 * @return string
 	 */

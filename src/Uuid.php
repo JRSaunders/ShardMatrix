@@ -21,8 +21,13 @@ class Uuid {
 	 * @param Table $table
 	 *
 	 * @return Uuid
+	 * @throws Exception
 	 */
 	public static function make( Node $node, Table $table ): Uuid {
+
+		if ( ! $node->containsTableName( $table->getName() ) ) {
+			throw new Exception( 'Table is not in the table groups for this Node!' );
+		}
 
 		$ramseyUuid = Ruuid::uuid6( new Hexadecimal( bin2hex( $node->getName() ) ) );
 
