@@ -18,6 +18,14 @@ class Node {
 		return $this->nodeData['dsn'];
 	}
 
+	public function isInsertData(): bool {
+		if ( isset( $this->nodeData['insert_data'] ) && $this->nodeData['insert_data'] == 'false' ) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public function getTableGroups(): TableGroups {
 		if ( isset( $this->tableGroups ) ) {
 			return $this->tableGroups;

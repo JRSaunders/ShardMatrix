@@ -41,7 +41,7 @@ class Nodes implements \Iterator {
 	public function setNodes( array $nodes ): Nodes {
 		foreach ( $nodes as $name => $data ) {
 			if ( $data instanceof Node ) {
-				$this->nodes[] = $name;
+				$this->nodes[] = $data;
 			} else {
 				$this->nodes[] = new Node( $name, $data );
 			}
@@ -116,6 +116,16 @@ class Nodes implements \Iterator {
 		return null;
 	}
 
+	public function getNodesWithTableName( string $tableName): Nodes {
+		$nodes = [];
+		foreach ( $this->getNodes() as $node ) {
+			if ( $node->containsTableName( $tableName ) ) {
+				$nodes[] = $node;
+			}
+		}
+
+		return new Nodes( $nodes );
+	}
 
 
 }

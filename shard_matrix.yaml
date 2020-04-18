@@ -36,6 +36,7 @@ nodes:
       - tracking
   DB0006:
     dsn: pdo://root:password@db_six?char_set=utf8&cache_on=false&pconnect=false
+    insert_data: false
     table_groups:
       - tracking
 
