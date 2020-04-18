@@ -12,30 +12,42 @@ table_groups:
 
 nodes:
   DB0001:
-    dsn: pdo://root:password@db_one?char_set=utf8&cache_on=false&pconnect=false
+    dsn: mysql:dbname=shard;host=localhost:3301
+    username: root
+    password: password
     table_groups:
       - user
       - published
   DB0002:
-    dsn: pdo://root:password@db_two?char_set=utf8&cache_on=false&pconnect=false
+    dsn: mysql:dbname=shard;host=localhost:3302
+    username: root
+    password: password
     table_groups:
       - user
       - published
   DB0003:
-    dsn: pdo://root:password@db_three?char_set=utf8&cache_on=false&pconnect=false
+    dsn: mysql:dbname=shard;host=localhost:3303
+    username: root
+    password: password
     table_groups:
       - user
       - published
   DB0004:
-    dsn: pdo://root:password@db_four?char_set=utf8&cache_on=false&pconnect=false
+    dsn: mysql:dbname=shard;host=localhost:3304
+    username: root
+    password: password
     table_groups:
       - published
   DB0005:
-    dsn: pdo://root:password@db_five?char_set=utf8&cache_on=false&pconnect=false
+    dsn: mysql:dbname=shard;host=localhost:3305
+    username: root
+    password: password
     table_groups:
       - tracking
   DB0006:
-    dsn: pdo://root:password@db_six?char_set=utf8&cache_on=false&pconnect=false
+    dsn: mysql:dbname=shard;host=localhost:3306
+    username: root
+    password: password
     insert_data: false
     table_groups:
       - tracking

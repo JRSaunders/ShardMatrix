@@ -4,12 +4,14 @@
 namespace ShardMatrix\DB;
 
 
+use ShardMatrix\Node;
 use ShardMatrix\Uuid;
 
 class ShardMatrixStatement {
 	protected ?\PDOStatement $pdoStatement = null;
 	protected ?Node $node = null;
 	protected ?Uuid $uuid = null;
+	protected array $data = [];
 
 	public function __construct( ?\PDOStatement $pdoStatement, ?Node $node, ?Uuid $uuid ) {
 		$this->uuid         = $uuid;
@@ -38,22 +40,35 @@ class ShardMatrixStatement {
 		return $this->uuid;
 	}
 
-	public function fetchAllArrays(): ?array {
+	public function fetchAllArrays(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
 				return $this->pdoStatement->fetchAll( \PDO::FETCH_ASSOC );
 			}
 		}
+		if ( $this->data ) {
+			return $this->data;
+		}
+
+		return [];
 	}
 
-	public function fetchAllObjects(): ?array {
+	public function fetchAllObjects(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
 				return $this->pdoStatement->fetchAll( \PDO::FETCH_OBJ );
 			}
 		}
+		if ( $this->data ) {
+			$returnArray = [];
+			foreach ( $this->data as $data ) {
+				$returnArray[] = (object) $data;
+			}
 
-		return null;
+			return $returnArray;
+		}
+
+		return [];
 	}
 
 	public function fetchRowArray(): ?array {
@@ -61,6 +76,9 @@ class ShardMatrixStatement {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
 				return $this->pdoStatement->fetch( \PDO::FETCH_ASSOC );
 			}
+		}
+		if ( $this->data && isset( $this->data[0] ) ) {
+			return $this->data[0];
 		}
 
 		return null;
@@ -72,7 +90,16 @@ class ShardMatrixStatement {
 				return $this->pdoStatement->fetch( \PDO::FETCH_OBJ );
 			}
 		}
+		if ( $this->data && isset( $this->data[0] ) ) {
+			return (object) $this->data[0];
+		}
 
 		return null;
 	}
+
+	public function __preSerialize() {
+		$this->data         = $this->fetchAllArrays();
+		$this->pdoStatement = null;
+	}
+
 }

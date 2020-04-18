@@ -16,8 +16,9 @@ class Connections {
 		if ( isset( static::$connections[ $node->getName() ] ) ) {
 			return static::$connections[ $node->getName() ];
 		}
+		$db = new \PDO( $node->getDsn(), $node->getUsername(), $node->getPassword() );
+		return static::$connections[ $node->getName() ] = $db;
 
-		return static::$connections[ $node->getName() ] = new \PDO( $node->getDsn() );
 	}
 
 	/**

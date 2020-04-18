@@ -4,6 +4,7 @@
 namespace ShardMatrix\DB;
 
 
+use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\ShardMatrix;
 use ShardMatrix\Table;
@@ -30,7 +31,7 @@ class ShardQuery {
 		}
 	}
 
-	public function uuidUpdate( Uuid $uuid, string $sql, ?array $bind = null ): ?\ShardMatrixStatement {
+	public function uuidUpdate( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		NodeDistributor::setFromUuid( $uuid );
 		$this->uuidBind( $uuid, $sql, $bind );
 
@@ -44,7 +45,7 @@ class ShardQuery {
 		return $this->execute( $uuid->getNode(), $sql, $bind, $uuid );
 	}
 
-	public function nodeQuery( Node $node, string $sql, ?array $bind = null ): ?\ShardMatrixStatement {
+	public function nodeQuery( Node $node, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		return $this->execute( $node, $sql, $bind );
 	}
 
@@ -68,7 +69,11 @@ class ShardQuery {
 				// we are the parent
 				pcntl_wait( $status ); //Protect against Zombie children
 			} else {
-				file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-' . getmypid(), serialize( $this->execute( $node, $sql, $bind ) ) );
+				$stmt = $this->execute( $node, $sql, $bind );
+				if ( $stmt ) {
+					$stmt->__preSerialize();
+				}
+				file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-' . getmypid(), serialize( $stmt ) );
 				exit;
 			}
 		}
@@ -97,9 +102,20 @@ class ShardQuery {
 	 *
 	 * @return \ShardMatrixStatement|null
 	 */
-	private function execute( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null ): ?\ShardMatrixStatement {
+	private function execute( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null ): ?ShardMatrixStatement {
 		$stmt = Connections::getNodeConnection( $node )->prepare( $sql );
 		$stmt->execute( $bind );
+		if ( $stmt ) {
+			return new ShardMatrixStatement( $stmt, $node, $uuid );
+		}
+
+		return null;
+	}
+
+	public function test( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null ): ?ShardMatrixStatement {
+		$stmt = Connections::getNodeConnection( $node )->prepare( $sql );
+		$stmt->execute( $bind );
+
 		if ( $stmt ) {
 			return new ShardMatrixStatement( $stmt, $node, $uuid );
 		}

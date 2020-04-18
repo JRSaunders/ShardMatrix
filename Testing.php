@@ -6,9 +6,20 @@ use ShardMatrix\ShardMatrix;
 include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
-ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache');
+ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
+//$f = ( new ShardQuery() )->allNodeQuery( 'users', "CREATE TABLE users (
+//    uuid VARCHAR(50) NOT NULL PRIMARY KEY,
+//    username VARCHAR(100),
+//    password VARCHAR(100),
+//    email VARCHAR(200)
+//) ENGINE=InnoDB;" );
+$f = ( new ShardQuery() )->allNodeQuery( 'users', "select * from users" ,null,'username','desc');
+var_dump($f->fetchRowArray());
 
-(new ShardQuery())->allNodeQuery( 'users', "select * from users where username = :username",[':username'=>'bobbyB45'])->fetchRowObject();
+//$stmt = ( new ShardQuery() )->test( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), 'select * from users' );
+//var_dump( $stmt );
+
+//(new ShardQuery())->allNodeQuery( 'users', "select * from users where username = :username",[':username'=>'bobbyB45'])->fetchRowObject();
 
 //$node = ShardMatrix::getConfig()->getNodes()->getNodes()[4];
 ////make NODE distributer

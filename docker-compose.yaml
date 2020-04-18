@@ -1,0 +1,68 @@
+version: "3.5"
+
+services:
+
+  DB0001:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    volumes:
+      - ./data/db01/mysql:/var/lib/mysql:cached
+    ports:
+      - 3301:3306
+
+
+  DB0002:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    volumes:
+      - ./data/db02/mysql:/var/lib/mysql:cached
+    ports:
+      - 3302:3306
+
+
+  DB0003:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    volumes:
+      - ./data/db03/mysql:/var/lib/mysql:cached
+    ports:
+      - 3303:3306
+
+  DB0004:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    volumes:
+      - ./data/db04/mysql:/var/lib/mysql:cached
+    ports:
+      - 3304:3306
+
+  DB0005:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    volumes:
+      - ./data/db05/mysql:/var/lib/mysql:cached
+    ports:
+      - 3305:3306
+
+  DB0006:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    volumes:
+      - ./data/db06/mysql:/var/lib/mysql:cached
+    ports:
+      - 3306:3306
+
+
+

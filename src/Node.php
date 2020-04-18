@@ -18,6 +18,14 @@ class Node {
 		return $this->nodeData['dsn'];
 	}
 
+	public function getPassword(): string {
+		return $this->nodeData['password'];
+	}
+
+	public function getUsername(): string {
+		return $this->nodeData['username'];
+	}
+
 	public function isInsertData(): bool {
 		if ( isset( $this->nodeData['insert_data'] ) && $this->nodeData['insert_data'] == 'false' ) {
 			return false;

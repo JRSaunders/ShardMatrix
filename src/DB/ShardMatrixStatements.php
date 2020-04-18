@@ -77,7 +77,7 @@ class ShardMatrixStatements implements \Iterator {
 	}
 
 	private function orderResults( &$results, bool $row = false ) {
-		if ( $this->orderByColumn ) {
+		if ( $this->orderByColumn && count( $results ) ) {
 			usort( $results, function ( $a, $b ) {
 				$orderByColumn = $this->orderByColumn;
 				if ( ! $a instanceof \stdClass ) {
@@ -96,19 +96,17 @@ class ShardMatrixStatements implements \Iterator {
 				return ( $a->$orderByColumn < $b->$orderByColumn ) ? + 1 : - 1;
 			} );
 		}
-		if ( $row ) {
+		if ( $row && isset( $results[0] ) ) {
 			$results = $results[0];
 		}
+
 	}
 
 	public function fetchAllArrays(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
-			if ( $statement->getPdoStatement() ) {
-				if ( $statement->getPdoStatement()->rowCount() > 0 ) {
-					$results = array_merge( $results, $statement->getPdoStatement()->fetchAll( \PDO::FETCH_ASSOC ) );
-				}
-			}
+
+			$results = array_merge( $results, $statement->fetchAllArrays() );
 		}
 		$this->orderResults( $results );
 
@@ -118,25 +116,17 @@ class ShardMatrixStatements implements \Iterator {
 	public function fetchAllObjects(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
-			if ( $statement->getPdoStatement() ) {
-				if ( $statement->getPdoStatement()->rowCount() > 0 ) {
-					$results = array_merge( $results, $statement->getPdoStatement()->fetchAll( \PDO::FETCH_OBJ ) );
-				}
-			}
+			$results = array_merge( $results, $statement->fetchAllObjects() );
 		}
 		$this->orderResults( $results );
 
 		return $results;
 	}
 
-	public function fetchRowArray(): ?array {
+	public function fetchRowArray(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
-			if ( $statement->getPdoStatement() ) {
-				if ( $statement->getPdoStatement()->rowCount() > 0 ) {
-					$results[] = $statement->getPdoStatement()->fetch( \PDO::FETCH_ASSOC );
-				}
-			}
+			$results[] = $statement->fetchRowArray();
 		}
 		$this->orderResults( $results, true );
 
@@ -146,13 +136,12 @@ class ShardMatrixStatements implements \Iterator {
 	public function fetchRowObject(): ?\stdClass {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
-			if ( $statement->getPdoStatement() ) {
-				if ( $statement->getPdoStatement()->rowCount() > 0 ) {
-					$results[] = $statement->getPdoStatement()->fetch( \PDO::FETCH_OBJ );
-				}
-			}
+			$results[] = $statement->fetchRowObject();
 		}
 		$this->orderResults( $results, true );
+		if ( ! $results ) {
+			return null;
+		}
 
 		return $results;
 	}
