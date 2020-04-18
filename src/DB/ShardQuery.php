@@ -11,6 +11,7 @@ use ShardMatrix\Uuid;
 
 class ShardQuery {
 
+
 	public function insert( string $tableName, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		$node = NodeDistributor::getNode( $tableName );
 		if ( $node->isInsertData() ) {
@@ -47,9 +48,44 @@ class ShardQuery {
 		return $this->execute( $node, $sql, $bind );
 	}
 
-	public function allNodeQuery( string $tableName, string $sql, ?array $bind = null ): ?\ShardMatrixStatement {
-		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName);
+	/**
+	 * @param string $tableName
+	 * @param string $sql
+	 * @param array|null $bind
+	 * @param string|null $orderByColumn
+	 * @param string|null $orderByDirection
+	 *
+	 * @return ShardMatrixStatements|null
+	 */
+	public function allNodeQuery( string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null ): ?ShardMatrixStatements {
+		$queryPidUuid = uniqid( getmypid() . '-' );
+		$nodes        = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName );
+		foreach ( $nodes as $node ) {
+			$pid = pcntl_fork();
+			if ( $pid == - 1 ) {
+				die( 'could not fork' );
+			} else if ( $pid ) {
+				// we are the parent
+				pcntl_wait( $status ); //Protect against Zombie children
+			} else {
+				file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-' . getmypid(), serialize( $this->execute( $node, $sql, $bind ) ) );
+				exit;
+			}
+		}
+		$results = [];
+		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-*' ) as $filename ) {
+			$result = unserialize( file_get_contents( $filename ) );
+			if ( $result ) {
+				$results[] = $result;
+			}
+			unlink( $filename );
+		}
 
+		if ( $results ) {
+			return new ShardMatrixStatements( $results, $orderByColumn, $orderByDirection );
+		}
+
+		return null;
 	}
 
 
