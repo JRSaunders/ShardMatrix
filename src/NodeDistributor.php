@@ -9,7 +9,10 @@ class NodeDistributor {
 	protected static $groupNodes = [];
 
 	static public function setFromUuid( Uuid $uuid ) {
-		static::$groupNodes[ $uuid->getNode()->getTableGroups()->getTableGroups()[0]->getName() ] = $uuid->getNode();
+		static::$groupNodes[ $uuid->getNode()
+		                          ->getTableGroups()
+		                          ->getTableGroupByTableName( $uuid->getTable()->getName() )
+		                          ->getName() ] = $uuid->getNode();
 	}
 
 	/**

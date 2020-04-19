@@ -102,4 +102,27 @@ class ShardMatrixStatement {
 		$this->pdoStatement = null;
 	}
 
+	/**
+	 * @return ResultSet
+	 */
+	public function fetchResultSet(): ResultSet {
+		$resultSet = new ResultSet( [] );
+		if ( $results = $this->fetchAllObjects() ) {
+			$resultSet->setResultSet( $results );
+		}
+
+		return $resultSet;
+	}
+
+	/**
+	 * @return ResultRow|null
+	 */
+	public function fetchResultRow(): ?ResultRow {
+		if ( $row = $this->fetchRowObject() ) {
+			return new ResultRow( $row );
+		}
+
+		return null;
+	}
+
 }
