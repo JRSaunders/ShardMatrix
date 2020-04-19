@@ -14,6 +14,7 @@ class ShardMatrixStatement {
 	protected array $data = [];
 	protected bool $dataSuccess = false;
 	protected ?bool $successChecked = null;
+	protected ?Uuid $lastInsertUuid = null;
 
 	/**
 	 * ShardMatrixStatement constructor.
@@ -188,5 +189,28 @@ class ShardMatrixStatement {
 		return $success;
 
 	}
+
+	/**
+	 * @return Uuid|null
+	 */
+	public function getLastInsertUuid(): ?Uuid {
+		if ( $this->lastInsertUuid && $this->lastInsertUuid->isValid() ) {
+			return $this->lastInsertUuid;
+		}
+
+		return null;
+	}
+
+	/**
+	 * @param Uuid|null $lastInsertUuid
+	 *
+	 * @return $this
+	 */
+	public function setLastInsertUuid( Uuid $lastInsertUuid ): ShardMatrixStatement {
+		$this->lastInsertUuid = $lastInsertUuid;
+
+		return $this;
+	}
+
 
 }

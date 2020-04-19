@@ -133,10 +133,14 @@ class ShardQuery {
 	 * @return \ShardMatrixStatement|null
 	 */
 	private function execute( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null ): ?ShardMatrixStatement {
-		$stmt = Connections::getNodeConnection( $node )->prepare( $sql );
+		$db   = Connections::getNodeConnection( $node );
+		$stmt = $db->prepare( $sql );
 		$stmt->execute( $bind );
 		if ( $stmt ) {
 			$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid );
+			if ( strpos( strtolower( trim( $sql ) ), 'insert ' ) === 0 ) {
+				$shardStmt->setLastInsertUuid( new Uuid( $db->lastInsertId() ) );
+			}
 			$shardStmt->setSuccessChecked( $this->executeCheckSuccessFunction( $shardStmt ) );
 
 			return $shardStmt;

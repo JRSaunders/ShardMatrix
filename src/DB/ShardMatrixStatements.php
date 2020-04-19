@@ -77,7 +77,8 @@ class ShardMatrixStatements implements \Iterator {
 	}
 
 	private function orderResults( &$results, bool $row = false ) {
-		if ( $this->orderByColumn && count( $results ) ) {
+
+		if ( $this->orderByColumn && count( $results ) > 1 ) {
 			usort( $results, function ( $a, $b ) {
 				$orderByColumn = $this->orderByColumn;
 				if ( ! $a instanceof \stdClass ) {
@@ -87,13 +88,14 @@ class ShardMatrixStatements implements \Iterator {
 					$b = (object) $b;
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
-					return ( $a->$orderByColumn > $b->$orderByColumn ) ? - 1 : + 1;
+
+					return ( ! strnatcmp( $a->$orderByColumn, $b->$orderByColumn ) ) ? - 1 : + 1;
 				}
-				/**
-				 * TODO Deal with dates and string better
-				 */
-				//strnatcmp()
-				return ( $a->$orderByColumn < $b->$orderByColumn ) ? + 1 : - 1;
+				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
+
+					return ( strnatcmp( $a->$orderByColumn, $b->$orderByColumn ) ) ? - 1 : + 1;
+				}
+
 			} );
 		}
 		if ( $row && isset( $results[0] ) ) {
@@ -126,7 +128,10 @@ class ShardMatrixStatements implements \Iterator {
 	public function fetchRowArray(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
-			$results[] = $statement->fetchRowArray();
+			if ( $row = $statement->fetchRowArray() ) {
+				$results[] = $row;
+			}
+
 		}
 		$this->orderResults( $results, true );
 
@@ -136,7 +141,9 @@ class ShardMatrixStatements implements \Iterator {
 	public function fetchRowObject(): ?\stdClass {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
-			$results[] = $statement->fetchRowObject();
+			if ( $row = $statement->fetchRowObject() ) {
+				$results[] = $row;
+			}
 		}
 		$this->orderResults( $results, true );
 		if ( ! $results ) {
@@ -200,6 +207,20 @@ class ShardMatrixStatements implements \Iterator {
 		}
 
 		return $count;
+	}
+
+	/**
+	 * @return Uuid[]
+	 */
+	public function getLastInsertUuids(): array {
+		$results = [];
+		foreach ( $this->getShardMatrixStatements() as $statement ) {
+			if ( $uuid = $statement->getLastInsertUuid() ) {
+				$results[] = $uuid;
+			}
+		}
+
+		return $results;
 	}
 
 }

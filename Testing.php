@@ -13,7 +13,7 @@ ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 //    password VARCHAR(100),
 //    email VARCHAR(200)
 //) ENGINE=InnoDB;" );
-$f = ( new ShardQuery() )->allNodeQuery( 'users', "select * from users" ,null,'username','desc');
+$f = ( new ShardQuery() )->allNodeQuery( 'users', "select * from users" ,null,'username','asc');
 var_dump($f->fetchRowArray());
 
 //$stmt = ( new ShardQuery() )->test( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), 'select * from users' );

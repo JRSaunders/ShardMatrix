@@ -85,4 +85,13 @@ class Uuid {
 		return $this->uuid;
 	}
 
+	public function isValid(): bool {
+
+		if ( $this->getTable() && $this->getNode() && count( $this->getParts() ) == 5 ) {
+			return true;
+		}
+
+		return false;
+	}
+
 }
