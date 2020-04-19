@@ -61,12 +61,18 @@ class Uuid {
 
 	public function getNode(): ?Node {
 
-		return $this->node ??
-		       (
-		       $this->node = ShardMatrix::getConfig()->getNodes()->getNodeByName(
-			       hex2bin( $this->getRamseyUuid()->getFields()->getNode() )
-		       )
-		       );
+		$node = $this->node ??
+		        (
+		        $this->node = ShardMatrix::getConfig()->getNodes()->getNodeByName(
+			        hex2bin( $this->getRamseyUuid()->getFields()->getNode() )
+		        )
+		        );
+
+		if ( $node ) {
+			$node->setLastUsedTableName( $this->getTable()->getName() );
+		}
+
+		return $node;
 	}
 
 	/**

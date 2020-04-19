@@ -5,9 +5,11 @@ namespace ShardMatrix;
 
 
 class Node {
+
 	protected string $name;
 	protected array $nodeData;
 	protected ?TableGroups $tableGroups = null;
+	protected ?string $lastUsedTableName = null;
 
 	public function __construct( string $name, array $nodeData ) {
 		$this->name     = $name;
@@ -64,6 +66,24 @@ class Node {
 	 */
 	public function getName(): string {
 		return $this->name;
+	}
+
+	/**
+	 * @param string|null $lastUsedTableName
+	 *
+	 * @return Node
+	 */
+	public function setLastUsedTableName( ?string $lastUsedTableName ): Node {
+		$this->lastUsedTableName = $lastUsedTableName;
+
+		return $this;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getLastUsedTableName(): ?string {
+		return $this->lastUsedTableName;
 	}
 
 

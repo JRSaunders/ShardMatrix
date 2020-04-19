@@ -13,12 +13,27 @@ use ShardMatrix\Table;
 use ShardMatrix\Uuid;
 
 class ShardDB {
-
+	/**
+	 * @var string
+	 */
 	protected $defaultRowReturnClass = ResultRow::class;
+	/**
+	 * @var array
+	 */
 	protected $resultRowReturnClasses = [];
-
+	/**
+	 * @var \Closure|null
+	 */
 	protected ?\Closure $checkSuccessFunction = null;
 
+	/**
+	 * @param string $tableName
+	 * @param string $sql
+	 * @param array|null $bind
+	 *
+	 * @return ShardMatrixStatement|null
+	 * @throws \ShardMatrix\Exception
+	 */
 	public function insert( string $tableName, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		$node = NodeDistributor::getNode( $tableName );
 		$uuid = Uuid::make( $node, new Table( $tableName ) );
@@ -44,6 +59,13 @@ class ShardDB {
 		return $this;
 	}
 
+	/**
+	 * @param Uuid $uuid
+	 * @param string $sql
+	 * @param array|null $bind
+	 *
+	 * @return ShardMatrixStatement|null
+	 */
 	public function uuidUpdate( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		NodeDistributor::setFromUuid( $uuid );
 
@@ -80,6 +102,11 @@ class ShardDB {
 		)->fetchResultRow();
 	}
 
+	/**
+	 * @param Uuid $uuid
+	 *
+	 * @return bool
+	 */
 	public function deleteByUuid( Uuid $uuid ): bool {
 
 		return $this->uuidQuery(
@@ -177,7 +204,10 @@ class ShardDB {
 			$stmt = $db->prepare( $sql );
 			$stmt->execute( $bind );
 			if ( $stmt ) {
-				$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid, $this->getRowReturnClassByUuid( $uuid ) );
+				if ( $uuid ) {
+					$node->setLastUsedTableName( $uuid->getTable()->getName() );
+				}
+				$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid, $this->getRowReturnClassByNode( $node ) );
 				if ( strpos( strtolower( trim( $sql ) ), 'insert ' ) === 0 ) {
 					if ( $stmt->rowCount() > 0 && $uuid ) {
 						$shardStmt->setLastInsertUuid( $uuid );
@@ -226,10 +256,10 @@ class ShardDB {
 		return null;
 	}
 
-	private function getRowReturnClassByUuid( ?Uuid $uuid ): string {
+	private function getRowReturnClassByNode( Node $node ): string {
 
-		if ( $uuid && isset( $this->getResultRowReturnClasses()[ $uuid->getTable()->getName() ] ) ) {
-			return $this->getResultRowReturnClasses()[ $uuid->getTable()->getName() ];
+		if ( isset( $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ] ) ) {
+			return $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ];
 		}
 
 		return $this->getDefaultRowReturnClass();

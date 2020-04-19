@@ -33,6 +33,9 @@ class Nodes implements \Iterator {
 		return $this->nodes;
 	}
 
+	/**
+	 * @return Node[]
+	 */
 	public function getInsertNodes(): array {
 		$returnArray = [];
 		foreach ( $this->getNodes() as $node ) {
@@ -135,7 +138,7 @@ class Nodes implements \Iterator {
 		$nodes = [];
 		foreach ( $this->getNodes() as $node ) {
 			if ( $node->containsTableName( $tableName ) ) {
-				$nodes[] = $node;
+				$nodes[] = $node->setLastUsedTableName( $tableName );
 			}
 		}
 

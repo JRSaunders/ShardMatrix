@@ -25,7 +25,7 @@ class NodeDistributor {
 	static public function getNode( string $tableName ): Node {
 		$group = ShardMatrix::getConfig()->getTableGroups()->getTableGroupByTableName( $tableName );
 		if ( isset( static::$groupNodes[ $group->getName() ] ) ) {
-			return static::$groupNodes[ $group->getName() ];
+			return static::$groupNodes[ $group->getName() ]->setLastUsedTableName( $tableName );
 		}
 
 		$nodes     = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName );
@@ -36,7 +36,7 @@ class NodeDistributor {
 		if ( $node && $group ) {
 			static::$groupNodes[ $group->getName() ] = $node;
 
-			return $node;
+			return $node->setLastUsedTableName( $tableName );
 		}
 
 		throw new Exception( 'No Node Found for ' . $tableName, 1 );

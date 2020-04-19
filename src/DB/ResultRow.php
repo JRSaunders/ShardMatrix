@@ -22,7 +22,7 @@ class ResultRow implements \JsonSerializable {
 	/**
 	 * @return Uuid|null
 	 */
-	public function getUuid(): ?Uuid {
+	final public function getUuid(): ?Uuid {
 		if ( isset( $this->uuids['uuid'] ) ) {
 			return $this->uuids['uuid'];
 		}
@@ -36,7 +36,7 @@ class ResultRow implements \JsonSerializable {
 	/**
 	 * @return Uuid[]
 	 */
-	public function getJoinUuids(): array {
+	final public function getJoinUuids(): array {
 		$resultArray = [];
 		foreach ( $this->row as $name => $value ) {
 			if ( strpos( $name, '_uuid' ) !== false ) {
@@ -55,7 +55,7 @@ class ResultRow implements \JsonSerializable {
 	 *
 	 * @return mixed|Uuid|null
 	 */
-	public function __get( $name ) {
+	final public function __get( $name ) {
 		if ( strpos( $name, 'uuid' ) !== false && isset( $this->row->$name ) ) {
 			if ( isset( $this->uuids[ $name ] ) ) {
 				return $this->uuids[ $name ];
