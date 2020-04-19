@@ -8,7 +8,7 @@ class UniqueColumns implements \Iterator {
 
 	protected $position = 0;
 	/**
-	 * @var UniqueColumn[]
+	 * @var string[]
 	 */
 	protected $uniqueColumns = [];
 
@@ -17,8 +17,8 @@ class UniqueColumns implements \Iterator {
 	 *
 	 * @param array $UniqueColumns
 	 */
-	public function __construct( array $UniqueColumns ) {
-		$this->UniqueColumns = $UniqueColumns;
+	public function __construct( array $uniqueColumns ) {
+		$this->uniqueColumns = $uniqueColumns;
 	}
 
 	/**

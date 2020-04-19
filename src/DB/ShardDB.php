@@ -213,6 +213,7 @@ class ShardDB {
 						$shardStmt->setLastInsertUuid( $uuid );
 					}
 				}
+				$this->uniqueColumns( $shardStmt, str_replace( static::class . '::', '', $calledMethod ) );
 				$shardStmt->setSuccessChecked( $this->executeCheckSuccessFunction( $shardStmt, $calledMethod ) );
 
 				return $shardStmt;
@@ -245,7 +246,6 @@ class ShardDB {
 	 * @return bool|null
 	 */
 	private function executeCheckSuccessFunction( ShardMatrixStatement $statement, string $calledMethod ): ?bool {
-//		$this->uniqueColumns( $statement, str_replace( static::class . '::', '', $calledMethod ) );
 		if ( $this->checkSuccessFunction ) {
 			return call_user_func_array( $this->checkSuccessFunction, [
 				$statement,
@@ -263,7 +263,7 @@ class ShardDB {
 	 */
 	private function getRowReturnClassByNode( Node $node ): string {
 
-		if ($node->getLastUsedTableName() && isset( $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ] ) ) {
+		if ( $node->getLastUsedTableName() && isset( $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ] ) ) {
 			return $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ];
 		}
 
@@ -288,23 +288,52 @@ class ShardDB {
 		return $this->defaultRowReturnClass;
 	}
 
+	/**
+	 * @param ShardMatrixStatement $statement
+	 * @param string $calledMethod
+	 *
+	 * @throws Exception
+	 */
 	private function uniqueColumns( ShardMatrixStatement $statement, string $calledMethod ) {
-//			switch($calledMethod){
-//				case 'insert':
-//				case 'uuidUpdate':
-//				$statement->getUuid()->getTable()->getUniqueColumns();
-//
-//				break;
-//
-//			}
-//			$statement->getUuid()->getTable();
-//
-//			$email = $this->getByUuid( $statement->getUuid() )->email;
-//			$checkDupes = $this->nodesQuery( $statement->getAllTableNodes(), "select uuid from users where email = :email and uuid != :uuid", [ ':email' => $email ,':uuid' => $statement->getUuid()->toString()] );
-//			if($checkDupes->isSuccessful()){
-//				$this->deleteByUuid( $statement->getUuid());
-//				throw new Exception('Duplicate Record');
-//			}
+
+		switch ( $calledMethod ) {
+			case 'insert':
+			case 'uuidUpdate':
+				$uniqueColumns = $statement->getUuid()->getTable()->getUniqueColumns();
+
+				if ( $uniqueColumns ) {
+					if ( $uuid = $statement->getUuid() ) {
+
+						$insertedRow = $this->getByUuid( $uuid );
+
+						$sql      = "select * from {$statement->getUuid()->getTable()->getName()} where";
+						$sqlArray = [];
+						foreach ( $uniqueColumns as $column ) {
+							if ( $insertedRow->__columnIsset( $column ) ) {
+								$binds[":{$column}"] = $insertedRow->$column;
+								$sqlArray[]          = " {$column} = :{$column} ";
+							}
+						}
+						$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
+						$binds[':uuid'] = $uuid->toString();
+
+						if ( $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds )->isSuccessful() ) {
+							$note = $uuid->toString();
+							/**
+							 * TODO this is note deleting why???
+							 */
+							if ( $this->deleteByUuid( $uuid ) ) {
+
+								$note = 'Record Removed ' . $uuid->toString();
+							}
+							throw new Exception( 'Duplicate Record ' . $note, 46 );
+						}
+					}
+				}
+				break;
+
+		}
+
 
 	}
 

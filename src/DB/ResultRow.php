@@ -20,6 +20,15 @@ class ResultRow implements \JsonSerializable {
 	}
 
 	/**
+	 * @param $column
+	 *
+	 * @return bool
+	 */
+	final public function __columnIsset($column):bool{
+		return isset($this->row->$column);
+	}
+
+	/**
 	 * @return Uuid|null
 	 */
 	final public function getUuid(): ?Uuid {

@@ -19,23 +19,27 @@ $username = 'tim' . rand( 500, 1000 );
 $password = 'pass' . rand( 500, 1000 );
 $email    = 'email' . rand( 500, 1000 ) . '@google.com';
 $shardDb  = new ShardDB();
-$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
-	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
-		$email = $shardDb->getByUuid( $statement->getUuid() )->email;
-		$checkDupes = $shardDb->nodesQuery( $statement->getAllTableNodes(), "select uuid from users where email = :email and uuid != :uuid", [ ':email' => $email ,':uuid' => $statement->getUuid()->toString()] );
-		if($checkDupes->isSuccessful()){
-			$shardDb->deleteByUuid( $statement->getUuid());
-			throw new \Exception('Duplicate Record');
-		}
-	}
 
-	return true;
-} );
-$shardDb->setDefaultRowReturnClass( \ShardMatrix\DB\TestRow::class);
+
 $x = $shardDb->allNodesQuery( 'users', 'select * from users');
-foreach($x->fetchResultSet() as $row){
-	echo $row->getTest();
-}
+echo $x->rowCount();
+//$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
+//	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
+//		$email = $shardDb->getByUuid( $statement->getUuid() )->email;
+//		$checkDupes = $shardDb->nodesQuery( $statement->getAllTableNodes(), "select uuid from users where email = :email and uuid != :uuid", [ ':email' => $email ,':uuid' => $statement->getUuid()->toString()] );
+//		if($checkDupes->isSuccessful()){
+//			$shardDb->deleteByUuid( $statement->getUuid());
+//			throw new \Exception('Duplicate Record');
+//		}
+//	}
+//
+//	return true;
+//} );
+//$shardDb->setDefaultRowReturnClass( \ShardMatrix\DB\TestRow::class);
+$shardDb->insert( 'users', "insert into users (uuid,email,username,password) values (:uuid,'email50ss5@google.com','odeq234iwuow','qwug234ddugwq');");
+
+//$shardDb->deleteByUuid( new \ShardMatrix\Uuid('06a00233-1ea82566-fa3d-6066-ac4d-444230303031'));
+
 //$shardDb->insert( 'users', "insert into users  (uuid,username,password,email) values (:uuid,:username,:password,:email);", [
 //	':username' => $username,
 //	':password' => $password,
