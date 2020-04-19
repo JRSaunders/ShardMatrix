@@ -152,4 +152,28 @@ class ShardMatrixStatements implements \Iterator {
 	public function getShardMatrixStatements(): array {
 		return $this->shardMatrixStatements;
 	}
+
+	/**
+	 * @return ResultSet
+	 */
+	public function fetchResultSet(): ResultSet {
+		$resultSet = new ResultSet( [] );
+		if ( $results = $this->fetchAllObjects() ) {
+			$resultSet->setResultSet( $results );
+		}
+
+		return $resultSet;
+	}
+
+	/**
+	 * @return ResultRow|null
+	 */
+	public function fetchResultRow(): ?ResultRow {
+		if ( $row = $this->fetchRowObject() ) {
+			return new ResultRow( $row );
+		}
+
+		return null;
+	}
+
 }
