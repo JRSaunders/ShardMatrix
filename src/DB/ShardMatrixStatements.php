@@ -176,4 +176,30 @@ class ShardMatrixStatements implements \Iterator {
 		return null;
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isSuccessful(): bool {
+		foreach ( $this->getShardMatrixStatements() as $statement ) {
+			if ( $statement->isSuccessful() ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+
+	/**
+	 * @return int
+	 */
+	public function rowCount(): int {
+		$count = 0;
+		foreach ( $this->getShardMatrixStatements() as $statement ) {
+			$count = $count + $statement->rowCount();
+		}
+
+		return $count;
+	}
+
 }

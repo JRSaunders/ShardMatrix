@@ -12,7 +12,16 @@ class ShardMatrixStatement {
 	protected ?Node $node = null;
 	protected ?Uuid $uuid = null;
 	protected array $data = [];
+	protected bool $dataSuccess = false;
+	protected ?bool $successChecked = null;
 
+	/**
+	 * ShardMatrixStatement constructor.
+	 *
+	 * @param \PDOStatement|null $pdoStatement
+	 * @param Node|null $node
+	 * @param Uuid|null $uuid
+	 */
 	public function __construct( ?\PDOStatement $pdoStatement, ?Node $node, ?Uuid $uuid ) {
 		$this->uuid         = $uuid;
 		$this->node         = $node;
@@ -40,9 +49,14 @@ class ShardMatrixStatement {
 		return $this->uuid;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function fetchAllArrays(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
+				$this->dataSuccess = true;
+
 				return $this->pdoStatement->fetchAll( \PDO::FETCH_ASSOC );
 			}
 		}
@@ -53,6 +67,9 @@ class ShardMatrixStatement {
 		return [];
 	}
 
+	/**
+	 * @return array
+	 */
 	public function fetchAllObjects(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
@@ -71,6 +88,9 @@ class ShardMatrixStatement {
 		return [];
 	}
 
+	/**
+	 * @return array|null
+	 */
 	public function fetchRowArray(): ?array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
@@ -84,6 +104,9 @@ class ShardMatrixStatement {
 		return null;
 	}
 
+	/**
+	 * @return \stdClass|null
+	 */
 	public function fetchRowObject(): ?\stdClass {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
@@ -95,6 +118,17 @@ class ShardMatrixStatement {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function rowCount(): int {
+		if ( $this->pdoStatement ) {
+			return $this->pdoStatement->rowCount();
+		}
+
+		return count( $this->data );
 	}
 
 	public function __preSerialize() {
@@ -123,6 +157,36 @@ class ShardMatrixStatement {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param bool|null $successChecked
+	 */
+	public function setSuccessChecked( ?bool $successChecked ): ShardMatrixStatement {
+		$this->successChecked = $successChecked;
+
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSuccessful(): bool {
+		$success = false;
+		if ( $this->pdoStatement ) {
+			if ( $this->pdoStatement->rowCount() > 0 ) {
+				$success = true;
+			}
+		} else {
+			$success = $this->dataSuccess;
+		}
+
+		if ( is_bool( $this->successChecked ) && $success ) {
+			return $this->successChecked;
+		}
+
+		return $success;
+
 	}
 
 }

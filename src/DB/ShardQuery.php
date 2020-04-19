@@ -4,6 +4,7 @@
 namespace ShardMatrix\DB;
 
 
+use Cassandra\Statement;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\ShardMatrix;
@@ -12,39 +13,66 @@ use ShardMatrix\Uuid;
 
 class ShardQuery {
 
+	protected ?\Closure $checkSuccessFunction = null;
 
 	public function insert( string $tableName, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		$node = NodeDistributor::getNode( $tableName );
 		if ( $node->isInsertData() ) {
 			$uuid = Uuid::make( $node, new Table( $tableName ) );
-			$this->uuidBind( $uuid, $sql, $bind );
 
-			return $this->execute( $node, $sql, $bind, $uuid );
+			return $this
+				->uuidBind( $uuid, $sql, $bind )
+				->execute( $node, $sql, $bind, $uuid );
 		}
 
 		return null;
 	}
 
-	private function uuidBind( Uuid $uuid, string $sql, &$bind ) {
-		if ( strpos( $sql, ':uuid' ) ) {
+	/**
+	 * @param Uuid $uuid
+	 * @param string $sql
+	 * @param $bind
+	 *
+	 * @return ShardQuery
+	 */
+	private function uuidBind( Uuid $uuid, string $sql, &$bind ): ShardQuery {
+		if ( strpos( $sql, ':uuid ' ) !== false ) {
 			$bind[':uuid'] = $uuid->__toString();
 		}
+
+		return $this;
 	}
 
 	public function uuidUpdate( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		NodeDistributor::setFromUuid( $uuid );
-		$this->uuidBind( $uuid, $sql, $bind );
 
-		return $this->execute( $uuid->getNode(), $sql, $bind, $uuid );
+		return $this
+			->uuidBind( $uuid, $sql, $bind )
+			->execute( $uuid->getNode(), $sql, $bind, $uuid );
 
 	}
 
-	public function uuidQuery( Uuid $uuid, string $sql, ?array $bind = null ) {
-		$bind[':uuid'] = $uuid->__toString();
+	/**
+	 * @param Uuid $uuid
+	 * @param string $sql
+	 * @param array|null $bind
+	 *
+	 * @return ShardMatrixStatement|null
+	 */
+	public function uuidQuery( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 
-		return $this->execute( $uuid->getNode(), $sql, $bind, $uuid );
+		return $this
+			->uuidBind( $uuid, $sql, $bind )
+			->execute( $uuid->getNode(), $sql, $bind, $uuid );
 	}
 
+	/**
+	 * @param Node $node
+	 * @param string $sql
+	 * @param array|null $bind
+	 *
+	 * @return ShardMatrixStatement|null
+	 */
 	public function nodeQuery( Node $node, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		return $this->execute( $node, $sql, $bind );
 	}
@@ -58,7 +86,9 @@ class ShardQuery {
 	 *
 	 * @return ShardMatrixStatements|null
 	 */
-	public function allNodeQuery( string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null ): ?ShardMatrixStatements {
+	public function allNodeQuery(
+		string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null
+	): ?ShardMatrixStatements {
 		$queryPidUuid = uniqid( getmypid() . '-' );
 		$nodes        = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName );
 		foreach ( $nodes as $node ) {
@@ -106,18 +136,34 @@ class ShardQuery {
 		$stmt = Connections::getNodeConnection( $node )->prepare( $sql );
 		$stmt->execute( $bind );
 		if ( $stmt ) {
-			return new ShardMatrixStatement( $stmt, $node, $uuid );
+			$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid );
+			$shardStmt->setSuccessChecked( $this->executeCheckSuccessFunction( $shardStmt ) );
+
+			return $shardStmt;
 		}
 
 		return null;
 	}
 
-	public function test( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null ): ?ShardMatrixStatement {
-		$stmt = Connections::getNodeConnection( $node )->prepare( $sql );
-		$stmt->execute( $bind );
+	/**
+	 * @param \Closure|null $checkSuccessFunction
+	 *
+	 * @return $this|ShardMatrix
+	 */
+	public function setCheckSuccessFunction( ?\Closure $checkSuccessFunction ): ShardMatrix {
+		$this->checkSuccessFunction = $checkSuccessFunction;
 
-		if ( $stmt ) {
-			return new ShardMatrixStatement( $stmt, $node, $uuid );
+		return $this;
+	}
+
+	/**
+	 * @param ShardMatrixStatement $statements
+	 *
+	 * @return bool|null
+	 */
+	private function executeCheckSuccessFunction( ShardMatrixStatement $statements ): ?bool {
+		if ( $this->checkSuccessFunction ) {
+			return call_user_func_array( $this->checkSuccessFunction, [ $statements ] );
 		}
 
 		return null;
