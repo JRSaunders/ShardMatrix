@@ -17,7 +17,6 @@ class NodeDistributor {
 
 	/**
 	 * @param string $tableName
-	 * @param bool $forNewUuid
 	 *
 	 * @return Node
 	 * @throws Exception
@@ -36,7 +35,7 @@ class NodeDistributor {
 		if ( $node && $group ) {
 			static::$groupNodes[ $group->getName() ] = $node;
 
-			return $node->setLastUsedTableName( $tableName );
+			return $node;
 		}
 
 		throw new Exception( 'No Node Found for ' . $tableName, 1 );
