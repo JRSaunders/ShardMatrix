@@ -1,6 +1,6 @@
 <?php
 
-use ShardMatrix\DB\ShardQuery;
+use ShardMatrix\DB\ShardDB;
 use ShardMatrix\ShardMatrix;
 
 include './vendor/autoload.php';
@@ -13,8 +13,33 @@ ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 //    password VARCHAR(100),
 //    email VARCHAR(200)
 //) ENGINE=InnoDB;" );
-$f = ( new ShardQuery() )->allNodeQuery( 'users', "select * from users" ,null,'username','asc');
-var_dump($f->fetchRowArray());
+//$f = ( new ShardQuery() )->allNodeQuery( 'users', "select * from users" ,null,'username','asc');
+//var_dump($f->fetchRowArray());
+$username = 'tim' . rand( 500, 1000 );
+$password = 'pass' . rand( 500, 1000 );
+$email    = 'email' . rand( 500, 1000 ) . '@google.com';
+$shardDb  = new ShardDB();
+$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
+	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
+		$email = $shardDb->getByUuid( $statement->getUuid() )->email;
+		$checkDupes = $shardDb->nodesQuery( $statement->getAllTableNodes(), "select uuid from users where email = :email and uuid != :uuid", [ ':email' => $email ,':uuid' => $statement->getUuid()->toString()] );
+		if($checkDupes->isSuccessful()){
+			$shardDb->deleteByUuid( $statement->getUuid());
+			throw new \Exception('Duplicate Record');
+		}
+	}
+
+	return true;
+} );
+//$shardDb->insert( 'users', "insert into users  (uuid,username,password,email) values (:uuid,:username,:password,:email);", [
+//	':username' => $username,
+//	':password' => $password,
+//	':email'    => $email
+//] );
+
+ShardMatrix::getConfig()->getUniqueColumns();
+
+
 
 //$stmt = ( new ShardQuery() )->test( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), 'select * from users' );
 //var_dump( $stmt );

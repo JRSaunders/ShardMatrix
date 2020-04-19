@@ -82,12 +82,16 @@ class Uuid {
 	}
 
 	public function __toString() {
-		return $this->uuid;
+		return $this->toString();
+	}
+
+	public function toString(): string {
+		return $this->uuid ?? '';
 	}
 
 	public function isValid(): bool {
 
-		if ( $this->getTable() && $this->getNode() && count( $this->getParts() ) == 5 ) {
+		if ( $this->getTable() && $this->getNode() && count( $this->getParts() ) == 6 ) {
 			return true;
 		}
 

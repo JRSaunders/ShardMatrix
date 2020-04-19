@@ -33,6 +33,17 @@ class Nodes implements \Iterator {
 		return $this->nodes;
 	}
 
+	public function getInsertNodes(): array {
+		$returnArray = [];
+		foreach ( $this->getNodes() as $node ) {
+			if ( $node->isInsertData() ) {
+				$returnArray[] = $node;
+			}
+		}
+
+		return $returnArray;
+	}
+
 	/**
 	 * @param array $nodes
 	 *
@@ -53,6 +64,10 @@ class Nodes implements \Iterator {
 
 	public function countNodes(): int {
 		return count( $this->getNodes() );
+	}
+
+	public function countInsertNodes(): int {
+		return count( $this->getInsertNodes() );
 	}
 
 
@@ -116,7 +131,7 @@ class Nodes implements \Iterator {
 		return null;
 	}
 
-	public function getNodesWithTableName( string $tableName): Nodes {
+	public function getNodesWithTableName( string $tableName ): Nodes {
 		$nodes = [];
 		foreach ( $this->getNodes() as $node ) {
 			if ( $node->containsTableName( $tableName ) ) {

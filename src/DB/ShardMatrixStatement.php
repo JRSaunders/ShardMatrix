@@ -4,7 +4,10 @@
 namespace ShardMatrix\DB;
 
 
+use ShardMatrix\Config;
 use ShardMatrix\Node;
+use ShardMatrix\Nodes;
+use ShardMatrix\ShardMatrix;
 use ShardMatrix\Uuid;
 
 class ShardMatrixStatement {
@@ -194,6 +197,7 @@ class ShardMatrixStatement {
 	 * @return Uuid|null
 	 */
 	public function getLastInsertUuid(): ?Uuid {
+
 		if ( $this->lastInsertUuid && $this->lastInsertUuid->isValid() ) {
 			return $this->lastInsertUuid;
 		}
@@ -212,5 +216,26 @@ class ShardMatrixStatement {
 		return $this;
 	}
 
+	/**
+	 * @return Nodes
+	 */
+	public function getOtherTableNodes(): Nodes {
+		$nodes = [];
+		if ( $this->getUuid() ) {
+
+			foreach ( $this->getAllTableNodes() as $node ) {
+				if ( $node->getName() != $this->getNode()->getName() ) {
+					$nodes[] = $node;
+				}
+			}
+
+		}
+
+		return new Nodes( $nodes );
+	}
+
+	public function getAllTableNodes(): Nodes {
+		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $this->getUuid()->getTable()->getName() );
+	}
 
 }

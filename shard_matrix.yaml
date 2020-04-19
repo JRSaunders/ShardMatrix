@@ -9,6 +9,10 @@ table_groups:
   published:
     - published_offers
 
+unique_columns:
+  users:
+    - email
+    - username
 
 nodes:
   DB0001:
@@ -51,7 +55,5 @@ nodes:
     insert_data: false
     table_groups:
       - tracking
-
-#hashes:
 
 

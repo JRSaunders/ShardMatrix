@@ -32,7 +32,7 @@ class NodeDistributor {
 		$count     = $nodes->countNodes();
 		$randomKey = rand( 1, $count ) - 1;
 
-		$node = $nodes->getNodes()[ $randomKey ];
+		$node = $nodes->getInsertNodes()[ $randomKey ];
 		if ( $node && $group ) {
 			static::$groupNodes[ $group->getName() ] = $node;
 
