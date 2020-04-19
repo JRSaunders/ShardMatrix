@@ -13,14 +13,14 @@ class ResultSet implements \Iterator {
 
 	protected array $resultSet = [];
 
-	public function __construct( array $resultSet ) {
-		$this->setResultSet( $resultSet );
+	public function __construct( array $resultSet, string $resultRowReturnClass = ResultRow::class ) {
+		$this->setResultSet( $resultSet, $resultRowReturnClass );
 	}
 
-	public function setResultSet( array $resultSet ) {
+	public function setResultSet( array $resultSet, string $resultRowReturnClass = ResultRow::class ) {
 		foreach ( $resultSet as &$row ) {
 			if ( ! $row instanceof ResultRow ) {
-				$row = new ResultRow( $row );
+				$row = new $resultRowReturnClass( $row );
 			}
 		}
 		$this->resultSet = $resultSet;

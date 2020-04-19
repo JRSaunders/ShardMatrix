@@ -14,6 +14,9 @@ use ShardMatrix\Uuid;
 
 class ShardDB {
 
+	protected $defaultRowReturnClass = ResultRow::class;
+	protected $resultRowReturnClasses = [];
+
 	protected ?\Closure $checkSuccessFunction = null;
 
 	public function insert( string $tableName, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
@@ -174,7 +177,7 @@ class ShardDB {
 			$stmt = $db->prepare( $sql );
 			$stmt->execute( $bind );
 			if ( $stmt ) {
-				$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid );
+				$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid, $this->getRowReturnClassByUuid( $uuid ) );
 				if ( strpos( strtolower( trim( $sql ) ), 'insert ' ) === 0 ) {
 					if ( $stmt->rowCount() > 0 && $uuid ) {
 						$shardStmt->setLastInsertUuid( $uuid );
@@ -212,7 +215,7 @@ class ShardDB {
 	 * @return bool|null
 	 */
 	private function executeCheckSuccessFunction( ShardMatrixStatement $statement, string $calledMethod ): ?bool {
-		$this->uniqueColumns( $statement, str_replace( static::class . '::', '', $calledMethod ) );
+//		$this->uniqueColumns( $statement, str_replace( static::class . '::', '', $calledMethod ) );
 		if ( $this->checkSuccessFunction ) {
 			return call_user_func_array( $this->checkSuccessFunction, [
 				$statement,
@@ -221,6 +224,33 @@ class ShardDB {
 		}
 
 		return null;
+	}
+
+	private function getRowReturnClassByUuid( ?Uuid $uuid ): string {
+
+		if ( $uuid && isset( $this->getResultRowReturnClasses()[ $uuid->getTable()->getName() ] ) ) {
+			return $this->getResultRowReturnClasses()[ $uuid->getTable()->getName() ];
+		}
+
+		return $this->getDefaultRowReturnClass();
+	}
+
+	/**
+	 * @param string $defaultRowReturnClass
+	 *
+	 * @return ShardDB
+	 */
+	public function setDefaultRowReturnClass( string $defaultRowReturnClass ): ShardDB {
+		$this->defaultRowReturnClass = $defaultRowReturnClass;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	private function getDefaultRowReturnClass(): string {
+		return $this->defaultRowReturnClass;
 	}
 
 	private function uniqueColumns( ShardMatrixStatement $statement, string $calledMethod ) {
@@ -241,6 +271,24 @@ class ShardDB {
 //				throw new Exception('Duplicate Record');
 //			}
 
+	}
+
+	/**
+	 * @param array $resultRowReturnClasses
+	 *
+	 * @return $this
+	 */
+	public function setResultRowReturnClasses( array $resultRowReturnClasses ): ShardDB {
+		$this->resultRowReturnClasses = $resultRowReturnClasses;
+
+		return $this;
+	}
+
+	/**
+	 * @return array
+	 */
+	private function getResultRowReturnClasses(): array {
+		return $this->resultRowReturnTypes;
 	}
 
 }

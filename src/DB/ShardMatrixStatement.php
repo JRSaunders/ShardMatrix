@@ -3,13 +3,15 @@
 
 namespace ShardMatrix\DB;
 
-
-use ShardMatrix\Config;
 use ShardMatrix\Node;
 use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
 use ShardMatrix\Uuid;
 
+/**
+ * Class ShardMatrixStatement
+ * @package ShardMatrix\DB
+ */
 class ShardMatrixStatement {
 	protected ?\PDOStatement $pdoStatement = null;
 	protected ?Node $node = null;
@@ -18,6 +20,7 @@ class ShardMatrixStatement {
 	protected bool $dataSuccess = false;
 	protected ?bool $successChecked = null;
 	protected ?Uuid $lastInsertUuid = null;
+	protected string $resultRowReturnClass;
 
 	/**
 	 * ShardMatrixStatement constructor.
@@ -25,11 +28,13 @@ class ShardMatrixStatement {
 	 * @param \PDOStatement|null $pdoStatement
 	 * @param Node|null $node
 	 * @param Uuid|null $uuid
+	 * @param string $resultRowReturnClass
 	 */
-	public function __construct( ?\PDOStatement $pdoStatement, ?Node $node, ?Uuid $uuid ) {
-		$this->uuid         = $uuid;
-		$this->node         = $node;
-		$this->pdoStatement = $pdoStatement;
+	public function __construct( ?\PDOStatement $pdoStatement, ?Node $node, ?Uuid $uuid, string $resultRowReturnClass = ResultRow::class ) {
+		$this->uuid                 = $uuid;
+		$this->node                 = $node;
+		$this->pdoStatement         = $pdoStatement;
+		$this->resultRowReturnClass = $resultRowReturnClass;
 	}
 
 	/**
@@ -144,7 +149,7 @@ class ShardMatrixStatement {
 	 * @return ResultSet
 	 */
 	public function fetchResultSet(): ResultSet {
-		$resultSet = new ResultSet( [] );
+		$resultSet = new ResultSet( [], $this->resultRowReturnClass );
 		if ( $results = $this->fetchAllObjects() ) {
 			$resultSet->setResultSet( $results );
 		}
@@ -157,7 +162,9 @@ class ShardMatrixStatement {
 	 */
 	public function fetchResultRow(): ?ResultRow {
 		if ( $row = $this->fetchRowObject() ) {
-			return new ResultRow( $row );
+			$returnClass = $this->resultRowReturnClass;
+
+			return new $returnClass( $row );
 		}
 
 		return null;
