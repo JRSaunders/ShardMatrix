@@ -3,6 +3,7 @@
 
 namespace ShardMatrix\DB;
 
+use mysql_xdevapi\RowResult;
 use ShardMatrix\Uuid;
 
 class ShardMatrixStatements implements \Iterator {
@@ -164,9 +165,13 @@ class ShardMatrixStatements implements \Iterator {
 	 * @return ResultSet
 	 */
 	public function fetchResultSet(): ResultSet {
-		$resultSet = new ResultSet( [] );
+		$class = RowResult::class;
+		if ( isset( $this->getShardMatrixStatements()[0] ) ) {
+			$class = $this->getShardMatrixStatements()[0]->getResultRowReturnClass();
+		}
+		$resultSet = new ResultSet( [], $class );
 		if ( $results = $this->fetchAllObjects() ) {
-			$resultSet->setResultSet( $results );
+			$resultSet->setResultSet( $results, $class );
 		}
 
 		return $resultSet;
@@ -177,7 +182,12 @@ class ShardMatrixStatements implements \Iterator {
 	 */
 	public function fetchResultRow(): ?ResultRow {
 		if ( $row = $this->fetchRowObject() ) {
-			return new ResultRow( $row );
+			$class = RowResult::class;
+			if ( isset( $this->getShardMatrixStatements()[0] ) ) {
+				$class = $this->getShardMatrixStatements()[0]->getResultRowReturnClass();
+			}
+
+			return new $class( $row );
 		}
 
 		return null;

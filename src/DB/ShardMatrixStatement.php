@@ -245,4 +245,11 @@ class ShardMatrixStatement {
 		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $this->getUuid()->getTable()->getName() );
 	}
 
+	/**
+	 * @return string
+	 */
+	public function getResultRowReturnClass(): string {
+		return $this->resultRowReturnClass;
+	}
+
 }

@@ -31,13 +31,18 @@ $shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStateme
 
 	return true;
 } );
+$shardDb->setDefaultRowReturnClass( \ShardMatrix\DB\TestRow::class);
+$x = $shardDb->allNodesQuery( 'users', 'select * from users');
+foreach($x->fetchResultSet() as $row){
+	echo $row->getTest();
+}
 //$shardDb->insert( 'users', "insert into users  (uuid,username,password,email) values (:uuid,:username,:password,:email);", [
 //	':username' => $username,
 //	':password' => $password,
 //	':email'    => $email
 //] );
 
-ShardMatrix::getConfig()->getUniqueColumns();
+//ShardMatrix::getConfig()->getUniqueColumns();
 
 
 

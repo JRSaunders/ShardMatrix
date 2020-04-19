@@ -256,9 +256,14 @@ class ShardDB {
 		return null;
 	}
 
+	/**
+	 * @param Node $node
+	 *
+	 * @return string
+	 */
 	private function getRowReturnClassByNode( Node $node ): string {
 
-		if ( isset( $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ] ) ) {
+		if ($node->getLastUsedTableName() && isset( $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ] ) ) {
 			return $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ];
 		}
 
@@ -318,7 +323,7 @@ class ShardDB {
 	 * @return array
 	 */
 	private function getResultRowReturnClasses(): array {
-		return $this->resultRowReturnTypes;
+		return $this->resultRowReturnClasses;
 	}
 
 }
