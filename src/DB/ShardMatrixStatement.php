@@ -3,6 +3,7 @@
 
 namespace ShardMatrix\DB;
 
+use mysql_xdevapi\RowResult;
 use ShardMatrix\Node;
 use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
@@ -264,6 +265,52 @@ class ShardMatrixStatement {
 		}
 
 		return $this->queryString;
+	}
+
+	/**
+	 * @param string $column
+	 * @param string|null $groupByColumn
+	 *
+	 * @return int
+	 */
+	public function sumColumn( string $column, ?string $groupByColumn = null ): int {
+		$sum = 0;
+		foreach ( $this->fetchResultSet() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				$sum = $sum + $row->__toObject()->$column;
+			}
+		}
+
+		return $sum;
+	}
+
+	/**
+	 * @param string $column
+	 * @param string $groupByColumn
+	 *
+	 * @return GroupSumSet
+	 */
+	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSumSet {
+		$sum = [];
+		foreach ( $this->fetchResultSet() as $row ) {
+			if ( isset( $row->__toObject()->$groupByColumn ) ) {
+				if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+					if ( ! isset( $sum[ $row->__toObject()->$groupByColumn ] ) ) {
+						$sum[ $row->__toObject()->$groupByColumn ] = 0;
+					}
+					$sum[ $row->__toObject()->$groupByColumn ] = $sum[ $row->__toObject()->$groupByColumn ] + $row->__toObject()->$column;
+				}
+			}
+		}
+
+
+		$results = [];
+		foreach ( $sum as $group => $result ) {
+			$results[] = new GroupSum( (object) [ 'column' => $group, 'sum' => $result ] );
+		}
+
+		return new GroupSumSet( $results );
+
 	}
 
 }

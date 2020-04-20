@@ -11,27 +11,35 @@ ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
 
+$shardDb = new ShardDB();
+
+//var_dump( $shardDb->allNodesQuery( 'users', 'select count(*) as count ,
+// HOUR( created ) as hours  from users group by hours' )->sumColumnByGroup( 'count', 'hours' ));
+
+$x = $shardDb->allNodesQuery( 'users', "select * from users where created between '2020-04-20 11:50:10' and   '2020-04-20 12:20:00' order by created desc limit 300;",null,'username','desc');
+
+var_dump( $x->fetchAllObjects());
 
 $i = 0;
-while ( $i < 100000 ) {
-	$username = 'timmy' . rand( 5000, 10000000 ) . uniqid();
-	$password = 'cool!!' . rand( 5000, 100000 );
-	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
-	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
-	$i ++;
-	try {
-		\ShardMatrix\DB\Connections::closeConnections();
-		$shardDb = new ShardDB();
-		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
-			':username' => $username,
-			':password' => $password,
-			':email'    => $email,
-			':created'  => $created
-		] );
-	} catch ( \ShardMatrix\DB\Exception $exception ) {
-		echo $exception->getMessage() . PHP_EOL;
-	}
-}
+//while ( $i < 100000 ) {
+//	$username = 'timmy' . rand( 5000, 10000000 ) . uniqid();
+//	$password = 'cool!!' . rand( 5000, 100000 );
+//	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
+//	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+//	$i ++;
+//	try {
+//		\ShardMatrix\DB\Connections::closeConnections();
+//		$shardDb = new ShardDB();
+//		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
+//			':username' => $username,
+//			':password' => $password,
+//			':email'    => $email,
+//			':created'  => $created
+//		] );
+//	} catch ( \ShardMatrix\DB\Exception $exception ) {
+//		echo $exception->getMessage() . PHP_EOL;
+//	}
+//}
 //$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
 //	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
 //		$email = $shardDb->getByUuid( $statement->getUuid() )->email;

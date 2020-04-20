@@ -13,10 +13,20 @@ class ResultSet implements \Iterator, \JsonSerializable {
 
 	protected array $resultSet = [];
 
+	/**
+	 * ResultSet constructor.
+	 *
+	 * @param array $resultSet
+	 * @param string $resultRowReturnClass
+	 */
 	public function __construct( array $resultSet, string $resultRowReturnClass = ResultRow::class ) {
 		$this->setResultSet( $resultSet, $resultRowReturnClass );
 	}
 
+	/**
+	 * @param array $resultSet
+	 * @param string $resultRowReturnClass
+	 */
 	public function setResultSet( array $resultSet, string $resultRowReturnClass = ResultRow::class ) {
 		foreach ( $resultSet as &$row ) {
 			if ( ! $row instanceof ResultRow ) {
@@ -36,7 +46,7 @@ class ResultSet implements \Iterator, \JsonSerializable {
 	/**
 	 * @return ResultRow
 	 */
-	public function current(): ResultRow {
+	public function current() {
 		return $this->resultSet[ $this->position ];
 	}
 

@@ -6,6 +6,10 @@ namespace ShardMatrix\DB;
 use mysql_xdevapi\RowResult;
 use ShardMatrix\Uuid;
 
+/**
+ * Class ShardMatrixStatements
+ * @package ShardMatrix\DB
+ */
 class ShardMatrixStatements implements \Iterator {
 
 	protected $position = 0;
@@ -90,11 +94,11 @@ class ShardMatrixStatements implements \Iterator {
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
 
-					return ( ! strnatcmp( $a->$orderByColumn, $b->$orderByColumn ) ) ? - 1 : + 1;
+					return strcmp( $b->$orderByColumn, $a->$orderByColumn );
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
 
-					return ( strnatcmp( $a->$orderByColumn, $b->$orderByColumn ) ) ? - 1 : + 1;
+					return strcmp( $a->$orderByColumn, $b->$orderByColumn );
 				}
 
 			} );
@@ -231,6 +235,50 @@ class ShardMatrixStatements implements \Iterator {
 		}
 
 		return $results;
+	}
+
+	/**
+	 * @param string $column
+	 *
+	 * @return int
+	 */
+	public function sumColumn( string $column ): int {
+		$sum = 0;
+		foreach ( $this->fetchResultSet() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				$sum = $sum + $row->$column;
+			}
+		}
+
+		return $sum;
+	}
+
+	/**
+	 * @param string $column
+	 * @param string $groupByColumn
+	 *
+	 * @return GroupSumSet
+	 */
+	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSumSet {
+		$sum = [];
+		foreach ( $this->fetchResultSet() as $row ) {
+			if ( isset( $row->__toObject()->$groupByColumn ) ) {
+				if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+					if ( ! isset( $sum[ $row->__toObject()->$groupByColumn ] ) ) {
+						$sum[ $row->__toObject()->$groupByColumn ] = 0;
+					}
+					$sum[ $row->__toObject()->$groupByColumn ] = $sum[ $row->__toObject()->$groupByColumn ] + $row->__toObject()->$column;
+				}
+			}
+		}
+
+		$results = [];
+		foreach ( $sum as $group => $result ) {
+			$results[] = new GroupSum( (object) [ 'column' => $group, 'sum' => $result ] );
+		}
+
+		return new GroupSumSet( $results );
+
 	}
 
 }
