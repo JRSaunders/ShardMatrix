@@ -15,8 +15,11 @@ $shardDb = new ShardDB();
 
 //var_dump( $shardDb->allNodesQuery( 'users', 'select count(*) as count ,
 // HOUR( created ) as hours  from users group by hours' )->sumColumnByGroup( 'count', 'hours' ));
+//
+//$x = $shardDb->allNodesQuery( 'users', "select * from users where created between '2020-04-20 11:50:10' and   '2020-04-20 12:20:00' order by uuid desc limit 300;",null,'uuid','asc');
 
-$x = $shardDb->allNodesQuery( 'users', "select * from users where created between '2020-04-20 11:50:10' and   '2020-04-20 12:20:00' order by created desc limit 300;",null,'username','desc');
+$x = $shardDb->allNodesQuery( 'users', "select * from users where uuid > '06a00233-1ea830fb-874c-6cb4-ac3a-444230303033' order by uuid asc;",null,'uuid','asc');
+
 
 var_dump( $x->fetchAllObjects());
 

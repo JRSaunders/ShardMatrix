@@ -217,6 +217,11 @@ class ShardDB {
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
+	public function paginationQuery( PaginationQuery $paginationQuery ) {
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $paginationQuery->getTableName() );
+
+		return $this->nodesQuery( $nodes, $paginationQuery->getSql(), $paginationQuery->getBinds(), 'uuid', 'asc', __METHOD__ );
+	}
 
 	/**
 	 * @param Node $node
@@ -396,5 +401,6 @@ class ShardDB {
 	private function getResultRowReturnClasses(): array {
 		return $this->resultRowReturnClasses;
 	}
+
 
 }
