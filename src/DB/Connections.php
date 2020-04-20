@@ -11,10 +11,13 @@ use ShardMatrix\ShardMatrix;
 class Connections {
 
 	protected static $connections = [];
-	protected static $dbAttributes = [];
+	protected static $dbAttributes = [ \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION ];
 
+	/**
+	 * @param array $dbAttributes
+	 */
 	public static function setDbAttributes( array $dbAttributes ): void {
-		static::$dbAttributes = $dbAttributes;
+		array_merge( static::$dbAttributes, $dbAttributes );
 	}
 
 	public static function getNodeConnection( Node $node ): \PDO {

@@ -3,8 +3,6 @@
 
 namespace ShardMatrix\DB;
 
-
-use Cassandra\Statement;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\Nodes;
@@ -42,6 +40,12 @@ class ShardDB {
 			->uuidBind( $uuid, $sql, $bind )
 			->execute( $node, $sql, $bind, $uuid, __METHOD__ );
 
+	}
+
+	public function newNodeInsert( string $tableName, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
+		NodeDistributor::clearGroupNodes();
+
+		return $this->insert( $tableName, $sql, $bind );
 	}
 
 	/**
@@ -214,6 +218,8 @@ class ShardDB {
 	 * @param string $calledMethod
 	 *
 	 * @return ShardMatrixStatement|null
+	 * @throws DuplicateException
+	 * @throws Exception
 	 */
 	private function execute( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null, string $calledMethod ): ?ShardMatrixStatement {
 		try {
@@ -237,10 +243,10 @@ class ShardDB {
 				return $shardStmt;
 			}
 		} catch ( \Exception | \TypeError | \Error $exception ) {
-			/**
-			 * TODO do something here if exception is thrown
-			 */
-			echo $exception->getMessage();
+			if ( $exception instanceof DuplicateException ) {
+				throw $exception;
+			}
+			throw new Exception( $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
 		}
 
 		return null;
@@ -346,15 +352,15 @@ class ShardDB {
 							}
 							$note = $uuid->toString();
 							if ( $this->deleteByUuid( $uuid ) ) {
-								$note = ' (Record Removed ' . $uuid->toString() . ')';
+								$note = ' ( Record Removed ' . $uuid->toString() . ' )';
 							}
 							$columnsIssueString = '';
 							if ( $columnsIssue ) {
 								foreach ( $columnsIssue as $key => $val ) {
-									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ') ';
+									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
 								}
 							}
-							throw new Exception( 'Duplicate Record violation ' . $columnsIssueString . $note, 46 );
+							throw new DuplicateException( $columnsIssue, 'Duplicate Record violation ' . $columnsIssueString . $note, 46 );
 						}
 					}
 				}
