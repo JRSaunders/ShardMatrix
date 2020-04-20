@@ -320,7 +320,7 @@ class ShardDB {
 						if ( $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds )->isSuccessful() ) {
 							$note = $uuid->toString();
 							/**
-							 * TODO this is note deleting why???
+							 * TODO this is not deleting why???
 							 */
 							if ( $this->deleteByUuid( $uuid ) ) {
 
