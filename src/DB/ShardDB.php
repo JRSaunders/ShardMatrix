@@ -42,6 +42,14 @@ class ShardDB {
 
 	}
 
+	/**
+	 * @param string $tableName
+	 * @param string $sql
+	 * @param array|null $bind
+	 *
+	 * @return ShardMatrixStatement|null
+	 * @throws \ShardMatrix\Exception
+	 */
 	public function newNodeInsert( string $tableName, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
 		NodeDistributor::clearGroupNodes();
 

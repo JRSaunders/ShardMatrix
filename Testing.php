@@ -12,24 +12,24 @@ ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 //var_dump($f->fetchRowArray());
 
 
-$i =0;
-while($i<1000) {
-	$username = 'tim' . rand( 500, 100000 );
-	$password = 'pass' . rand( 500, 100000 );
-	$email    = 'email' . rand( 500, 100000 ) . '@google.com';
+$i = 0;
+while ( $i < 100000 ) {
+	$username = 'timmy' . rand( 5000, 10000000 ) . uniqid();
+	$password = 'cool!!' . rand( 5000, 100000 );
+	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
 	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
-	$i++;
+	$i ++;
 	try {
 		\ShardMatrix\DB\Connections::closeConnections();
-		$shardDb  = new ShardDB();
+		$shardDb = new ShardDB();
 		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
 			':username' => $username,
 			':password' => $password,
 			':email'    => $email,
 			':created'  => $created
 		] );
-	}catch(\ShardMatrix\DB\Exception $exception){
-		echo $exception->getMessage().PHP_EOL;
+	} catch ( \ShardMatrix\DB\Exception $exception ) {
+		echo $exception->getMessage() . PHP_EOL;
 	}
 }
 //$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
