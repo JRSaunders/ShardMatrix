@@ -320,28 +320,41 @@ class ShardDB {
 				$uniqueColumns = $statement->getUuid()->getTable()->getUniqueColumns();
 
 				if ( $uniqueColumns ) {
-					if ( $uuid = $statement->getUuid() ) {
+					if ( ( $uuid = $statement->getUuid() ) && ( $insertedRow = $this->getByUuid( $uuid ) ) ) {
 
-						$insertedRow = $this->getByUuid( $uuid );
-
-						$sql      = "select * from {$statement->getUuid()->getTable()->getName()} where";
-						$sqlArray = [];
+						$sqlArray      = [];
+						$selectColumns = [];
 						foreach ( $uniqueColumns as $column ) {
 							if ( $insertedRow->__columnIsset( $column ) ) {
 								$binds[":{$column}"] = $insertedRow->$column;
+								$selectColumns[]     = $column;
 								$sqlArray[]          = " {$column} = :{$column} ";
 							}
 						}
+						$sql            = "select " . join( ', ', $selectColumns ) . " from {$statement->getUuid()->getTable()->getName()} where";
 						$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
 						$binds[':uuid'] = $uuid->toString();
-
-						if ( $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds )->isSuccessful() ) {
+						$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
+						if ( $nodesResults->isSuccessful() && $insertedRow ) {
+							$columnsIssue = [];
+							foreach ( $nodesResults->fetchResultSet() as $row ) {
+								foreach ( $selectColumns as $column ) {
+									if ( $insertedRow->$column == $row->$column ) {
+										$columnsIssue[ $column ] = $insertedRow->$column;
+									}
+								}
+							}
 							$note = $uuid->toString();
 							if ( $this->deleteByUuid( $uuid ) ) {
-
-								$note = 'Record Removed ' . $uuid->toString();
+								$note = ' (Record Removed ' . $uuid->toString() . ')';
 							}
-							throw new Exception( 'Duplicate Record ' . $note, 46 );
+							$columnsIssueString = '';
+							if ( $columnsIssue ) {
+								foreach ( $columnsIssue as $key => $val ) {
+									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ') ';
+								}
+							}
+							throw new Exception( 'Duplicate Record violation ' . $columnsIssueString . $note, 46 );
 						}
 					}
 				}

@@ -7,19 +7,21 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-//$f = ( new ShardQuery() )->allNodeQuery( 'users', "CREATE TABLE users (
-//    uuid VARCHAR(50) NOT NULL PRIMARY KEY,
-//    username VARCHAR(100),
-//    password VARCHAR(100),
-//    email VARCHAR(200)
-//) ENGINE=InnoDB;" );
-//$f = ( new ShardQuery() )->allNodeQuery( 'users', "select * from users" ,null,'username','asc');
+$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
+//$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
 $username = 'tim' . rand( 500, 1000 );
 $password = 'pass' . rand( 500, 1000 );
 $email    = 'email' . rand( 500, 1000 ) . '@google.com';
+$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
 $shardDb  = new ShardDB();
 
+$shardDb->insert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
+	':username' => $username,
+	':password' => $password,
+	':email'    => $email,
+	':created'  => $created
+] );
 //$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
 //	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
 //		$email = $shardDb->getByUuid( $statement->getUuid() )->email;
@@ -35,15 +37,15 @@ $shardDb  = new ShardDB();
 //$shardDb->setDefaultRowReturnClass( \ShardMatrix\DB\TestRow::class);
 
 
-$shardDb->insert( 'users', "insert into users (uuid,email,username,password) values (:uuid,'email50ss5@google.com','odeq234iwuow','qwug234ddugwq');");
-
-$x = $shardDb->allNodesQuery( 'users', 'select * from users');
-
-foreach ($x->getShardMatrixStatements() as $s){
-	echo $s->getQueryString().PHP_EOL;
-	echo $s->getNode()->getName().':'.$s->rowCount().PHP_EOL;
-	//var_dump($s->fetchResultSet()->jsonSerialize());
-}
+//$shardDb->insert( 'users', "insert into users (uuid,email,username,password) values (:uuid,'email50ss5@google.com','odeq234iwuow','qwug234ddugwq');");
+//
+//$x = $shardDb->allNodesQuery( 'users', 'select * from users');
+//
+//foreach ($x->getShardMatrixStatements() as $s){
+//	echo PHP_EOL.$s->getQueryString().PHP_EOL;
+//	echo PHP_EOL.$s->getNode()->getName().':'.$s->rowCount().PHP_EOL;
+//	//var_dump($s->fetchResultSet()->jsonSerialize());
+//}
 
 //$shardDb->deleteByUuid( new \ShardMatrix\Uuid('06a00233-1ea82566-fa3d-6066-ac4d-444230303031'));
 
@@ -54,7 +56,6 @@ foreach ($x->getShardMatrixStatements() as $s){
 //] );
 
 //ShardMatrix::getConfig()->getUniqueColumns();
-
 
 
 //$stmt = ( new ShardQuery() )->test( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), 'select * from users' );
