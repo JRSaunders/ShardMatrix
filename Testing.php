@@ -20,9 +20,6 @@ $password = 'pass' . rand( 500, 1000 );
 $email    = 'email' . rand( 500, 1000 ) . '@google.com';
 $shardDb  = new ShardDB();
 
-
-$x = $shardDb->allNodesQuery( 'users', 'select * from users');
-echo $x->rowCount();
 //$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
 //	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
 //		$email = $shardDb->getByUuid( $statement->getUuid() )->email;
@@ -36,7 +33,17 @@ echo $x->rowCount();
 //	return true;
 //} );
 //$shardDb->setDefaultRowReturnClass( \ShardMatrix\DB\TestRow::class);
+
+
 $shardDb->insert( 'users', "insert into users (uuid,email,username,password) values (:uuid,'email50ss5@google.com','odeq234iwuow','qwug234ddugwq');");
+
+$x = $shardDb->allNodesQuery( 'users', 'select * from users');
+
+foreach ($x->getShardMatrixStatements() as $s){
+	echo $s->getQueryString().PHP_EOL;
+	echo $s->getNode()->getName().':'.$s->rowCount().PHP_EOL;
+	//var_dump($s->fetchResultSet()->jsonSerialize());
+}
 
 //$shardDb->deleteByUuid( new \ShardMatrix\Uuid('06a00233-1ea82566-fa3d-6066-ac4d-444230303031'));
 

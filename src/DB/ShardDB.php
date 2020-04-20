@@ -138,13 +138,17 @@ class ShardDB {
 	 */
 	public function nodesQuery( Nodes $nodes, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ) {
 		$queryPidUuid = uniqid( getmypid() . '-' );
+		$pids         = [];
+
 		foreach ( $nodes as $node ) {
 			$pid = pcntl_fork();
+			Connections::closeConnections();
 			if ( $pid == - 1 ) {
 				die( 'could not fork' );
 			} else if ( $pid ) {
-				// we are the parent
-				pcntl_wait( $status ); //Protect against Zombie children
+
+				$pids[] = $pid;
+
 			} else {
 				$stmt = $this->execute( $node, $sql, $bind, null, $calledMethod ?? __METHOD__ );
 				if ( $stmt ) {
@@ -154,6 +158,19 @@ class ShardDB {
 				exit;
 			}
 		}
+
+
+		while ( count( $pids ) > 0 ) {
+			foreach ( $pids as $key => $pid ) {
+				$res = pcntl_waitpid( $pid, $status, WNOHANG );
+				// If the process has already exited
+				if ( $res == - 1 || $res > 0 ) {
+					unset( $pids[ $key ] );
+				}
+			}
+			usleep( 10000 );
+		}
+
 		$results = [];
 		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-*' ) as $filename ) {
 			$result = unserialize( file_get_contents( $filename ) );
@@ -214,6 +231,7 @@ class ShardDB {
 					}
 				}
 				$this->uniqueColumns( $shardStmt, str_replace( static::class . '::', '', $calledMethod ) );
+
 				$shardStmt->setSuccessChecked( $this->executeCheckSuccessFunction( $shardStmt, $calledMethod ) );
 
 				return $shardStmt;
@@ -319,9 +337,6 @@ class ShardDB {
 
 						if ( $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds )->isSuccessful() ) {
 							$note = $uuid->toString();
-							/**
-							 * TODO this is not deleting why???
-							 */
 							if ( $this->deleteByUuid( $uuid ) ) {
 
 								$note = 'Record Removed ' . $uuid->toString();

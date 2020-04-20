@@ -7,7 +7,7 @@ namespace ShardMatrix\DB;
  * Class ResultSet
  * @package ShardMatrix\DB
  */
-class ResultSet implements \Iterator {
+class ResultSet implements \Iterator, \JsonSerializable {
 
 	protected int $position = 0;
 
@@ -54,5 +54,15 @@ class ResultSet implements \Iterator {
 
 	public function rewind() {
 		$this->position = 0;
+	}
+
+
+	public function jsonSerialize() {
+		$array = [];
+		foreach ( $this->getResultSet() as $result ) {
+			$array[] = $result->__toObject();
+		}
+
+		return $array;
 	}
 }

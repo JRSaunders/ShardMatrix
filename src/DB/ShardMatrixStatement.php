@@ -14,6 +14,7 @@ use ShardMatrix\Uuid;
  */
 class ShardMatrixStatement {
 	protected ?\PDOStatement $pdoStatement = null;
+	protected ?string $queryString = null;
 	protected ?Node $node = null;
 	protected ?Uuid $uuid = null;
 	protected array $data = [];
@@ -142,7 +143,9 @@ class ShardMatrixStatement {
 
 	public function __preSerialize() {
 		$this->data         = $this->fetchAllArrays();
+		$this->queryString  = $this->getPdoStatement()->queryString;
 		$this->pdoStatement = null;
+
 	}
 
 	/**
@@ -250,6 +253,17 @@ class ShardMatrixStatement {
 	 */
 	public function getResultRowReturnClass(): string {
 		return $this->resultRowReturnClass;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getQueryString(): ?string {
+		if ( $this->getPdoStatement() ) {
+			return $this->getPdoStatement()->queryString;
+		}
+
+		return $this->queryString;
 	}
 
 }

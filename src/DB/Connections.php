@@ -37,11 +37,18 @@ class Connections {
 	 * @return \PDO
 	 * @throws Exception
 	 */
-	public function getConnectionByNodeName( string $nodeName ) {
+	static public function getConnectionByNodeName( string $nodeName ) {
 		$node = ShardMatrix::getConfig()->getNodes()->getNodeByName( $nodeName );
 		if ( $node ) {
 			return static::getNodeConnection( $node );
 		}
 		throw new Exception( 'No Node by name ' . $nodeName . ' Exists!' );
+	}
+
+	static public function closeConnections() {
+		foreach ( static::$connections as &$con ) {
+			$con = null;
+		}
+		static::$connections = [];
 	}
 }
