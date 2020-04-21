@@ -23,27 +23,27 @@ $shardDb = new ShardDB();
 
 
 //var_dump( $x->fetchAllObjects());
-
-$i = 0;
-while ( $i < 100000 ) {
-	$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
-	$password = 'cool!!' . rand( 5000, 100000 );
-	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
-	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
-	$i ++;
-	try {
-		\ShardMatrix\DB\Connections::closeConnections();
-		$shardDb = new ShardDB();
-		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
-			':username' => $username,
-			':password' => $password,
-			':email'    => $email,
-			':created'  => $created
-		] );
-	} catch ( \ShardMatrix\DB\Exception $exception ) {
-		echo $exception->getMessage() . PHP_EOL;
-	}
-}
+//
+//$i = 0;
+//while ( $i < 100000 ) {
+//	$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
+//	$password = 'cool!!' . rand( 5000, 100000 );
+//	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
+//	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+//	$i ++;
+//	try {
+//		\ShardMatrix\DB\Connections::closeConnections();
+//		$shardDb = new ShardDB();
+//		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
+//			':username' => $username,
+//			':password' => $password,
+//			':email'    => $email,
+//			':created'  => $created
+//		] );
+//	} catch ( \ShardMatrix\DB\Exception $exception ) {
+//		echo $exception->getMessage() . PHP_EOL;
+//	}
+//}
 //$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
 //	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
 //		$email = $shardDb->getByUuid( $statement->getUuid() )->email;
@@ -61,7 +61,12 @@ while ( $i < 100000 ) {
 
 //$shardDb->insert( 'users', "insert into users (uuid,email,username,password) values (:uuid,'email50ss5@google.com','odeq234iwuow','qwug234ddugwq');");
 //
-//$x = $shardDb->allNodesQuery( 'users', 'select * from users');
+$x = $shardDb->allNodesQuery( 'users', 'select * from users limit 23000;' );
+$i = 0;
+foreach($x->fetchResultSet() as $row){
+	echo $row->getUuid()->__toString().PHP_EOL.$i++;
+}
+echo PHP_EOL.$x->rowCount();
 //
 //foreach ($x->getShardMatrixStatements() as $s){
 //	echo PHP_EOL.$s->getQueryString().PHP_EOL;
