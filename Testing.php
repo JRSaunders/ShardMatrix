@@ -7,6 +7,7 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
+ShardMatrix::setGeo( 'UK' );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
@@ -18,31 +19,31 @@ $shardDb = new ShardDB();
 //
 //$x = $shardDb->allNodesQuery( 'users', "select * from users where created between '2020-04-20 11:50:10' and   '2020-04-20 12:20:00' order by uuid desc limit 300;",null,'uuid','asc');
 
-$x = $shardDb->allNodesQuery( 'users', "select * from users where uuid > '06a00233-1ea830fb-874c-6cb4-ac3a-444230303033' order by uuid asc;",null,'uuid','asc');
+//$x = $shardDb->allNodesQuery( 'users', "select * from users where uuid > '06a00233-1ea830fb-874c-6cb4-ac3a-444230303033' order by uuid asc;",null,'uuid','asc');
 
 
-var_dump( $x->fetchAllObjects());
+//var_dump( $x->fetchAllObjects());
 
 $i = 0;
-//while ( $i < 100000 ) {
-//	$username = 'timmy' . rand( 5000, 10000000 ) . uniqid();
-//	$password = 'cool!!' . rand( 5000, 100000 );
-//	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
-//	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
-//	$i ++;
-//	try {
-//		\ShardMatrix\DB\Connections::closeConnections();
-//		$shardDb = new ShardDB();
-//		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
-//			':username' => $username,
-//			':password' => $password,
-//			':email'    => $email,
-//			':created'  => $created
-//		] );
-//	} catch ( \ShardMatrix\DB\Exception $exception ) {
-//		echo $exception->getMessage() . PHP_EOL;
-//	}
-//}
+while ( $i < 100000 ) {
+	$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
+	$password = 'cool!!' . rand( 5000, 100000 );
+	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
+	$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+	$i ++;
+	try {
+		\ShardMatrix\DB\Connections::closeConnections();
+		$shardDb = new ShardDB();
+		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
+			':username' => $username,
+			':password' => $password,
+			':email'    => $email,
+			':created'  => $created
+		] );
+	} catch ( \ShardMatrix\DB\Exception $exception ) {
+		echo $exception->getMessage() . PHP_EOL;
+	}
+}
 //$shardDb->setCheckSuccessFunction( function ( \ShardMatrix\DB\ShardMatrixStatement $statement, string $calledMethod ) use ( $shardDb ) {
 //	if ( $calledMethod == 'insert' && $statement->getUuid()->getTable()->getName() == 'users' ) {
 //		$email = $shardDb->getByUuid( $statement->getUuid() )->email;

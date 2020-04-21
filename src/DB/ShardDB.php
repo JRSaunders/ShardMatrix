@@ -212,13 +212,13 @@ class ShardDB {
 		string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null
 	): ?ShardMatrixStatements {
 
-		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName );
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName , false);
 
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
 	public function paginationQuery( PaginationQuery $paginationQuery ) {
-		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $paginationQuery->getTableName() );
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $paginationQuery->getTableName() , false);
 
 		return $this->nodesQuery( $nodes, $paginationQuery->getSql(), $paginationQuery->getBinds(), 'uuid', 'asc', __METHOD__ );
 	}

@@ -28,6 +28,10 @@ class Node {
 		return $this->nodeData['username'];
 	}
 
+	public function getGeo(): ?string {
+		return $this->nodeData['geo'] ?? null;
+	}
+
 	public function isInsertData(): bool {
 		if ( isset( $this->nodeData['insert_data'] ) && $this->nodeData['insert_data'] == 'false' ) {
 			return false;

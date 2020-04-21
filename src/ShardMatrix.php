@@ -13,6 +13,8 @@ class ShardMatrix {
 
 	protected static string $pdoCachePath = '../../shard_matrix_cache';
 
+	protected static ?string $geo = null;
+
 	public static function initFromYaml( string $configPath = null ) {
 		static::$config = new Config( Yaml::parse( file_get_contents( $configPath ) ) );
 	}
@@ -30,6 +32,20 @@ class ShardMatrix {
 
 	public static function getPdoCachePath(): string {
 		return static::$pdoCachePath;
+	}
+
+	/**
+	 * @param string|null $geo
+	 */
+	public static function setGeo( ?string $geo ): void {
+		static::$geo = $geo;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public static function getGeo(): ?string {
+		return static::$geo;
 	}
 
 }

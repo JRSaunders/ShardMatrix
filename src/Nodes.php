@@ -134,10 +134,13 @@ class Nodes implements \Iterator {
 		return null;
 	}
 
-	public function getNodesWithTableName( string $tableName ): Nodes {
+	public function getNodesWithTableName( string $tableName, bool $useGeo = true ): Nodes {
 		$nodes = [];
 		foreach ( $this->getNodes() as $node ) {
 			if ( $node->containsTableName( $tableName ) ) {
+				if ( $useGeo && isset( $geo ) && $node->getGeo() != ShardMatrix::getGeo() && ! is_null( ShardMatrix::getGeo() ) ) {
+					continue;
+				}
 				$nodes[] = $node->setLastUsedTableName( $tableName );
 			}
 		}

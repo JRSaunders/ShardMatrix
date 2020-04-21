@@ -246,7 +246,7 @@ class ShardMatrixStatement {
 	}
 
 	public function getAllTableNodes(): Nodes {
-		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $this->getUuid()->getTable()->getName() );
+		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $this->getUuid()->getTable()->getName(), false );
 	}
 
 	/**
