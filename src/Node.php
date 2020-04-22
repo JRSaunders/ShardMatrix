@@ -16,17 +16,10 @@ class Node {
 		$this->nodeData = $nodeData;
 	}
 
-	public function getDsn(): string {
-		return $this->nodeData['dsn'];
+	public function getDsn(): Dsn {
+		return new Dsn( $this->nodeData['dsn'] ?? null );
 	}
 
-	public function getPassword(): string {
-		return $this->nodeData['password'];
-	}
-
-	public function getUsername(): string {
-		return $this->nodeData['username'];
-	}
 
 	public function getGeo(): ?string {
 		return $this->nodeData['geo'] ?? null;
@@ -89,6 +82,7 @@ class Node {
 	public function getLastUsedTableName(): ?string {
 		return $this->lastUsedTableName;
 	}
+
 
 
 }

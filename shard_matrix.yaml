@@ -16,47 +16,35 @@ unique_columns:
 
 nodes:
   DB0001:
-    dsn: mysql:dbname=shard;host=localhost:3301
+    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password
     geo: UK
-    username: root
-    password: password
     table_groups:
       - user
       - published
   DB0002:
-    dsn: mysql:dbname=shard;host=localhost:3302
+    dsn: mysql:dbname=shard;host=localhost:3302;user=root;password=password
     geo: UK
-    username: root
-    password: password
     table_groups:
       - user
       - published
   DB0003:
-    dsn: mysql:dbname=shard;host=localhost:3303
+    dsn: mysql:dbname=shard;host=localhost:3303;user=root;password=password
     geo: UK
-    username: root
-    password: password
     table_groups:
       - user
       - published
   DB0004:
-    dsn: mysql:dbname=shard;host=localhost:3304
+    dsn: mysql:dbname=shard;host=localhost:3304;user=root;password=password
     geo: UK
-    username: root
-    password: password
     table_groups:
       - published
   DB0005:
-    dsn: mysql:dbname=shard;host=localhost:3305
-    username: root
-    password: password
+    dsn: mysql:dbname=shard;host=localhost:3305;user=root;password=password
     table_groups:
       - tracking
   DB0006:
-    dsn: mysql:dbname=shard;host=localhost:3306
+    dsn: mysql:dbname=shard;host=localhost:3306;user=root;password=password
     geo: UK
-    username: root
-    password: password
     insert_data: false
     table_groups:
       - tracking

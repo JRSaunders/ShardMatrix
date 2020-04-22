@@ -24,8 +24,7 @@ class Connections {
 		if ( isset( static::$connections[ $node->getName() ] ) ) {
 			return static::$connections[ $node->getName() ];
 		}
-		$db = new \PDO( $node->getDsn(), $node->getUsername(), $node->getPassword() );
-
+		$db = new \PDO( $node->getDsn()->__toString());
 		foreach ( static::$dbAttributes as $attribute => $value ) {
 			$db->setAttribute( $attribute, $value );
 		}
@@ -33,6 +32,7 @@ class Connections {
 		return static::$connections[ $node->getName() ] = $db;
 
 	}
+
 
 	/**
 	 * @param string $nodeName

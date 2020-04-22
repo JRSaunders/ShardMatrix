@@ -1,6 +1,10 @@
 <?php
 
+use ShardMatrix\Db\Illuminate\QueryBuilder;
+use ShardMatrix\Db\Illuminate\ShardMatrixConnection;
 use ShardMatrix\DB\ShardDB;
+use ShardMatrix\Dsn;
+use ShardMatrix\NodeDistributor;
 use ShardMatrix\ShardMatrix;
 
 include './vendor/autoload.php';
@@ -12,11 +16,32 @@ ShardMatrix::setGeo( 'UK' );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
 
-$shardDb = new ShardDB();
+//$shardDb   = new ShardDB();
+//$tableName = 'users';
+//$con       = new ShardMatrixConnection(
+//		NodeDistributor::getNode( $tableName )
+//	);
+//
+//$q = $con->query()->select('username')->from( 'users')->whereBetween( 'created',['2020-04-19','2020-04-21'])->limit(10);
 
+
+//
+//echo $q->toSql();
+//
+//var_dump( $q->getBindings());
+//
+//$x = $shardDb->allNodesQuery( 'users', 'select * from `users` where `created` between ? and ? and uuid = ? limit 10', ['2020-04-19','2020-04-21','06a00233-1ea82fe3-46ef-6464-8494-444230303031']);
+//
+//echo $x->rowCount();
+//
+
+//$x = $shardDb->allNodesQuery( 'users', 'select * from users limit 10' );
+
+//var_dump($x->fetchResultSet());
 //var_dump( $shardDb->allNodesQuery( 'users', 'select count(*) as count ,
 // HOUR( created ) as hours  from users group by hours' )->sumColumnByGroup( 'count', 'hours' ));
-//
+//$dsn = new Dsn('mysql:dbname=shard;host=localhost:3304;user=root;password=password');
+//echo $dsn;
 //$x = $shardDb->allNodesQuery( 'users', "select * from users where created between '2020-04-20 11:50:10' and   '2020-04-20 12:20:00' order by uuid desc limit 300;",null,'uuid','asc');
 
 //$x = $shardDb->allNodesQuery( 'users', "select * from users where uuid > '06a00233-1ea830fb-874c-6cb4-ac3a-444230303033' order by uuid asc;",null,'uuid','asc');
@@ -61,12 +86,14 @@ $shardDb = new ShardDB();
 
 //$shardDb->insert( 'users', "insert into users (uuid,email,username,password) values (:uuid,'email50ss5@google.com','odeq234iwuow','qwug234ddugwq');");
 //
-$x = $shardDb->allNodesQuery( 'users', 'select * from users limit 23000;' );
-$i = 0;
-foreach($x->fetchResultSet() as $row){
-	echo $row->getUuid()->__toString().PHP_EOL.$i++;
-}
-echo PHP_EOL.$x->rowCount();
+//$x = $shardDb->allNodesQuery( 'users', 'select * from users limit 23000;' );
+//$i = 0;
+//foreach($x->fetchResultSet() as $row){
+//	echo $row->getUuid()->__toString().PHP_EOL.$i++;
+//}
+//echo PHP_EOL.$x->rowCount();
+
+
 //
 //foreach ($x->getShardMatrixStatements() as $s){
 //	echo PHP_EOL.$s->getQueryString().PHP_EOL;
@@ -128,3 +155,10 @@ echo PHP_EOL.$x->rowCount();
 //echo 'back in parent '.getmypid().PHP_EOL;
 //var_dump($results);
 
+$q = new QueryBuilder();
+
+$q->select()->from( 'users' )->where('username','=','fred')->limit( 10 );
+$con = new ShardMatrixConnection( NodeDistributor::getNode( 'users' ) );
+$con->prepareQuery( $q );
+
+var_dump( $q->first());
