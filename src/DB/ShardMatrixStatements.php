@@ -166,29 +166,29 @@ class ShardMatrixStatements implements \Iterator {
 	}
 
 	/**
-	 * @return ResultSet
+	 * @return DataRows
 	 */
-	public function fetchResultSet(): ResultSet {
-		$class = RowResult::class;
+	public function fetchDataRows(): DataRows {
+		$class = DataRow::class;
 		if ( isset( $this->getShardMatrixStatements()[0] ) ) {
-			$class = $this->getShardMatrixStatements()[0]->getResultRowReturnClass();
+			$class = $this->getShardMatrixStatements()[0]->getDataRowReturnClass();
 		}
-		$resultSet = new ResultSet( [], $class );
+		$resultSet = new DataRows( [], $class );
 		if ( $results = $this->fetchAllObjects() ) {
-			$resultSet->setResultSet( $results, $class );
+			$resultSet->setDataRows( $results, $class );
 		}
 
 		return $resultSet;
 	}
 
 	/**
-	 * @return ResultRow|null
+	 * @return DataRow|null
 	 */
-	public function fetchResultRow(): ?ResultRow {
+	public function fetchDataRow(): ?DataRow {
 		if ( $row = $this->fetchRowObject() ) {
-			$class = RowResult::class;
+			$class = DataRow::class;
 			if ( isset( $this->getShardMatrixStatements()[0] ) ) {
-				$class = $this->getShardMatrixStatements()[0]->getResultRowReturnClass();
+				$class = $this->getShardMatrixStatements()[0]->getDataRowReturnClass();
 			}
 
 			return new $class( $row );
@@ -244,7 +244,7 @@ class ShardMatrixStatements implements \Iterator {
 	 */
 	public function sumColumn( string $column ): int {
 		$sum = 0;
-		foreach ( $this->fetchResultSet() as $row ) {
+		foreach ( $this->fetchDataRows() as $row ) {
 			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
 				$sum = $sum + $row->$column;
 			}
@@ -257,11 +257,11 @@ class ShardMatrixStatements implements \Iterator {
 	 * @param string $column
 	 * @param string $groupByColumn
 	 *
-	 * @return GroupSumSet
+	 * @return GroupSums
 	 */
-	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSumSet {
+	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSums {
 		$sum = [];
-		foreach ( $this->fetchResultSet() as $row ) {
+		foreach ( $this->fetchDataRows() as $row ) {
 			if ( isset( $row->__toObject()->$groupByColumn ) ) {
 				if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
 					if ( ! isset( $sum[ $row->__toObject()->$groupByColumn ] ) ) {
@@ -277,7 +277,7 @@ class ShardMatrixStatements implements \Iterator {
 			$results[] = new GroupSum( (object) [ 'column' => $group, 'sum' => $result ] );
 		}
 
-		return new GroupSumSet( $results );
+		return new GroupSums( $results );
 
 	}
 

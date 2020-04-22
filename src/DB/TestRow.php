@@ -6,7 +6,7 @@ namespace ShardMatrix\DB;
 
 
 
-class TestRow extends ResultRow {
+class TestRow extends DataRow {
 	public function getTest(){
 		return $this->getUuid()->getNode()->getName();
 	}

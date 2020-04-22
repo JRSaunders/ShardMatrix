@@ -14,7 +14,7 @@ class ShardDB {
 	/**
 	 * @var string
 	 */
-	protected $defaultRowReturnClass = ResultRow::class;
+	protected $defaultRowReturnClass = DataRow::class;
 	/**
 	 * @var array
 	 */
@@ -104,9 +104,9 @@ class ShardDB {
 	/**
 	 * @param Uuid $uuid
 	 *
-	 * @return ResultRow|null
+	 * @return DataRow|null
 	 */
-	public function getByUuid( Uuid $uuid ): ?ResultRow {
+	public function getByUuid( Uuid $uuid ): ?DataRow {
 
 		return $this->uuidQuery(
 			$uuid,
@@ -148,11 +148,29 @@ class ShardDB {
 	 *
 	 * @return ShardMatrixStatements|null
 	 */
-	public function nodesQuery( Nodes $nodes, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ) {
+	public function nodesQuery( Nodes $nodes, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ): ?ShardMatrixStatements {
+		$nodeQueries = [];
+		foreach ( $nodes as $node ) {
+			$nodeQueries[] = new NodeQuery( $node, $sql, $bind );
+		}
+		return $this->nodeQueries( new NodeQueries( $nodeQueries ), $orderByColumn, $orderByDirection, $calledMethod ?? __METHOD__ );
+	}
+
+	/**
+	 * @param NodeQueries $nodeQueries
+	 * @param string|null $orderByColumn
+	 * @param string|null $orderByDirection
+	 * @param string|null $calledMethod
+	 *
+	 * @return ShardMatrixStatements|null
+	 * @throws DuplicateException
+	 * @throws Exception
+	 */
+	public function nodeQueries( NodeQueries $nodeQueries, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ): ?ShardMatrixStatements {
 		$queryPidUuid = uniqid( getmypid() . '-' );
 		$pids         = [];
 
-		foreach ( $nodes as $node ) {
+		foreach ( $nodeQueries as $nodeQuery ) {
 			$pid = pcntl_fork();
 			Connections::closeConnections();
 			if ( $pid == - 1 ) {
@@ -162,7 +180,7 @@ class ShardDB {
 				$pids[] = $pid;
 
 			} else {
-				$stmt = $this->execute( $node, $sql, $bind, null, $calledMethod ?? __METHOD__ );
+				$stmt = $this->execute( $nodeQuery->getNode(), $nodeQuery->getSql(), $nodeQuery->getBinds(), null, $calledMethod ?? __METHOD__ );
 				if ( $stmt ) {
 					$stmt->__preSerialize();
 				}
@@ -212,13 +230,13 @@ class ShardDB {
 		string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null
 	): ?ShardMatrixStatements {
 
-		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName , false);
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $tableName, false );
 
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
 	public function paginationQuery( PaginationQuery $paginationQuery ) {
-		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $paginationQuery->getTableName() , false);
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $paginationQuery->getTableName(), false );
 
 		return $this->nodesQuery( $nodes, $paginationQuery->getSql(), $paginationQuery->getBinds(), 'uuid', 'asc', __METHOD__ );
 	}
@@ -356,7 +374,7 @@ class ShardDB {
 						$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
 						if ( $nodesResults->isSuccessful() && $insertedRow ) {
 							$columnsIssue = [];
-							foreach ( $nodesResults->fetchResultSet() as $row ) {
+							foreach ( $nodesResults->fetchDataRows() as $row ) {
 								foreach ( $selectColumns as $column ) {
 									if ( $insertedRow->$column == $row->$column ) {
 										$columnsIssue[ $column ] = $insertedRow->$column;

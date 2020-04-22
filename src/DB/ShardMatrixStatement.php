@@ -22,7 +22,7 @@ class ShardMatrixStatement {
 	protected bool $dataSuccess = false;
 	protected ?bool $successChecked = null;
 	protected ?Uuid $lastInsertUuid = null;
-	protected string $resultRowReturnClass;
+	protected string $dataRowReturnClass;
 
 	/**
 	 * ShardMatrixStatement constructor.
@@ -30,13 +30,13 @@ class ShardMatrixStatement {
 	 * @param \PDOStatement|null $pdoStatement
 	 * @param Node|null $node
 	 * @param Uuid|null $uuid
-	 * @param string $resultRowReturnClass
+	 * @param string $dataRowReturnClass
 	 */
-	public function __construct( ?\PDOStatement $pdoStatement, ?Node $node, ?Uuid $uuid, string $resultRowReturnClass = ResultRow::class ) {
-		$this->uuid                 = $uuid;
-		$this->node                 = $node;
-		$this->pdoStatement         = $pdoStatement;
-		$this->resultRowReturnClass = $resultRowReturnClass;
+	public function __construct( ?\PDOStatement $pdoStatement, ?Node $node, ?Uuid $uuid, string $dataRowReturnClass = DataRow::class ) {
+		$this->uuid               = $uuid;
+		$this->node               = $node;
+		$this->pdoStatement       = $pdoStatement;
+		$this->dataRowReturnClass = $dataRowReturnClass;
 	}
 
 	/**
@@ -150,23 +150,24 @@ class ShardMatrixStatement {
 	}
 
 	/**
-	 * @return ResultSet
+	 * @return DataRows
 	 */
-	public function fetchResultSet(): ResultSet {
-		$resultSet = new ResultSet( [], $this->resultRowReturnClass );
+	public function fetchDataRows(): DataRows {
+		$resultSet = new DataRows( [], $this->dataRowReturnClass );
 		if ( $results = $this->fetchAllObjects() ) {
-			$resultSet->setResultSet( $results );
+			$resultSet->setDataRows( $results );
 		}
 
 		return $resultSet;
 	}
 
 	/**
-	 * @return ResultRow|null
+	 * @return DataRow|null
 	 */
-	public function fetchResultRow(): ?ResultRow {
+
+	public function fetchDataRow(): ?DataRow {
 		if ( $row = $this->fetchRowObject() ) {
-			$returnClass = $this->resultRowReturnClass;
+			$returnClass = $this->dataRowReturnClass;
 
 			return new $returnClass( $row );
 		}
@@ -252,8 +253,8 @@ class ShardMatrixStatement {
 	/**
 	 * @return string
 	 */
-	public function getResultRowReturnClass(): string {
-		return $this->resultRowReturnClass;
+	public function getDataRowReturnClass(): string {
+		return $this->dataRowReturnClass;
 	}
 
 	/**
@@ -275,7 +276,7 @@ class ShardMatrixStatement {
 	 */
 	public function sumColumn( string $column, ?string $groupByColumn = null ): int {
 		$sum = 0;
-		foreach ( $this->fetchResultSet() as $row ) {
+		foreach ( $this->fetchDataRows() as $row ) {
 			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
 				$sum = $sum + $row->__toObject()->$column;
 			}
@@ -288,11 +289,11 @@ class ShardMatrixStatement {
 	 * @param string $column
 	 * @param string $groupByColumn
 	 *
-	 * @return GroupSumSet
+	 * @return GroupSums
 	 */
-	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSumSet {
+	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSums {
 		$sum = [];
-		foreach ( $this->fetchResultSet() as $row ) {
+		foreach ( $this->fetchDataRows() as $row ) {
 			if ( isset( $row->__toObject()->$groupByColumn ) ) {
 				if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
 					if ( ! isset( $sum[ $row->__toObject()->$groupByColumn ] ) ) {
@@ -309,7 +310,7 @@ class ShardMatrixStatement {
 			$results[] = new GroupSum( (object) [ 'column' => $group, 'sum' => $result ] );
 		}
 
-		return new GroupSumSet( $results );
+		return new GroupSums( $results );
 
 	}
 

@@ -9,10 +9,12 @@ use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;
 use Illuminate\Database\Query\Processors\MySqlProcessor;
 use Illuminate\Database\Query\Processors\PostgresProcessor;
+use ShardMatrix\Config;
 use ShardMatrix\DB\Connections;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
+use ShardMatrix\ShardMatrix;
 
 /**
  * Class ShardMatrixConnection
@@ -21,6 +23,8 @@ use ShardMatrix\NodeDistributor;
 class ShardMatrixConnection extends Connection {
 
 	protected Node $node;
+
+	protected ?Nodes $nodes = null;
 
 	/**
 	 * ShardMatrixConnection constructor.
@@ -138,6 +142,10 @@ class ShardMatrixConnection extends Connection {
 	 * @throws \ShardMatrix\Exception
 	 */
 	public function table( $table, $as = null ) {
+		if ( $this instanceof UnassignedConnection ) {
+			$this->node = NodeDistributor::getNode( $table );
+			$this->pdo  = $this->getNodePdo();
+		}
 		if ( ! $this->getNode()->containsTableName( $table ) || ! isset( $this->pdo ) ) {
 			$this->node = NodeDistributor::getNode( $table );
 			$this->pdo  = $this->getNodePdo();
@@ -146,6 +154,36 @@ class ShardMatrixConnection extends Connection {
 		return parent::table( $table, $as );
 	}
 
+	/**
+	 * @param $table
+	 * @param null $as
+	 *
+	 * @return QueryBuilder
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function allNodesTable( $table, $as = null ): QueryBuilder {
+
+		$this->nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $table );
+
+		return $this->table( $table, $as );
+	}
+
+	public function hasNodes(): bool {
+		return isset( $this->nodes );
+	}
+
+	/**
+	 * @return Nodes|null
+	 */
+	public function getNodesClear(): ?Nodes {
+		$clonedNodes = null;
+		if ( $this->nodes ) {
+			$clonedNodes = clone( $this->nodes );
+			$this->nodes = null;
+		}
+
+		return $clonedNodes;
+	}
 
 
 }

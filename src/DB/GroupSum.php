@@ -4,7 +4,7 @@
 namespace ShardMatrix\DB;
 
 
-class GroupSum extends ResultRow {
+class GroupSum extends DataRow {
 
 	public function getSum(): int {
 		return $this->row->sum ?? 0;

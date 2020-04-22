@@ -7,10 +7,10 @@ namespace ShardMatrix\DB;
 use ShardMatrix\Uuid;
 
 /**
- * Class ResultRow
+ * Class DataRow
  * @package ShardMatrix\DB
  */
-class ResultRow implements \JsonSerializable {
+class DataRow implements \JsonSerializable {
 
 	protected \stdClass $row;
 	protected $uuids = [];
@@ -24,8 +24,8 @@ class ResultRow implements \JsonSerializable {
 	 *
 	 * @return bool
 	 */
-	final public function __columnIsset($column):bool{
-		return isset($this->row->$column);
+	final public function __columnIsset( $column ): bool {
+		return isset( $this->row->$column );
 	}
 
 	/**
@@ -77,6 +77,12 @@ class ResultRow implements \JsonSerializable {
 		}
 
 		return null;
+	}
+
+	public function __set( $name, $value ) {
+		if ( $name != 'uuid' ) {
+			$this->row->$name = $value;
+		}
 	}
 
 	public function __toObject(): \stdClass {

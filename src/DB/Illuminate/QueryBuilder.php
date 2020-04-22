@@ -5,9 +5,14 @@ namespace ShardMatrix\Db\Illuminate;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ShardMatrix\DB\Exception;
+use ShardMatrix\DB\NodeQueries;
+use ShardMatrix\DB\NodeQuery;
 use ShardMatrix\DB\ShardDB;
+use ShardMatrix\DB\ShardMatrixStatement;
+use ShardMatrix\DB\ShardMatrixStatements;
 use ShardMatrix\Uuid;
 
 /**
@@ -49,93 +54,154 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	}
 
 
-	/**
-	 * @param $columns
-	 *
-	 * @return Collection|null
-	 * @throws Exception
-	 */
-	public function getAllNodes( $columns ): ?Collection {
-		if ( ! $this->columns ) {
-			throw new Exception( 'Select Columns need to be set' );
-		}
+	protected function getPrimaryOrderColumn(): ?string {
 		if ( $this->orders ) {
-			$order     = $this->orders[0];
-			$column    = $order['column'];
-			$direction = $order['direction'];
-		}
-		$result = ( new ShardDB() )->allNodesQuery( $this->from, $this->toSql(), $this->getBindings(), $column, $direction );
-		if ( ! $result ) {
-			return $result;
+			$order = $this->orders[0];
+
+			return $order['column'] ?? null;
 		}
 
-		return new Collection( $result->fetchResultSet()->getResultSet() );
+		return null;
+	}
+
+	protected function getPrimaryOrderDirection(): ?string {
+		if ( $this->orders ) {
+			$order = $this->orders[0];
+
+			return $order['direction'] ?? null;
+		}
+
+		return null;
 	}
 
 
 	/**
-	 * @param Uuid $uuid
+	 * @param Uuid| string $uuid
 	 *
 	 * @return $this
 	 * @throws Exception
 	 */
-	public function uuid( Uuid $uuid ): QueryBuilder {
+	public function uuidAsNodeReference( $uuid ): QueryBuilder {
+		if ( is_string( $uuid ) ) {
+			$uuid = new Uuid( $uuid );
+		}
+		if ( ! $uuid instanceof Uuid ) {
+			throw new Exception( 'Uuid Object Required' );
+		}
 		$this->uuid = $uuid;
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
 
 		return $this;
 	}
 
-
 	/**
-	 * @param string $uuid
+	 * @param Uuid | string $uuid
 	 *
 	 * @return $this
 	 * @throws Exception
 	 */
-	public function uuidString( string $uuid ): QueryBuilder {
-		return $this->uuid( new Uuid( $uuid ) );
-	}
-
-	/**
-	 * @param Uuid $uuid
-	 *
-	 * @return $this
-	 * @throws Exception
-	 */
-	public function useNodeFromUuid( Uuid $uuid ): QueryBuilder {
+	public function whereUuid( $uuid ): QueryBuilder {
+		if ( is_string( $uuid ) ) {
+			$uuid = new Uuid( $uuid );
+		}
+		if ( ! $uuid instanceof Uuid ) {
+			throw new Exception( 'Uuid Object Required' );
+		}
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
+		$this->where( 'uuid', '=', $uuid->toString() );
 
 		return $this;
 	}
 
-	/**
-	 * @param string $uuid
-	 *
-	 * @return QueryBuilder
-	 * @throws Exception
-	 */
-	public function useNodeFromUuidString( string $uuid ): QueryBuilder {
-
-		return $this->useNodeFromUuid( new Uuid( $uuid ) );
-
-	}
 
 	/**
 	 * @param array $values
 	 *
-	 * @return bool
+	 * @return Uuid|null
 	 * @throws \ShardMatrix\Exception
 	 */
-	public function insert( array $values ) {
-		$values = array_merge( [ 'uuid' => Uuid::make( $this->getConnection()->getNode(), $this->from )->toString() ], $values );
+	public function insert( array $values ): ?Uuid {
+		$values = array_merge( [ 'uuid' => $uuid = Uuid::make( $this->getConnection()->getNode(), $this->from )->toString() ], $values );
 
-		return parent::insert( $values );
+		$insert = parent::insert( $values );
+		if ( $insert ) {
+			return $uuid;
+		}
+
+		return null;
 	}
 
-//	public function get(){
-//
-//	}
+	/**
+	 * @return ShardMatrixStatements|null
+	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
+	 */
+	protected function returnNodesResults(): ?ShardMatrixStatements {
+		if ( $nodes = $this->getConnection()->getNodesClear() ) {
+			$nodeQueries = [];
+			foreach ( $nodes as $node ) {
+				$queryBuilder = clone( $this );
+				( new ShardMatrixConnection( $node ) )->prepareQuery( $queryBuilder );
+				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
+			}
+
+			return ( new ShardDB() )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
+		}
+	}
+
+	/**
+	 * @return ShardMatrixStatement|null
+	 */
+	protected function returnNodeResult(): ?ShardMatrixStatement {
+		return ( new ShardDB() )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+	}
+
+	/**
+	 * @param bool $asShardMatrixStatement
+	 *
+	 * @return Collection | ShardMatrixStatements | ShardMatrixStatement | null
+	 */
+	protected function returnResults( bool $asShardMatrixStatement = false ) {
+		if ( $this->getConnection()->hasNodes() ) {
+			$result = $this->returnNodesResults();
+		} else {
+			$result = $this->returnNodeResult();
+		}
+		if ( ! $asShardMatrixStatement ) {
+			if ( $result ) {
+				return new Collection( $result->fetchDataRows()->getDataRows() );
+			}
+
+
+			return new Collection( [] );
+		}
+
+		return $result;
+	}
+
+	public function delete( ?Uuid $uuid = null ) {
+		if ( ! is_null( $uuid ) ) {
+			$this->uuidAsNodeReference( $uuid );
+			$this->where( $this->from . '.uuid', '=', $uuid->toString() );
+		}
+
+		return $this->connection->delete(
+			$this->grammar->compileDelete( $this ), $this->cleanBindings(
+			$this->grammar->prepareBindingsForDelete( $this->bindings )
+		)
+		);
+	}
+
+	/**
+	 * @param string[] $columns
+	 *
+	 * @return Collection
+	 */
+	public function get( $columns = [ '*' ] ) {
+		$this->select( $columns );
+
+		return $this->returnResults();
+	}
 
 
 }

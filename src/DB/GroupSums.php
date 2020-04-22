@@ -6,10 +6,10 @@ namespace ShardMatrix\DB;
 use mysql_xdevapi\RowResult;
 
 /**
- * Class GroupSumSet
+ * Class GroupSums
  * @package ShardMatrix\DB
  */
-class GroupSumSet extends ResultSet {
+class GroupSums extends DataRows {
 	/**
 	 * GroupSumSet constructor.
 	 *
@@ -23,27 +23,27 @@ class GroupSumSet extends ResultSet {
 	/**
 	 * @return GroupSum[]
 	 */
-	public function getResultSet(): array {
-		return parent::getResultSet();
+	public function getDataRows(): array {
+		return parent::getDataRows();
 	}
 
 	/**
 	 * @param array $resultSet
 	 * @param string $resultRowReturnClass
 	 */
-	public function setResultSet( array $resultSet, string $resultRowReturnClass = GroupSum::class ) {
+	public function setDataRows( array $resultSet, string $resultRowReturnClass = GroupSum::class ) {
 		foreach ( $resultSet as &$row ) {
 			if ( ! $row instanceof GroupSum ) {
 				$row = new $resultRowReturnClass( $row );
 			}
 		}
-		$this->resultSet = $resultSet;
+		$this->dataRows = $resultSet;
 	}
 	/**
 	 * @return GroupSum
 	 */
 	public function current() {
-		return $this->resultSet[ $this->position ];
+		return $this->dataRows[ $this->position ];
 	}
 
 	/**
@@ -51,7 +51,7 @@ class GroupSumSet extends ResultSet {
 	 */
 	public function getTotalSum(): int {
 		$sum = 0;
-		foreach ( $this->getResultSet() as $groupSum ) {
+		foreach ( $this->getDataRows() as $groupSum ) {
 			$sum = $sum + $groupSum->getSum();
 		}
 

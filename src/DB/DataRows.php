@@ -4,14 +4,14 @@
 namespace ShardMatrix\DB;
 
 /**
- * Class ResultSet
+ * Class DataRows
  * @package ShardMatrix\DB
  */
-class ResultSet implements \Iterator, \JsonSerializable {
+class DataRows implements \Iterator, \JsonSerializable {
 
 	protected int $position = 0;
 
-	protected array $resultSet = [];
+	protected array $dataRows = [];
 
 	/**
 	 * ResultSet constructor.
@@ -19,35 +19,35 @@ class ResultSet implements \Iterator, \JsonSerializable {
 	 * @param array $resultSet
 	 * @param string $resultRowReturnClass
 	 */
-	public function __construct( array $resultSet, string $resultRowReturnClass = ResultRow::class ) {
-		$this->setResultSet( $resultSet, $resultRowReturnClass );
+	public function __construct( array $resultSet, string $resultRowReturnClass = DataRow::class ) {
+		$this->setDataRows( $resultSet, $resultRowReturnClass );
 	}
 
 	/**
 	 * @param array $resultSet
 	 * @param string $resultRowReturnClass
 	 */
-	public function setResultSet( array $resultSet, string $resultRowReturnClass = ResultRow::class ) {
+	public function setDataRows( array $resultSet, string $resultRowReturnClass = DataRow::class ) {
 		foreach ( $resultSet as &$row ) {
-			if ( ! $row instanceof ResultRow ) {
+			if ( ! $row instanceof DataRow ) {
 				$row = new $resultRowReturnClass( $row );
 			}
 		}
-		$this->resultSet = $resultSet;
+		$this->dataRows = $resultSet;
 	}
 
 	/**
-	 * @return ResultRow[]
+	 * @return DataRow[]
 	 */
-	public function getResultSet(): array {
-		return $this->resultSet;
+	public function getDataRows(): array {
+		return $this->dataRows;
 	}
 
 	/**
-	 * @return ResultRow
+	 * @return DataRow
 	 */
 	public function current() {
-		return $this->resultSet[ $this->position ];
+		return $this->dataRows[ $this->position ];
 	}
 
 	public function next() {
@@ -59,7 +59,7 @@ class ResultSet implements \Iterator, \JsonSerializable {
 	}
 
 	public function valid() {
-		return isset( $this->resultSet[ $this->position ] );
+		return isset( $this->dataRows[ $this->position ] );
 	}
 
 	public function rewind() {
@@ -69,7 +69,7 @@ class ResultSet implements \Iterator, \JsonSerializable {
 
 	public function jsonSerialize() {
 		$array = [];
-		foreach ( $this->getResultSet() as $result ) {
+		foreach ( $this->getDataRows() as $result ) {
 			$array[] = $result->__toObject();
 		}
 

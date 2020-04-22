@@ -1,6 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
+use ShardMatrix\Db\Illuminate\DB;
 use ShardMatrix\Db\Illuminate\QueryBuilder;
 use ShardMatrix\Db\Illuminate\ShardMatrixConnection;
 use ShardMatrix\DB\ShardDB;
@@ -156,14 +156,17 @@ ShardMatrix::setGeo( 'UK' );
 //echo 'back in parent '.getmypid().PHP_EOL;
 //var_dump($results);
 
-$q = new QueryBuilder();
+//$q = new QueryBuilder();
+//
+//$con = new ShardMatrixConnection( NodeDistributor::getNode( 'users' ) );
+//$con->prepareQuery( $q );
 
-$con = new ShardMatrixConnection( NodeDistributor::getNode( 'users' ) );
-$con->prepareQuery( $q );
+//$x = DB::table( 'users')->where('uuid' ,'>','06a00233-1ea82fe3-79a2-6b72-98eb-444230303033' )->limit(40)->getBindings();
+//
+//var_dump($x);
 
-DB::setDefaultConnection( $con);
+var_dump(DB::table( 'users')->whereUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033')->get()->fetchDataRows()->getDataRows());
 
-DB::select('select * from users');
 
 
 
