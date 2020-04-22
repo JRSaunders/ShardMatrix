@@ -68,6 +68,8 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return new Collection( $result->fetchResultSet()->getResultSet() );
 	}
 
+
+
 	/**
 	 * @param Uuid $uuid
 	 *
@@ -80,6 +82,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return $this;
 	}
+
 
 	/**
 	 * @param string $uuid

@@ -12,6 +12,7 @@ use Illuminate\Database\Query\Processors\PostgresProcessor;
 use ShardMatrix\DB\Connections;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\Node;
+use ShardMatrix\NodeDistributor;
 
 /**
  * Class ShardMatrixConnection
@@ -106,20 +107,20 @@ class ShardMatrixConnection extends Connection {
 	 * @throws Exception
 	 */
 	public function getPostProcessor() {
-		$returnGrammar = $this->getDefaultPostProcessor();
+		$returnProcessor = $this->getDefaultPostProcessor();
 		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
 			case 'mysql':
-				$returnGrammar = new MySqlProcessor();
+				$returnProcessor = new MySqlProcessor();
 				break;
 			case 'pgsql':
-				$returnGrammar = new PostgresProcessor();
+				$returnProcessor = new PostgresProcessor();
 				break;
 			case 'sqlite':
 				throw new Exception( 'SQL LITE IS NOT SUPPORTED' );
 				break;
 		}
 
-		return $this->getDefaultPostProcessor();
+		return $returnProcessor;
 	}
 
 	/**
@@ -128,5 +129,22 @@ class ShardMatrixConnection extends Connection {
 	public function getDefaultPostProcessor() {
 		return new MySqlProcessor();
 	}
+
+	/**
+	 * @param \Closure|\Illuminate\Database\Query\Builder|string $table
+	 * @param null $as
+	 *
+	 * @return \Illuminate\Database\Query\Builder
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function table( $table, $as = null ) {
+		if ( ! $this->getNode()->containsTableName( $table ) || ! isset( $this->pdo ) ) {
+			$this->node = NodeDistributor::getNode( $table );
+			$this->pdo  = $this->getNodePdo();
+		}
+
+		return parent::table( $table, $as );
+	}
+
 
 }

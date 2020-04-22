@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\DB;
 use ShardMatrix\Db\Illuminate\QueryBuilder;
 use ShardMatrix\Db\Illuminate\ShardMatrixConnection;
 use ShardMatrix\DB\ShardDB;
@@ -157,8 +158,13 @@ ShardMatrix::setGeo( 'UK' );
 
 $q = new QueryBuilder();
 
-$q->select()->from( 'users' )->where('username','=','fred')->limit( 10 );
 $con = new ShardMatrixConnection( NodeDistributor::getNode( 'users' ) );
 $con->prepareQuery( $q );
 
-var_dump( $q->first());
+DB::setDefaultConnection( $con);
+
+DB::select('select * from users');
+
+
+
+
