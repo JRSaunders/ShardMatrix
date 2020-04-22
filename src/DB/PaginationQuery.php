@@ -4,10 +4,14 @@
 namespace ShardMatrix\DB;
 
 
+
+use Illuminate\Database\Query\Builder;
 use ShardMatrix\Uuid;
 
 class PaginationQuery extends Query {
 
+
+	protected Builder $builder;
 
 	protected ?Uuid $lastUuid = null;
 
@@ -19,7 +23,6 @@ class PaginationQuery extends Query {
 	 */
 	public function setLastUuid( ?Uuid $lastUuid ): PaginationQuery {
 		$this->lastUuid = $lastUuid;
-
 		return $this;
 	}
 
