@@ -29,6 +29,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		parent::__construct( $connection ?? new UnassignedConnection(), $grammar, $processor );
 	}
 
+	public function getConnection(): ShardMatrixConnection {
+		return $this->connection;
+	}
+
 	/**
 	 * @param ShardMatrixConnection $connection
 	 *
@@ -67,7 +71,6 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return new Collection( $result->fetchResultSet()->getResultSet() );
 	}
-
 
 
 	/**
@@ -116,6 +119,18 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return $this->useNodeFromUuid( new Uuid( $uuid ) );
 
+	}
+
+	/**
+	 * @param array $values
+	 *
+	 * @return bool
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function insert( array $values ) {
+		$values = array_merge( [ 'uuid' => Uuid::make( $this->getConnection()->getNode(), $this->from )->toString() ], $values );
+
+		return parent::insert( $values );
 	}
 
 //	public function get(){
