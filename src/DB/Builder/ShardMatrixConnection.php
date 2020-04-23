@@ -17,6 +17,7 @@ use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
+use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
 use ShardMatrix\Uuid;
 

@@ -179,14 +179,23 @@ ShardMatrix::setGeo( 'UK' );
 
 
 $sdb = new ShardDB();
+//
+//$x = $sdb->insert( 'users', "insert into users ( uuid, username, email , password , created ) values (:uuid , :username, :email, :password, :created )", [
+//	':username' => 'tim48135ff11',
+//	':email'    => 'johfn@poo11.com',
+//	':password' => 'kjsffjksdds11',
+//
+//] );
 
-$x = $sdb->insert( 'users', "insert into users ( uuid, username, email , password , created ) values (:uuid , :username, :email, :password, :created )", [
-	':username' => 'tim4813511',
-	':email'    => 'john@poo11.com',
-	':password' => 'kjsjksdds11',
-	':created'  => ( new DateTime() )->format( "Y-m-d H:i:s" )
-] );
+//$user = new \ShardMatrix\DB\Models\EloquentDataRowModel( []);
+//$user->setTable( 'users');
+//$user->username = 'tank';
+//$user->email = 'bill@fish.com';
+//$user->created = (new DateTime())->format('Y-m-d H:i:s');
+//$user->create();
 
 
-var_dump($x->getLastInsertUuid());
-
+$x = DB::allNodesTable( 'users')->where( 'email','=','bill@fish.com')->get()->first();
+$x->username = 'tanky';
+$x->save();
+var_dump( $x->username);

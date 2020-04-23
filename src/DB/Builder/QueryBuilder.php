@@ -134,6 +134,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $this;
 	}
 
+
 	/**
 	 * @param array $values
 	 *
@@ -143,6 +144,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	public function insert( array $values ): ?Uuid {
 		$uuid   = Uuid::make( $this->getConnection()->getNode(), new Table( $this->from ) );
 		$values = array_merge( [ 'uuid' => $uuid->toString() ], $values );
+
 		if ( empty( $values ) ) {
 			return null;
 		}

@@ -29,6 +29,7 @@ class EloquentDataRowModel extends Model implements DBDataRowTransactionsInterfa
 		$this->__originalState = clone( $this );
 	}
 
+
 	public function __columnIsset( $column ): bool {
 		return isset( $this->attributes[ $column ] );
 	}
