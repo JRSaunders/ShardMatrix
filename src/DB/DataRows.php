@@ -3,6 +3,8 @@
 
 namespace ShardMatrix\DB;
 
+use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
+
 /**
  * Class DataRows
  * @package ShardMatrix\DB
@@ -44,9 +46,9 @@ class DataRows implements \Iterator, \JsonSerializable {
 	}
 
 	/**
-	 * @return DataRow
+	 * @return ShardDataRowInterface
 	 */
-	public function current() {
+	public function current() : ShardDataRowInterface{
 		return $this->dataRows[ $this->position ];
 	}
 

@@ -3,6 +3,7 @@
 
 namespace ShardMatrix\DB;
 
+use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\Nodes;
@@ -12,13 +13,14 @@ use ShardMatrix\Uuid;
 
 class ShardDB {
 	/**
+	 *
 	 * @var string
 	 */
-	protected $defaultRowReturnClass = DataRow::class;
+	protected $defaultDataRowClass = DataRow::class;
 	/**
 	 * @var array
 	 */
-	protected $resultRowReturnClasses = [];
+	protected $dataRowClasses = [];
 	/**
 	 * @var \Closure|null
 	 */
@@ -274,7 +276,7 @@ class ShardDB {
 				if ( $uuid ) {
 					$node->setLastUsedTableName( $uuid->getTable()->getName() );
 				}
-				$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid, $this->getRowReturnClassByNode( $node ) );
+				$shardStmt = new ShardMatrixStatement( $stmt, $node, $uuid, $this->getDataRowClassByNode( $node ) );
 				if ( strpos( strtolower( trim( $sql ) ), 'insert ' ) === 0 ) {
 					if ( $stmt->rowCount() > 0 && $uuid ) {
 						$shardStmt->setLastInsertUuid( $uuid );
@@ -308,7 +310,7 @@ class ShardDB {
 	}
 
 	/**
-	 * @param ShardMatrixStatement $statements
+	 * @param ShardMatrixStatement $statement
 	 * @param string $calledMethod
 	 *
 	 * @return bool|null
@@ -329,22 +331,22 @@ class ShardDB {
 	 *
 	 * @return string
 	 */
-	private function getRowReturnClassByNode( Node $node ): string {
+	private function getDataRowClassByNode( Node $node ): string {
 
-		if ( $node->getLastUsedTableName() && isset( $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ] ) ) {
-			return $this->getResultRowReturnClasses()[ $node->getLastUsedTableName() ];
+		if ( $node->getLastUsedTableName() && isset( $this->getDataRowClasses()[ $node->getLastUsedTableName() ] ) ) {
+			return $this->getDataRowClasses()[ $node->getLastUsedTableName() ];
 		}
 
-		return $this->getDefaultRowReturnClass();
+		return $this->getDefaultDataRowClass();
 	}
 
 	/**
-	 * @param string $defaultRowReturnClass
+	 * @param string $defaultDataRowClass
 	 *
 	 * @return ShardDB
 	 */
-	public function setDefaultRowReturnClass( string $defaultRowReturnClass ): ShardDB {
-		$this->defaultRowReturnClass = $defaultRowReturnClass;
+	public function setDefaultDataRowClass( string $defaultDataRowClass ): ShardDB {
+		$this->defaultDataRowClass = $defaultDataRowClass;
 
 		return $this;
 	}
@@ -352,8 +354,8 @@ class ShardDB {
 	/**
 	 * @return string
 	 */
-	private function getDefaultRowReturnClass(): string {
-		return $this->defaultRowReturnClass;
+	private function getDefaultDataRowClass(): string {
+		return $this->defaultDataRowClass;
 	}
 
 	/**
@@ -416,12 +418,12 @@ class ShardDB {
 	}
 
 	/**
-	 * @param array $resultRowReturnClasses
+	 * @param array $dataRowClasses
 	 *
 	 * @return $this
 	 */
-	public function setResultRowReturnClasses( array $resultRowReturnClasses ): ShardDB {
-		$this->resultRowReturnClasses = $resultRowReturnClasses;
+	public function setDataRowClasses( array $dataRowClasses ): ShardDB {
+		$this->dataRowClasses = $dataRowClasses;
 
 		return $this;
 	}
@@ -429,8 +431,8 @@ class ShardDB {
 	/**
 	 * @return array
 	 */
-	private function getResultRowReturnClasses(): array {
-		return $this->resultRowReturnClasses;
+	private function getDataRowClasses(): array {
+		return $this->dataRowClasses;
 	}
 
 

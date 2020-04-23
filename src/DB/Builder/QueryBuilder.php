@@ -190,7 +190,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
 			}
 
-			return ( new ShardDB() )->setDefaultRowReturnClass( Model::class )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
+			return ( new ShardDB() )->setDefaultDataRowClass( Model::class )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
 		}
 	}
 
@@ -198,7 +198,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return ShardMatrixStatement|null
 	 */
 	protected function returnNodeResult(): ?ShardMatrixStatement {
-		return ( new ShardDB() )->setDefaultRowReturnClass( Model::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+		return ( new ShardDB() )->setDefaultDataRowClass( Model::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
 	}
 
 	/**
