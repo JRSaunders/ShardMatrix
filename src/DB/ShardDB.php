@@ -153,6 +153,7 @@ class ShardDB {
 		foreach ( $nodes as $node ) {
 			$nodeQueries[] = new NodeQuery( $node, $sql, $bind );
 		}
+
 		return $this->nodeQueries( new NodeQueries( $nodeQueries ), $orderByColumn, $orderByDirection, $calledMethod ?? __METHOD__ );
 	}
 

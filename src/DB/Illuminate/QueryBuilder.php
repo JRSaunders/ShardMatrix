@@ -5,7 +5,6 @@ namespace ShardMatrix\Db\Illuminate;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\NodeQueries;
@@ -145,7 +144,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
 			}
 
-			return ( new ShardDB() )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
+			return ( new ShardDB() )->setDefaultRowReturnClass( Model::class )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
 		}
 	}
 
@@ -153,7 +152,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return ShardMatrixStatement|null
 	 */
 	protected function returnNodeResult(): ?ShardMatrixStatement {
-		return ( new ShardDB() )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+		return ( new ShardDB() )->setDefaultRowReturnClass( Model::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
 	}
 
 	/**
@@ -179,7 +178,8 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $result;
 	}
 
-	public function delete( ?Uuid $uuid = null ) {
+	public function delete( $id = null ) {
+		$uuid = new Uuid( $id );
 		if ( ! is_null( $uuid ) ) {
 			$this->uuidAsNodeReference( $uuid );
 			$this->where( $this->from . '.uuid', '=', $uuid->toString() );
@@ -201,6 +201,21 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		$this->select( $columns );
 
 		return $this->returnResults();
+	}
+
+	/**
+	 * @param int|string $uuid
+	 * @param string[] $columns
+	 *
+	 * @return \Illuminate\Database\Eloquent\Model|mixed|object|QueryBuilder|null
+	 * @throws Exception
+	 */
+	public function find( $uuid, $columns = [ '*' ] ) {
+		if ( ! $uuid instanceof Uuid ) {
+			$uuid = new Uuid( $uuid );
+		}
+
+		return $this->whereUuid( $uuid )->first( $columns );
 	}
 
 

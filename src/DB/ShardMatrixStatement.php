@@ -155,7 +155,7 @@ class ShardMatrixStatement {
 	public function fetchDataRows(): DataRows {
 		$resultSet = new DataRows( [], $this->dataRowReturnClass );
 		if ( $results = $this->fetchAllObjects() ) {
-			$resultSet->setDataRows( $results );
+			$resultSet->setDataRows( $results , $this->getDataRowReturnClass());
 		}
 
 		return $resultSet;

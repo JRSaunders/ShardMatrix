@@ -165,9 +165,12 @@ ShardMatrix::setGeo( 'UK' );
 //
 //var_dump($x);
 
-var_dump(DB::table( 'users')->whereUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033')->get()->fetchDataRows()->getDataRows());
+//DB::table( 'users')->whereUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033')->get()->each(function(\ShardMatrix\Db\Illuminate\Model $model){
+//	$model->username = 'harry';
+//	var_dump($model->save() );
+//});
 
-
+var_dump(DB::getByUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033'));
 
 
 

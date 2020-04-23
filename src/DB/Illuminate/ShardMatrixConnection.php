@@ -15,6 +15,7 @@ use ShardMatrix\DB\Exception;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\ShardMatrix;
+use ShardMatrix\Uuid;
 
 /**
  * Class ShardMatrixConnection
@@ -184,6 +185,16 @@ class ShardMatrixConnection extends Connection {
 
 		return $clonedNodes;
 	}
+
+	public function getByUuid( $uuid ): Model {
+		if ( ! $uuid instanceof Uuid ) {
+			$uuid = new Uuid( $uuid );
+		}
+
+		return $this->table( $uuid->getTable()->getName() )->whereUuid( $uuid )->first( [ '*' ] );
+	}
+
+
 
 
 }
