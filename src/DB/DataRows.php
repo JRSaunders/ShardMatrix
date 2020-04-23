@@ -39,7 +39,7 @@ class DataRows implements \Iterator, \JsonSerializable {
 	}
 
 	/**
-	 * @return DataRow[]
+	 * @return ShardDataRowInterface[]
 	 */
 	public function getDataRows(): array {
 		return $this->dataRows;

@@ -53,8 +53,9 @@ class DataRow implements  ShardDataRowInterface {
 			if ( strpos( $name, '_uuid' ) !== false ) {
 				if ( isset( $this->uuids[ $name ] ) ) {
 					$resultArray[] = $this->uuids[ $name ];
+				}else {
+					$resultArray[] = $this->uuids[ $name ] = new Uuid( $this->row->$name );
 				}
-				$resultArray[] = $this->uuids[ $name ] = new Uuid( $this->row->$name );
 			}
 		}
 
