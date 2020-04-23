@@ -1,6 +1,6 @@
 <?php
 
-namespace ShardMatrix\Db\Illuminate;
+namespace ShardMatrix\Db\Builder;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;

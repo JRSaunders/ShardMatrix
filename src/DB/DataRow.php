@@ -4,13 +4,15 @@
 namespace ShardMatrix\DB;
 
 
+
+use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Uuid;
 
 /**
  * Class DataRow
  * @package ShardMatrix\DB
  */
-class DataRow implements \JsonSerializable {
+class DataRow implements  ShardDataRowInterface {
 
 	protected \stdClass $row;
 	protected $uuids = [];

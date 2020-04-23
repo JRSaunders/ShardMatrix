@@ -1,8 +1,8 @@
 <?php
 
-use ShardMatrix\Db\Illuminate\DB;
-use ShardMatrix\Db\Illuminate\QueryBuilder;
-use ShardMatrix\Db\Illuminate\ShardMatrixConnection;
+use ShardMatrix\Db\Builder\DB;
+use ShardMatrix\Db\Builder\QueryBuilder;
+use ShardMatrix\Db\Builder\ShardMatrixConnection;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\Dsn;
 use ShardMatrix\NodeDistributor;

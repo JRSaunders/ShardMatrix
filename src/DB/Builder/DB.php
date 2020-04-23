@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Illuminate;
+namespace ShardMatrix\Db\Builder;
 
 
 use ShardMatrix\Uuid;
