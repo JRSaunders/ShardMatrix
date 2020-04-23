@@ -42,6 +42,7 @@ class ShardDB {
 
 	}
 
+
 	/**
 	 * @param string $tableName
 	 * @param string $sql
@@ -85,6 +86,17 @@ class ShardDB {
 			->uuidBind( $uuid, $sql, $bind )
 			->execute( $uuid->getNode(), $sql, $bind, $uuid, __METHOD__ );
 
+	}
+
+	/**
+	 * @param Uuid $uuid
+	 * @param string $sql
+	 * @param array|null $bind
+	 *
+	 * @return ShardMatrixStatement|null
+	 */
+	public function uuidInsert( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
+		return $this->uuidUpdate( $uuid, $sql, $bind );
 	}
 
 	/**

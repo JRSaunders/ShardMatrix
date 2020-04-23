@@ -5,6 +5,7 @@ namespace ShardMatrix\Db\Illuminate;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\NodeQueries;
@@ -12,6 +13,8 @@ use ShardMatrix\DB\NodeQuery;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\DB\ShardMatrixStatements;
+use ShardMatrix\NodeDistributor;
+use ShardMatrix\Table;
 use ShardMatrix\Uuid;
 
 /**
@@ -107,11 +110,26 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			throw new Exception( 'Uuid Object Required' );
 		}
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
-		$this->where( 'uuid', '=', $uuid->toString() );
+		parent::where( 'uuid', '=', $uuid->toString() );
+		$this->uuid = $uuid;
 
 		return $this;
 	}
 
+	public function where( $column, $operator = null, $value = null, $boolean = 'and' ) {
+		if ( $column == 'uuid' && $operator == '=' ) {
+			$this->uuid = new Uuid( $value );
+			$this->setShardMatrixConnection( new ShardMatrixConnection( $this->uuid->getNode() ) );
+		}
+
+		return parent::where( $column, $operator, $value, $boolean );
+	}
+
+	public function newNode(): QueryBuilder {
+		NodeDistributor::clearGroupNodes();
+
+		return $this;
+	}
 
 	/**
 	 * @param array $values
@@ -120,14 +138,42 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @throws \ShardMatrix\Exception
 	 */
 	public function insert( array $values ): ?Uuid {
-		$values = array_merge( [ 'uuid' => $uuid = Uuid::make( $this->getConnection()->getNode(), $this->from )->toString() ], $values );
+		$uuid   = Uuid::make( $this->getConnection()->getNode(), new Table( $this->from ) );
+		$values = array_merge( [ 'uuid' => $uuid->toString() ], $values );
+		if ( empty( $values ) ) {
+			return null;
+		}
+		if ( ! is_array( reset( $values ) ) ) {
+			$values = [ $values ];
+		} else {
+			foreach ( $values as $key => $value ) {
+				ksort( $value );
 
-		$insert = parent::insert( $values );
-		if ( $insert ) {
-			return $uuid;
+				$values[ $key ] = $value;
+			}
+		}
+
+		$result = ( new ShardDB() )->uuidInsert( $uuid, $this->grammar->compileInsert( $this, $values ), $this->cleanBindings( Arr::flatten( $values, 1 ) ) );
+		if ( $result ) {
+			return $result->getLastInsertUuid();
 		}
 
 		return null;
+	}
+
+
+	public function update( array $values ) {
+
+		if ( $this->uuid ) {
+			return ( new ShardDB() )->uuidUpdate( $this->uuid, $this->grammar->compileUpdate( $this, $values ),
+				$this->cleanBindings(
+					$this->grammar->prepareBindingsForUpdate( $this->bindings, $values )
+				)
+			);
+		}
+
+		return parent::update( $values );
+
 	}
 
 	/**

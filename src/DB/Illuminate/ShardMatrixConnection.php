@@ -195,6 +195,4 @@ class ShardMatrixConnection extends Connection {
 	}
 
 
-
-
 }
