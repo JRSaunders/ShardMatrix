@@ -49,4 +49,6 @@ interface ShardDataRowInterface extends \JsonSerializable {
 	public function __toArray(): array;
 
 	public function jsonSerialize();
+
+	public function __getOriginalState(): ShardDataRowInterface;
 }

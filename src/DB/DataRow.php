@@ -4,7 +4,6 @@
 namespace ShardMatrix\DB;
 
 
-
 use ShardMatrix\DB\Interfaces\ConstructObjectInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Uuid;
@@ -13,13 +12,15 @@ use ShardMatrix\Uuid;
  * Class DataRow
  * @package ShardMatrix\DB
  */
-class DataRow implements  ShardDataRowInterface, ConstructObjectInterface {
+class DataRow implements ShardDataRowInterface, ConstructObjectInterface {
 
 	protected \stdClass $row;
 	protected $uuids = [];
+	protected ?ShardDataRowInterface $__originalState = null;
 
 	public function __construct( \stdClass $row ) {
-		$this->row = $row;
+		$this->row             = $row;
+		$this->__originalState = clone( $this );
 	}
 
 	/**
@@ -54,7 +55,7 @@ class DataRow implements  ShardDataRowInterface, ConstructObjectInterface {
 			if ( strpos( $name, '_uuid' ) !== false ) {
 				if ( isset( $this->uuids[ $name ] ) ) {
 					$resultArray[] = $this->uuids[ $name ];
-				}else {
+				} else {
 					$resultArray[] = $this->uuids[ $name ] = new Uuid( $this->row->$name );
 				}
 			}
@@ -103,5 +104,9 @@ class DataRow implements  ShardDataRowInterface, ConstructObjectInterface {
 
 	public function __setRowData( \stdClass $row ) {
 		$this->row = $row;
+	}
+
+	public function __getOriginalState(): ShardDataRowInterface {
+		return $this->__originalState;
 	}
 }

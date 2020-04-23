@@ -4,13 +4,14 @@
 namespace ShardMatrix\Db\Builder;
 
 
-use ShardMatrix\Uuid;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
 
 /**
  * Class DB
  * @package ShardMatrix\Db\Illuminate
  * @method static QueryBuilder table( string $table, string $as = null )
- * @method static Model getByUuid( $uuid )
+ * @method static DBDataRowTransactionsInterface getByUuid( $uuid )
  */
 class DB extends \Illuminate\Support\Facades\DB {
 

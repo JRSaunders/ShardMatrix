@@ -8,9 +8,11 @@ use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ShardMatrix\DB\Exception;
+use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\NodeQuery;
+use ShardMatrix\DB\PreStatement;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\DB\ShardMatrixStatements;
@@ -177,6 +179,41 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return parent::update( $values );
 
+	}
+
+	/**
+	 * @param ShardDataRowInterface $dataRow
+	 *
+	 * @return bool|null
+	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
+	 */
+	public function updateByDataRow( ShardDataRowInterface $dataRow ): ?bool {
+
+		if ( ! ( $uuid = $dataRow->getUuid() ) ) {
+			return null;
+		}
+		$values = $dataRow->__toArray();
+		unset( $values['uuid'] );
+		if ( isset( $values['modified'] ) ) {
+			$array['modified'] = ( new \DateTime() )->format( 'Y-m-d H:i:s' );
+		}
+		$this->from( $dataRow->getUuid()->getTable()->getName() )->whereUuid( $dataRow->getUuid() );
+
+		$update = ( new ShardDB() )->execute( new PreStatement(
+			$dataRow->getUuid()->getNode(), $this->grammar->compileUpdate( $this, $values ),
+			$this->cleanBindings(
+				$this->grammar->prepareBindingsForUpdate( $this->bindings, $values )
+			),
+			$dataRow->getUuid(),
+			$dataRow,
+			'update'
+		) );
+		if ( $update && $update->isSuccessful() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

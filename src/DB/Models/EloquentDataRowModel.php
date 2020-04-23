@@ -17,6 +17,17 @@ use ShardMatrix\Uuid;
 class EloquentDataRowModel extends Model implements DBDataRowTransactionsInterface, ConstructArrayInterface {
 	protected array $uuids = [];
 	protected $guarded = [ '/' ];
+	protected ?ShardDataRowInterface $__originalState = null;
+
+	/**
+	 * EloquentDataRowModel constructor.
+	 *
+	 * @param array $array
+	 */
+	public function __construct( array $array ) {
+		parent::__construct( $array );
+		$this->__originalState = clone( $this );
+	}
 
 	public function __columnIsset( $column ): bool {
 		return isset( $this->attributes[ $column ] );
@@ -60,16 +71,19 @@ class EloquentDataRowModel extends Model implements DBDataRowTransactionsInterfa
 		$this->attributes = (array) $row;
 	}
 
-	public function save(array $options = []) {
-		$uuid  = $this->getUuid();
-		$array = $this->__toArray();
-		if ( isset( $array['modified'] ) ) {
-			$array['modified'] = ( new \DateTime() )->format( 'Y-m-d H:i:s' );
+	/**
+	 * @param array $options
+	 *
+	 * @return bool|mixed
+	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
+	 */
+	public function save( array $options = [] ) {
+		if ( ! $this->getUuid() ) {
+			return false;
 		}
 
-		unset( $array['uuid'] );
-
-		return (bool) DB::table( $uuid->getTable()->getName() )->whereUuid( $uuid )->update( $array );
+		return (bool) DB::table( $this->getUuid()->getTable()->getName() )->updateByDataRow( $this );
 	}
 
 	public function delete() {
@@ -89,5 +103,9 @@ class EloquentDataRowModel extends Model implements DBDataRowTransactionsInterfa
 		}
 
 		return DB::table( $this->table )->insert( $this->__toArray() );
+	}
+
+	public function __getOriginalState(): ShardDataRowInterface {
+		// TODO: Implement __getOriginalState() method.
 	}
 }

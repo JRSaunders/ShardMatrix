@@ -190,6 +190,3 @@ $x = $sdb->insert( 'users', "insert into users ( uuid, username, email , passwor
 
 var_dump($x->getLastInsertUuid());
 
-//var_dump($sdb->getByUuidSeparateConnection( new \ShardMatrix\Uuid('06a00233-1ea85735-71b1-6034-a76e-444230303031')));
-//
-var_dump($sdb->getByUuidSeparateConnection( new \ShardMatrix\Uuid('06a00233-1ea85745-94a7-6a24-a90b-444230303033')));

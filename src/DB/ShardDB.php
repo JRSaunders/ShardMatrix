@@ -40,7 +40,7 @@ class ShardDB {
 
 		return $this
 			->uuidBind( $uuid, $sql, $bind )
-			->execute( new PreStatement( $node, $sql, $bind, $uuid, null, __METHOD__ );
+			->execute( new PreStatement( $node, $sql, $bind, $uuid, null, __METHOD__ ) );
 
 	}
 
@@ -78,15 +78,18 @@ class ShardDB {
 	 * @param Uuid $uuid
 	 * @param string $sql
 	 * @param array|null $bind
+	 * @param ShardDataRowInterface|null $dataRow
 	 *
 	 * @return ShardMatrixStatement|null
+	 * @throws DuplicateException
+	 * @throws Exception
 	 */
-	public function uuidUpdate( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
+	public function uuidUpdate( Uuid $uuid, string $sql, ?array $bind = null, ?ShardDataRowInterface $dataRow = null ): ?ShardMatrixStatement {
 		NodeDistributor::setFromUuid( $uuid );
 
 		return $this
 			->uuidBind( $uuid, $sql, $bind )
-			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, null, __METHOD__ ) );
+			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, $dataRow, __METHOD__ ) );
 
 	}
 
@@ -260,11 +263,6 @@ class ShardDB {
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
-	public function paginationQuery( PaginationQuery $paginationQuery ) {
-		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $paginationQuery->getTableName(), false );
-
-		return $this->nodesQuery( $nodes, $paginationQuery->getSql(), $paginationQuery->getBinds(), 'uuid', 'asc', __METHOD__ );
-	}
 
 	/**
 	 * @param PreStatement $preStatement
@@ -301,7 +299,7 @@ class ShardDB {
 						$shardStmt->setLastInsertUuid( $uuid );
 					}
 				}
-				$this->postExecuteProcesses( $shardStmt, str_replace( static::class . '::', '', $calledMethod ) );
+				$this->postExecuteProcesses( $shardStmt, $preStatement );
 
 				$shardStmt->setSuccessChecked( $this->executeCheckSuccessFunction( $shardStmt, $calledMethod ) );
 				if ( $rollbacks ) {
@@ -310,6 +308,9 @@ class ShardDB {
 
 				return $shardStmt;
 			}
+			/**
+			 * TODO swap exeptions out of PDO exception and shard matrix exceptions
+			 */
 		} catch ( \Exception | \TypeError | \Error $exception ) {
 			if ( $rollbacks ) {
 				$db->rollBack();
@@ -384,7 +385,26 @@ class ShardDB {
 	}
 
 	private function preExecuteProcesses( PreStatement $preStatement ) {
+		$calledMethod = str_replace( static::class . '::', '', $preStatement->getCalledMethod() );
 
+		switch ( $calledMethod ) {
+			case 'uuidUpdate':
+			case 'update':
+				$dataRow = $preStatement->getDataRow() ?? $this->getByUuid( $preStatement->getUuid() );
+				if ( $dataRow ) {
+					$this->handleDuplicateColumns( $dataRow, function ( ShardDataRowInterface $dataRow, array $columnsIssue ) {
+						$columnsIssueString = '';
+						if ( $columnsIssue ) {
+							foreach ( $columnsIssue as $key => $val ) {
+								$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
+							}
+						}
+
+						throw new DuplicateException( $columnsIssue, 'Update Duplicate Column violation ' . $columnsIssueString , 45);
+					} );
+				}
+				break;
+		}
 	}
 
 	/**
@@ -394,58 +414,65 @@ class ShardDB {
 	 * @throws DuplicateException
 	 */
 	private function postExecuteProcesses( ShardMatrixStatement $statement, PreStatement $preStatement ) {
-		$calledMethod = $preStatement->getCalledMethod();
+		$calledMethod = str_replace( static::class . '::', '', $preStatement->getCalledMethod() );
 		switch ( $calledMethod ) {
 			case 'insert':
 			case 'uuidInsert':
-
-				$uniqueColumns = $statement->getUuid()->getTable()->getUniqueColumns();
-
-				if ( $uniqueColumns ) {
-					if ( ( $uuid = $statement->getUuid() ) && ( $insertedRow = $this->getByUuid( $uuid ) ) ) {
-
-						$sqlArray      = [];
-						$selectColumns = [];
-						foreach ( $uniqueColumns as $column ) {
-							if ( $insertedRow->__columnIsset( $column ) ) {
-								$binds[":{$column}"] = $insertedRow->$column;
-								$selectColumns[]     = $column;
-								$sqlArray[]          = " {$column} = :{$column} ";
+				$dataRow = $preStatement->getDataRow() ?? $this->getByUuid( $preStatement->getUuid() );
+				if ( $dataRow ) {
+					$this->handleDuplicateColumns( $dataRow, function ( ShardDataRowInterface $dataRow, array $columnsIssue ) {
+						$handleNote = '';
+						if ( $this->deleteByUuid( $dataRow->getUuid() ) ) {
+							$handleNote = '( Record Removed ' . $dataRow->getUuid()->toString() . ' )';
+						}
+						$columnsIssueString = '';
+						if ( $columnsIssue ) {
+							foreach ( $columnsIssue as $key => $val ) {
+								$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
 							}
 						}
-						$sql            = "select " . join( ', ', $selectColumns ) . " from {$statement->getUuid()->getTable()->getName()} where";
-						$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
-						$binds[':uuid'] = $uuid->toString();
-						$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
-						if ( $nodesResults && $nodesResults->isSuccessful() && $insertedRow ) {
-							$columnsIssue = [];
-							foreach ( $nodesResults->fetchDataRows() as $row ) {
-								foreach ( $selectColumns as $column ) {
-									if ( $insertedRow->$column == $row->$column ) {
-										$columnsIssue[ $column ] = $insertedRow->$column;
-									}
-								}
-							}
-							$note = $uuid->toString();
-
-							if ( $this->deleteByUuid( $uuid ) ) {
-								$note = ' ( ' . $uuid->toString() . ' Removed )';
-							}
-
-							$columnsIssueString = '';
-							if ( $columnsIssue ) {
-								foreach ( $columnsIssue as $key => $val ) {
-									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
-								}
-							}
-							throw new DuplicateException( $columnsIssue, 'Duplicate Column violation ' . $columnsIssueString . $note, 46 );
-						}
-					}
+						throw new DuplicateException( $columnsIssue, 'Insert Duplicate Column violation ' . $columnsIssueString . $handleNote, 46 );
+					} );
 				}
 				break;
 		}
 
+	}
 
+	protected function handleDuplicateColumns( ShardDataRowInterface $dataRow, \Closure $handleDuplicateColumns ): void {
+
+		if ( ! ( $uuid = $dataRow->getUuid() ) ) {
+			return;
+		}
+
+		if ( $uniqueColumns = $dataRow->getUuid()->getTable()->getUniqueColumns() ) {
+			$sqlArray      = [];
+			$selectColumns = [];
+			foreach ( $uniqueColumns as $column ) {
+				if ( $dataRow->__columnIsset( $column ) ) {
+					$binds[":{$column}"] = $dataRow->$column;
+					$selectColumns[]     = $column;
+					$sqlArray[]          = " {$column} = :{$column} ";
+				}
+			}
+			$sql            = "select " . join( ', ', $selectColumns ) . " from {$dataRow->getUuid()->getTable()->getName()} where";
+			$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
+			$binds[':uuid'] = $uuid->toString();
+			$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
+			if ( $nodesResults && $nodesResults->isSuccessful() ) {
+				$columnsIssue = [];
+				foreach ( $nodesResults->fetchDataRows() as $row ) {
+					foreach ( $selectColumns as $column ) {
+						if ( $dataRow->$column == $row->$column ) {
+							$columnsIssue[ $column ] = $dataRow->$column;
+						}
+					}
+				}
+
+				$handleDuplicateColumns( $dataRow, $columnsIssue );
+
+			}
+		}
 	}
 
 	/**
