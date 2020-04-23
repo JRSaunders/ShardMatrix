@@ -16,7 +16,7 @@ interface ShardDataRowInterface extends \JsonSerializable {
 	 *
 	 * @param \stdClass $row
 	 */
-	public function __construct( \stdClass $row );
+	public function __setRowData( \stdClass $row );
 
 	/**
 	 * @param $column

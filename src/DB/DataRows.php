@@ -3,6 +3,8 @@
 
 namespace ShardMatrix\DB;
 
+use ShardMatrix\DB\Interfaces\ConstructArrayInterface;
+use ShardMatrix\DB\Interfaces\ConstructObjectInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 
 /**
@@ -31,8 +33,13 @@ class DataRows implements \Iterator, \JsonSerializable {
 	 */
 	public function setDataRows( array $resultSet, string $resultRowReturnClass = DataRow::class ) {
 		foreach ( $resultSet as &$row ) {
-			if ( ! $row instanceof DataRow ) {
-				$row = new $resultRowReturnClass( $row );
+			if ( ! $row instanceof ShardDataRowInterface ) {
+				if ( in_array( ConstructObjectInterface::class, class_implements( $resultRowReturnClass ) ) ) {
+					$row = new $resultRowReturnClass( $row );
+				}
+				if ( in_array( ConstructArrayInterface::class, class_implements( $resultRowReturnClass ) ) ) {
+					$row = new $resultRowReturnClass( (array) $row );
+				}
 			}
 		}
 		$this->dataRows = $resultSet;
@@ -48,7 +55,7 @@ class DataRows implements \Iterator, \JsonSerializable {
 	/**
 	 * @return ShardDataRowInterface
 	 */
-	public function current() : ShardDataRowInterface{
+	public function current(): ShardDataRowInterface {
 		return $this->dataRows[ $this->position ];
 	}
 

@@ -8,6 +8,7 @@ namespace ShardMatrix\DB;
  * @package ShardMatrix\DB
  */
 class NodeQueries implements \Iterator {
+
 	protected $position = 0;
 	/**
 	 * @var NodeQuery[]
@@ -33,7 +34,7 @@ class NodeQueries implements \Iterator {
 	}
 
 	public function next() {
-		$this->position++;
+		$this->position ++;
 	}
 
 	public function key() {
@@ -41,10 +42,10 @@ class NodeQueries implements \Iterator {
 	}
 
 	public function valid() {
-		return isset($this->nodeQueries[$this->position]);
+		return isset( $this->nodeQueries[ $this->position ] );
 	}
 
 	public function rewind() {
-		$this->position--;
+		$this->position = 0;
 	}
 }

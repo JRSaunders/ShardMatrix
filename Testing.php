@@ -170,7 +170,26 @@ ShardMatrix::setGeo( 'UK' );
 //	var_dump($model->save() );
 //});
 
-var_dump(DB::getByUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033'));
+//$user = DB::getByUuid( '06a00233-1ea82fe3-46ef-6464-8494-444230303031');
+//$user->username = 'tim48135';
+//var_dump($user->__toArray());
+////var_dump($user->save());
+////
+////var_dump(DB::getByUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033'));
 
 
+$sdb = new ShardDB();
 
+$x = $sdb->insert( 'users', "insert into users ( uuid, username, email , password , created ) values (:uuid , :username, :email, :password, :created )", [
+	':username' => 'tim4813511',
+	':email'    => 'john@poo11.com',
+	':password' => 'kjsjksdds11',
+	':created'  => ( new DateTime() )->format( "Y-m-d H:i:s" )
+] );
+
+
+var_dump($x->getLastInsertUuid());
+
+//var_dump($sdb->getByUuidSeparateConnection( new \ShardMatrix\Uuid('06a00233-1ea85735-71b1-6034-a76e-444230303031')));
+//
+var_dump($sdb->getByUuidSeparateConnection( new \ShardMatrix\Uuid('06a00233-1ea85745-94a7-6a24-a90b-444230303033')));

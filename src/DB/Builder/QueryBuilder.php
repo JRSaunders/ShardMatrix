@@ -8,6 +8,7 @@ use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ShardMatrix\DB\Exception;
+use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\NodeQuery;
 use ShardMatrix\DB\ShardDB;
@@ -165,7 +166,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	public function update( array $values ) {
 
 		if ( $this->uuid ) {
-			return ( new ShardDB() )->uuidUpdate( $this->uuid, $this->grammar->compileUpdate( $this, $values ),
+			return ( new ShardDB() )->uuidUpdate(
+				$this->uuid,
+				$this->grammar->compileUpdate( $this, $values ),
 				$this->cleanBindings(
 					$this->grammar->prepareBindingsForUpdate( $this->bindings, $values )
 				)
@@ -190,7 +193,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
 			}
 
-			return ( new ShardDB() )->setDefaultDataRowClass( Model::class )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
+			return ( new ShardDB() )->setDefaultDataRowClass( EloquentDataRowModel::class )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
 		}
 	}
 
@@ -198,7 +201,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return ShardMatrixStatement|null
 	 */
 	protected function returnNodeResult(): ?ShardMatrixStatement {
-		return ( new ShardDB() )->setDefaultDataRowClass( Model::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+		return ( new ShardDB() )->setDefaultDataRowClass( EloquentDataRowModel::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
 	}
 
 	/**

@@ -5,6 +5,7 @@ namespace ShardMatrix\DB;
 
 
 
+use ShardMatrix\DB\Interfaces\ConstructObjectInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Uuid;
 
@@ -12,7 +13,7 @@ use ShardMatrix\Uuid;
  * Class DataRow
  * @package ShardMatrix\DB
  */
-class DataRow implements  ShardDataRowInterface {
+class DataRow implements  ShardDataRowInterface, ConstructObjectInterface {
 
 	protected \stdClass $row;
 	protected $uuids = [];
@@ -98,5 +99,9 @@ class DataRow implements  ShardDataRowInterface {
 
 	public function jsonSerialize() {
 		return $this->__toObject();
+	}
+
+	public function __setRowData( \stdClass $row ) {
+		$this->row = $row;
 	}
 }

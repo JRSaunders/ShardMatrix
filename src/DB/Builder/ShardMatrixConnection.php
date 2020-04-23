@@ -12,6 +12,9 @@ use Illuminate\Database\Query\Processors\PostgresProcessor;
 use ShardMatrix\Config;
 use ShardMatrix\DB\Connections;
 use ShardMatrix\DB\Exception;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
+use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\ShardMatrix;
@@ -186,7 +189,7 @@ class ShardMatrixConnection extends Connection {
 		return $clonedNodes;
 	}
 
-	public function getByUuid( $uuid ): Model {
+	public function getByUuid( $uuid ):? DBDataRowTransactionsInterface {
 		if ( ! $uuid instanceof Uuid ) {
 			$uuid = new Uuid( $uuid );
 		}

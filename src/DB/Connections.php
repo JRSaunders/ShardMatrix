@@ -20,17 +20,25 @@ class Connections {
 		array_merge( static::$dbAttributes, $dbAttributes );
 	}
 
-	public static function getNodeConnection( Node $node ): \PDO {
-		if ( isset( static::$connections[ $node->getName() ] ) ) {
+	/**
+	 * @param Node $node
+	 * @param bool $useNewConnection
+	 *
+	 * @return \PDO
+	 */
+	public static function getNodeConnection( Node $node, bool $useNewConnection = false ): \PDO {
+		if ( isset( static::$connections[ $node->getName() ] ) && ! $useNewConnection ) {
 			return static::$connections[ $node->getName() ];
 		}
-		$db = new \PDO( $node->getDsn()->__toString());
+		$db = new \PDO( $node->getDsn()->__toString() );
 		foreach ( static::$dbAttributes as $attribute => $value ) {
 			$db->setAttribute( $attribute, $value );
 		}
+		if ( ! $useNewConnection ) {
+			return static::$connections[ $node->getName() ] = $db;
+		}
 
-		return static::$connections[ $node->getName() ] = $db;
-
+		return $db;
 	}
 
 

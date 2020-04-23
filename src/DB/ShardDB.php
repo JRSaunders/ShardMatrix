@@ -40,7 +40,7 @@ class ShardDB {
 
 		return $this
 			->uuidBind( $uuid, $sql, $bind )
-			->execute( $node, $sql, $bind, $uuid, __METHOD__ );
+			->execute( new PreStatement( $node, $sql, $bind, $uuid, null, __METHOD__ );
 
 	}
 
@@ -86,7 +86,7 @@ class ShardDB {
 
 		return $this
 			->uuidBind( $uuid, $sql, $bind )
-			->execute( $uuid->getNode(), $sql, $bind, $uuid, __METHOD__ );
+			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, null, __METHOD__ ) );
 
 	}
 
@@ -98,7 +98,9 @@ class ShardDB {
 	 * @return ShardMatrixStatement|null
 	 */
 	public function uuidInsert( Uuid $uuid, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
-		return $this->uuidUpdate( $uuid, $sql, $bind );
+		return $this
+			->uuidBind( $uuid, $sql, $bind )
+			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, null, __METHOD__ ) );
 	}
 
 	/**
@@ -112,7 +114,7 @@ class ShardDB {
 
 		return $this
 			->uuidBind( $uuid, $sql, $bind )
-			->execute( $uuid->getNode(), $sql, $bind, $uuid, __METHOD__ );
+			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, null, __METHOD__ ) );
 	}
 
 	/**
@@ -125,8 +127,15 @@ class ShardDB {
 		return $this->uuidQuery(
 			$uuid,
 			"select * from {$uuid->getTable()->getName()} where uuid = :uuid limit 1;"
-		)->fetchResultRow();
+		)->fetchDataRow();
 	}
+
+	protected function getByUuidSeparateConnection( Uuid $uuid ): ?DataRow {
+		return $this
+			->uuidBind( $uuid, $sql = "select * from {$uuid->getTable()->getName()} where uuid = :uuid limit 1;", $bind )
+			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, null, __METHOD__ ), true )->fetchDataRow();
+	}
+
 
 	/**
 	 * @param Uuid $uuid
@@ -149,7 +158,7 @@ class ShardDB {
 	 * @return ShardMatrixStatement|null
 	 */
 	public function nodeQuery( Node $node, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
-		return $this->execute( $node, $sql, $bind, null, __METHOD__ );
+		return $this->execute( new PreStatement( $node, $sql, $bind, null, null, __METHOD__ ) );
 	}
 
 	/**
@@ -182,6 +191,7 @@ class ShardDB {
 	 * @throws Exception
 	 */
 	public function nodeQueries( NodeQueries $nodeQueries, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ): ?ShardMatrixStatements {
+
 		$queryPidUuid = uniqid( getmypid() . '-' );
 		$pids         = [];
 
@@ -195,7 +205,7 @@ class ShardDB {
 				$pids[] = $pid;
 
 			} else {
-				$stmt = $this->execute( $nodeQuery->getNode(), $nodeQuery->getSql(), $nodeQuery->getBinds(), null, $calledMethod ?? __METHOD__ );
+				$stmt = $this->execute( new PreStatement( $nodeQuery->getNode(), $nodeQuery->getSql(), $nodeQuery->getBinds(), null, null, $calledMethod ?? __METHOD__ ) );
 				if ( $stmt ) {
 					$stmt->__preSerialize();
 				}
@@ -257,21 +267,30 @@ class ShardDB {
 	}
 
 	/**
-	 * @param Node $node
-	 * @param string $sql
-	 * @param array|null $bind
-	 * @param Uuid|null $uuid
-	 * @param string $calledMethod
+	 * @param PreStatement $preStatement
+	 * @param bool $useNewConnection
+	 * @param bool $rollbacks
 	 *
 	 * @return ShardMatrixStatement|null
 	 * @throws DuplicateException
 	 * @throws Exception
 	 */
-	private function execute( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null, string $calledMethod ): ?ShardMatrixStatement {
+	public function execute( PreStatement $preStatement, bool $useNewConnection = false, bool $rollbacks = false ): ?ShardMatrixStatement {
+		$node         = $preStatement->getNode();
+		$sql          = $preStatement->getSql();
+		$bind         = $preStatement->getBind();
+		$uuid         = $preStatement->getUuid();
+		$calledMethod = $preStatement->getCalledMethod();
+		$db           = Connections::getNodeConnection( $node, $useNewConnection );
+
+		if ( $rollbacks ) {
+			$db->beginTransaction();
+		}
 		try {
-			$db   = Connections::getNodeConnection( $node );
+			$this->preExecuteProcesses( $preStatement );
 			$stmt = $db->prepare( $sql );
 			$stmt->execute( $bind );
+
 			if ( $stmt ) {
 				if ( $uuid ) {
 					$node->setLastUsedTableName( $uuid->getTable()->getName() );
@@ -282,13 +301,19 @@ class ShardDB {
 						$shardStmt->setLastInsertUuid( $uuid );
 					}
 				}
-				$this->uniqueColumns( $shardStmt, str_replace( static::class . '::', '', $calledMethod ) );
+				$this->postExecuteProcesses( $shardStmt, str_replace( static::class . '::', '', $calledMethod ) );
 
 				$shardStmt->setSuccessChecked( $this->executeCheckSuccessFunction( $shardStmt, $calledMethod ) );
+				if ( $rollbacks ) {
+					$db->commit();
+				}
 
 				return $shardStmt;
 			}
 		} catch ( \Exception | \TypeError | \Error $exception ) {
+			if ( $rollbacks ) {
+				$db->rollBack();
+			}
 			if ( $exception instanceof DuplicateException ) {
 				throw $exception;
 			}
@@ -358,17 +383,22 @@ class ShardDB {
 		return $this->defaultDataRowClass;
 	}
 
+	private function preExecuteProcesses( PreStatement $preStatement ) {
+
+	}
+
 	/**
 	 * @param ShardMatrixStatement $statement
-	 * @param string $calledMethod
+	 * @param PreStatement $preStatement
 	 *
-	 * @throws Exception
+	 * @throws DuplicateException
 	 */
-	private function uniqueColumns( ShardMatrixStatement $statement, string $calledMethod ) {
-
+	private function postExecuteProcesses( ShardMatrixStatement $statement, PreStatement $preStatement ) {
+		$calledMethod = $preStatement->getCalledMethod();
 		switch ( $calledMethod ) {
 			case 'insert':
-			case 'uuidUpdate':
+			case 'uuidInsert':
+
 				$uniqueColumns = $statement->getUuid()->getTable()->getUniqueColumns();
 
 				if ( $uniqueColumns ) {
@@ -387,7 +417,7 @@ class ShardDB {
 						$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
 						$binds[':uuid'] = $uuid->toString();
 						$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
-						if ( $nodesResults->isSuccessful() && $insertedRow ) {
+						if ( $nodesResults && $nodesResults->isSuccessful() && $insertedRow ) {
 							$columnsIssue = [];
 							foreach ( $nodesResults->fetchDataRows() as $row ) {
 								foreach ( $selectColumns as $column ) {
@@ -397,21 +427,22 @@ class ShardDB {
 								}
 							}
 							$note = $uuid->toString();
+
 							if ( $this->deleteByUuid( $uuid ) ) {
-								$note = ' ( Record Removed ' . $uuid->toString() . ' )';
+								$note = ' ( ' . $uuid->toString() . ' Removed )';
 							}
+
 							$columnsIssueString = '';
 							if ( $columnsIssue ) {
 								foreach ( $columnsIssue as $key => $val ) {
 									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
 								}
 							}
-							throw new DuplicateException( $columnsIssue, 'Duplicate Record violation ' . $columnsIssueString . $note, 46 );
+							throw new DuplicateException( $columnsIssue, 'Duplicate Column violation ' . $columnsIssueString . $note, 46 );
 						}
 					}
 				}
 				break;
-
 		}
 
 
