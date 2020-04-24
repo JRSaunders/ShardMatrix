@@ -13,6 +13,7 @@ use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
  * @method static QueryBuilder table( string $table, string $as = null )
  * @method static DBDataRowTransactionsInterface getByUuid( $uuid )
  * @method static QueryBuilder allNodesTable( string $table, string $as = null )
+ * @method static QueryBuilder shardTable( string $table, string $as = null )
  */
 class DB extends \Illuminate\Support\Facades\DB {
 
