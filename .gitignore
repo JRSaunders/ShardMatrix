@@ -2,5 +2,7 @@ vendor
 vendor/*
 shard_matrix_cache
 shard_matrix_cache/*
-data/*
+dataOld/*
+dataOld
 data
+data/*

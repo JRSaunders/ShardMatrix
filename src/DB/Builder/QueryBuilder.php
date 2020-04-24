@@ -128,11 +128,6 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return parent::where( $column, $operator, $value, $boolean );
 	}
 
-	public function newNode(): QueryBuilder {
-		NodeDistributor::clearGroupNodes();
-
-		return $this;
-	}
 
 
 	/**

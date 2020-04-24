@@ -133,6 +133,19 @@ class ShardMatrixConnection extends Connection {
 	}
 
 	/**
+	 * @param $table
+	 * @param null $as
+	 *
+	 * @return ShardMatrixConnection
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function shardTable( $table, $as = null ) {
+		NodeDistributor::clearGroupNodes();
+
+		return $this->table( $table, $as );
+	}
+
+	/**
 	 * @return MySqlProcessor|\Illuminate\Database\Query\Processors\Processor
 	 */
 	public function getDefaultPostProcessor() {
@@ -143,7 +156,7 @@ class ShardMatrixConnection extends Connection {
 	 * @param \Closure|\Illuminate\Database\Query\Builder|string $table
 	 * @param null $as
 	 *
-	 * @return \Illuminate\Database\Query\Builder
+	 * @return QueryBuilder
 	 * @throws \ShardMatrix\Exception
 	 */
 	public function table( $table, $as = null ) {
@@ -190,7 +203,7 @@ class ShardMatrixConnection extends Connection {
 		return $clonedNodes;
 	}
 
-	public function getByUuid( $uuid ):? DBDataRowTransactionsInterface {
+	public function getByUuid( $uuid ): ?DBDataRowTransactionsInterface {
 		if ( ! $uuid instanceof Uuid ) {
 			$uuid = new Uuid( $uuid );
 		}
