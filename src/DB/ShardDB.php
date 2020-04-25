@@ -279,13 +279,20 @@ class ShardDB {
 		$bind         = $preStatement->getBind();
 		$uuid         = $preStatement->getUuid();
 		$calledMethod = $preStatement->getCalledMethod();
-		$db           = Connections::getNodeConnection( $node, $useNewConnection );
+		try {
+			$this->preExecuteProcesses( $preStatement );
+		} catch ( \Exception $exception ) {
+			if ( $exception instanceof DuplicateException ) {
+				throw $exception;
+			}
+			throw new Exception( $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+		}
+		$db = Connections::getNodeConnection( $node, $useNewConnection );
 
 		if ( $rollbacks ) {
 			$db->beginTransaction();
 		}
 		try {
-			$this->preExecuteProcesses( $preStatement );
 			$stmt = $db->prepare( $sql );
 			$stmt->execute( $bind );
 
@@ -311,13 +318,14 @@ class ShardDB {
 			/**
 			 * TODO swap exeptions out of PDO exception and shard matrix exceptions
 			 */
-		} catch ( \Exception | \TypeError | \Error $exception ) {
+		} catch ( \Exception $exception ) {
 			if ( $rollbacks ) {
 				$db->rollBack();
 			}
 			if ( $exception instanceof DuplicateException ) {
 				throw $exception;
 			}
+
 			throw new Exception( $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
 		}
 
@@ -385,6 +393,7 @@ class ShardDB {
 	}
 
 	private function preExecuteProcesses( PreStatement $preStatement ) {
+
 		$calledMethod = str_replace( static::class . '::', '', $preStatement->getCalledMethod() );
 
 		switch ( $calledMethod ) {
@@ -400,7 +409,7 @@ class ShardDB {
 							}
 						}
 
-						throw new DuplicateException( $columnsIssue, 'Update Duplicate Column violation ' . $columnsIssueString , 45);
+						throw new DuplicateException( $columnsIssue, 'Update Duplicate Column violation ' . $columnsIssueString, 45 );
 					} );
 				}
 				break;
