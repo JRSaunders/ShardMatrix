@@ -3,11 +3,25 @@
 
 namespace ShardMatrix;
 
-
+/**
+ * Class Table
+ * @package ShardMatrix
+ */
 class Table {
+	/**
+	 * @var string|null
+	 */
 	protected ?string $hash = null;
+	/**
+	 * @var string
+	 */
 	protected string $table;
 
+	/**
+	 * Table constructor.
+	 *
+	 * @param string $table
+	 */
 	public function __construct( string $table ) {
 		$this->table = $table;
 	}

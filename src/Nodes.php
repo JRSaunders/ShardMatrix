@@ -9,7 +9,9 @@ namespace ShardMatrix;
  * @package ShardMatrix
  */
 class Nodes implements \Iterator {
-
+	/**
+	 * @var int
+	 */
 	protected $position = 0;
 	/**
 	 * @var Node[]
@@ -64,11 +66,16 @@ class Nodes implements \Iterator {
 		return $this;
 	}
 
-
+	/**
+	 * @return int
+	 */
 	public function countNodes(): int {
 		return count( $this->getNodes() );
 	}
 
+	/**
+	 * @return int
+	 */
 	public function countInsertNodes(): int {
 		return count( $this->getInsertNodes() );
 	}
@@ -114,7 +121,9 @@ class Nodes implements \Iterator {
 		$this->position = 0;
 	}
 
-
+	/**
+	 * @return bool
+	 */
 	public function valid() {
 		return isset( $this->nodes[ $this->position ] );
 	}
@@ -134,6 +143,12 @@ class Nodes implements \Iterator {
 		return null;
 	}
 
+	/**
+	 * @param string $tableName
+	 * @param bool $useGeo
+	 *
+	 * @return Nodes
+	 */
 	public function getNodesWithTableName( string $tableName, bool $useGeo = true ): Nodes {
 		$nodes = [];
 		foreach ( $this->getNodes() as $node ) {

@@ -6,12 +6,21 @@ use Ramsey\Uuid\Type\Hexadecimal;
 use Ramsey\Uuid\Uuid as Ruuid;
 use Ramsey\Uuid\UuidInterface;
 
+/**
+ * Class Uuid
+ * @package ShardMatrix
+ */
 class Uuid {
 	protected ?string $uuid = null;
 	protected Table $table;
 	protected Node $node;
 	protected ?UuidInterface $ramseyUuid = null;
 
+	/**
+	 * Uuid constructor.
+	 *
+	 * @param string|null $uuid
+	 */
 	public function __construct( ?string $uuid = null ) {
 		$this->uuid = $uuid;
 	}
@@ -34,7 +43,9 @@ class Uuid {
 		return new static( $table->getHash() . '-' . $ramseyUuid->toString() );
 	}
 
-
+	/**
+	 * @return string
+	 */
 	protected function stripToRamseyUuidString(): string {
 		$parts = $this->getParts();
 		array_shift( $parts );
@@ -42,15 +53,23 @@ class Uuid {
 		return join( '-', $parts );
 	}
 
+	/**
+	 * @return array
+	 */
 	protected function getParts(): array {
 		return explode( '-', $this->uuid );
 	}
 
+	/**
+	 * @return string
+	 */
 	protected function getTableHash(): string {
 		return $this->getParts()[0];
 	}
 
-
+	/**
+	 * @return UuidInterface|null
+	 */
 	protected function getRamseyUuid(): ?UuidInterface {
 		if ( is_string( $this->uuid ) ) {
 			return $this->ramseyUuid ?? ( $this->ramseyUuid = Ruuid::fromString( $this->stripToRamseyUuidString() ) );
@@ -59,6 +78,9 @@ class Uuid {
 		return null;
 	}
 
+	/**
+	 * @return Node|null
+	 */
 	public function getNode(): ?Node {
 
 		$node = $this->node ??
@@ -87,14 +109,23 @@ class Uuid {
 		       );
 	}
 
+	/**
+	 * @return string
+	 */
 	public function __toString() {
 		return $this->toString();
 	}
 
+	/**
+	 * @return string
+	 */
 	public function toString(): string {
 		return $this->uuid ?? '';
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isValid(): bool {
 
 		if ( $this->getTable() && $this->getNode() && count( $this->getParts() ) == 6 ) {

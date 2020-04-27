@@ -11,11 +11,21 @@ use ShardMatrix\Uuid;
  * @package ShardMatrix\DB
  */
 class ShardMatrixStatements implements \Iterator {
-
+	/**
+	 * @var int
+	 */
 	protected $position = 0;
-
+	/**
+	 * @var ShardMatrixStatement[]
+	 */
 	protected array $shardMatrixStatements = [];
+	/**
+	 * @var string|null
+	 */
 	protected ?string $orderByColumn = null;
+	/**
+	 * @var string|null
+	 */
 	protected ?string $orderByDirection = null;
 
 	/**
@@ -31,6 +41,9 @@ class ShardMatrixStatements implements \Iterator {
 		$this->orderByDirection      = $orderByDirection;
 	}
 
+	/**
+	 * @return int
+	 */
 	public function countShardMatrixStatements(): int {
 		return count( $this->getShardMatrixStatements() );
 	}
@@ -76,11 +89,17 @@ class ShardMatrixStatements implements \Iterator {
 		$this->position = 0;
 	}
 
-
+	/**
+	 * @return bool
+	 */
 	public function valid() {
 		return isset( $this->shardMatrixStatements[ $this->position ] );
 	}
 
+	/**
+	 * @param $results
+	 * @param bool $row
+	 */
 	private function orderResults( &$results, bool $row = false ) {
 
 		if ( $this->orderByColumn && count( $results ) > 1 ) {
@@ -109,6 +128,9 @@ class ShardMatrixStatements implements \Iterator {
 
 	}
 
+	/**
+	 * @return array
+	 */
 	public function fetchAllArrays(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
@@ -120,6 +142,9 @@ class ShardMatrixStatements implements \Iterator {
 		return $results;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function fetchAllObjects(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
@@ -130,6 +155,9 @@ class ShardMatrixStatements implements \Iterator {
 		return $results;
 	}
 
+	/**
+	 * @return array
+	 */
 	public function fetchRowArray(): array {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {
@@ -143,6 +171,9 @@ class ShardMatrixStatements implements \Iterator {
 		return $results;
 	}
 
+	/**
+	 * @return \stdClass|null
+	 */
 	public function fetchRowObject(): ?\stdClass {
 		$results = [];
 		foreach ( $this->getShardMatrixStatements() as $statement ) {

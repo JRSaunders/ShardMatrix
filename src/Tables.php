@@ -51,7 +51,9 @@ class Tables implements \Iterator {
 		return $this;
 	}
 
-
+	/**
+	 * @return int
+	 */
 	public function countTables(): int {
 		return count( $this->getTables() );
 	}
@@ -97,7 +99,9 @@ class Tables implements \Iterator {
 		$this->position = 0;
 	}
 
-
+	/**
+	 * @return bool
+	 */
 	public function valid() {
 		return isset( $this->tables[ $this->position ] );
 	}

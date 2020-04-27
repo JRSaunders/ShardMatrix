@@ -3,9 +3,14 @@
 
 namespace ShardMatrix;
 
-
+/**
+ * Class UniqueColumns
+ * @package ShardMatrix
+ */
 class UniqueColumns implements \Iterator {
-
+	/**
+	 * @var int
+	 */
 	protected $position = 0;
 	/**
 	 * @var string[]
@@ -45,7 +50,9 @@ class UniqueColumns implements \Iterator {
 		return [];
 	}
 
-
+	/**
+	 * @return int
+	 */
 	public function countUniqueColumns(): int {
 		return count( $this->getUniqueColumns() );
 	}
@@ -91,7 +98,9 @@ class UniqueColumns implements \Iterator {
 		$this->position = 0;
 	}
 
-
+	/**
+	 * @return bool
+	 */
 	public function valid() {
 		return isset( $this->uniqueColumns[ $this->position ] );
 	}

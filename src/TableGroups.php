@@ -9,7 +9,9 @@ namespace ShardMatrix;
  * @package TableGroupsModulus
  */
 class TableGroups implements \Iterator {
-
+	/**
+	 * @var int
+	 */
 	protected $position = 0;
 	/**
 	 * @var TableGroup[]
@@ -83,7 +85,9 @@ class TableGroups implements \Iterator {
 		return $this;
 	}
 
-
+	/**
+	 * @return int
+	 */
 	public function countTableGroups(): int {
 		return count( $this->getTableGroups() );
 	}
@@ -129,11 +133,18 @@ class TableGroups implements \Iterator {
 		$this->position = 0;
 	}
 
-
+	/**
+	 * @return bool
+	 */
 	public function valid() {
 		return isset( $this->tableGroups[ $this->position ] );
 	}
 
+	/**
+	 * @param string $hash
+	 *
+	 * @return Table|null
+	 */
 	public function getTableByHash( string $hash ): ?Table {
 		foreach ( $this->getTableGroups() as $group ) {
 			foreach ( $group->getTables() as $table ) {

@@ -3,7 +3,10 @@
 
 namespace ShardMatrix;
 
-
+/**
+ * Class Dsn
+ * @package ShardMatrix
+ */
 class Dsn {
 
 	public string $dsn;

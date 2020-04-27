@@ -5,9 +5,14 @@ namespace ShardMatrix;
 
 
 class NodeDistributor {
-
+	/**
+	 * @var Node[]
+	 */
 	protected static $groupNodes = [];
 
+	/**
+	 * @param Uuid $uuid
+	 */
 	static public function setFromUuid( Uuid $uuid ) {
 		static::$groupNodes[ $uuid->getNode()
 		                          ->getTableGroups()
