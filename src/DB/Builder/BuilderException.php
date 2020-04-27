@@ -5,6 +5,7 @@ namespace ShardMatrix\Db\Builder;
 
 
 use ShardMatrix\DB\Exception;
+use ShardMatrix\Node;
 use Throwable;
 
 /**
@@ -12,8 +13,21 @@ use Throwable;
  * @package ShardMatrix\Db\Builder
  */
 class BuilderException extends Exception {
+	/**
+	 * @var Node|null
+	 */
 	protected ?Node $node = null;
+
+	/**
+	 * BuilderException constructor.
+	 *
+	 * @param Node|null $node
+	 * @param string $message
+	 * @param int $code
+	 * @param Throwable|null $previous
+	 */
 	public function __construct( ?Node $node, $message = "", $code = 0, Throwable $previous = null ) {
+		$this->node = $node;
 		parent::__construct( $message, $code, $previous );
 	}
 
