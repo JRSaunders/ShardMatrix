@@ -19,7 +19,7 @@ ShardMatrix::setGeo( 'UK' );
 //var_dump($f->fetchRowArray());
 
 $shardDb = new ShardDB();
-
+DB::table( 'users')->sum();
 //$shardDb->nodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007'), "create table users
 //(
 //    uuid     varchar(50)  not null

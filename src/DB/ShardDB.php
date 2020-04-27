@@ -315,10 +315,8 @@ class ShardDB {
 
 				return $shardStmt;
 			}
-			/**
-			 * TODO swap exeptions out of PDO exception and shard matrix exceptions
-			 */
-		} catch ( \Exception $exception ) {
+
+		} catch ( DuplicateException | \PDOException $exception ) {
 			if ( $rollbacks ) {
 				$db->rollBack();
 			}
