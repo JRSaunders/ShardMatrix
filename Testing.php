@@ -2,6 +2,7 @@
 
 use ShardMatrix\Db\Builder\DB;
 use ShardMatrix\Db\Builder\QueryBuilder;
+use ShardMatrix\Db\Builder\Schema;
 use ShardMatrix\Db\Builder\ShardMatrixConnection;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\Dsn;
@@ -17,7 +18,25 @@ ShardMatrix::setGeo( 'UK' );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
 
-//$shardDb   = new ShardDB();
+$shardDb = new ShardDB();
+
+//$shardDb->nodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007'), "create table users
+//(
+//    uuid     varchar(50)  not null
+//        primary key,
+//    username varchar(100) null,
+//    password varchar(100) null,
+//    email    varchar(200) null,
+//    created  timestamp without time zone    null
+//);");
+
+Schema::create( 'visitors',
+	function ( \Illuminate\Database\Schema\Blueprint $table ) {
+		$table->string( 'uuid', 50 )->primary();
+		$table->dateTime( 'created' );
+
+	} );
+
 //$tableName = 'users';
 //$con       = new ShardMatrixConnection(
 //		NodeDistributor::getNode( $tableName )
@@ -195,7 +214,7 @@ ShardMatrix::setGeo( 'UK' );
 //$user->create();
 
 //
-$x = DB::allNodesTable( 'users')->where( 'email','=','bill@fish.com')->get()->first();
-//$x->username = 'tim48135';
-//$x->save();
-var_dump( $x->username);
+//$x = DB::allNodesTable( 'users')->where( 'email','=','bill@fish.com')->get()->first();
+////$x->username = 'tim48135';
+////$x->save();
+//var_dump( $x->username);

@@ -48,5 +48,11 @@ nodes:
     insert_data: false
     table_groups:
       - tracking
+  DB0007:
+    dsn: pgsql:dbname=shard;host=localhost:5407;user=postgres;password=password
+    geo: UK
+    table_groups:
+      - user
+      - tracking
 
 

@@ -18,11 +18,8 @@ use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
 class DB extends \Illuminate\Support\Facades\DB {
 
 	static public function __callStatic( $method, $args ) {
-		$instance = new UnassignedConnection();
 
-		if ( ! $instance ) {
-			throw new RuntimeException( 'A facade root has not been set.' );
-		}
+		$instance = new UnassignedConnection();
 
 		return $instance->$method( ...$args );
 	}

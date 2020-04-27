@@ -64,5 +64,15 @@ services:
     ports:
       - 3306:3306
 
+  DB0007:
+    restart: always
+    image: postgres
+    env_file:
+      - .postgres-dev-env
+    volumes:
+      - ./data/db07/postgres:/data/postgres
+    ports:
+      - 5407:5432
+
 
 

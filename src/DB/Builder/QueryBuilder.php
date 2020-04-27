@@ -51,7 +51,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	public function setShardMatrixConnection( ShardMatrixConnection $connection ): QueryBuilder {
 		if ( $connection instanceof UnassignedConnection ) {
-			throw new Exception( 'Connection has to be assigned' );
+			throw new BuilderException( null, 'Connection has to be assigned' );
 		}
 		$connection->prepareQuery( $this );
 
@@ -91,7 +91,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			$uuid = new Uuid( $uuid );
 		}
 		if ( ! $uuid instanceof Uuid ) {
-			throw new Exception( 'Uuid Object Required' );
+			throw new BuilderException( null, 'Uuid Object Required' );
 		}
 		$this->uuid = $uuid;
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
@@ -110,7 +110,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			$uuid = new Uuid( $uuid );
 		}
 		if ( ! $uuid instanceof Uuid ) {
-			throw new Exception( 'Uuid Object Required' );
+			throw new BuilderException( null, 'Uuid Object Required' );
 		}
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
 		parent::where( 'uuid', '=', $uuid->toString() );
@@ -127,7 +127,6 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return parent::where( $column, $operator, $value, $boolean );
 	}
-
 
 
 	/**

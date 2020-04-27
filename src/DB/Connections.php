@@ -12,6 +12,7 @@ class Connections {
 
 	protected static $connections = [];
 	protected static $dbAttributes = [ \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION ];
+	protected static ? Node $lastNodeUsed = null;
 
 	/**
 	 * @param array $dbAttributes
@@ -27,6 +28,7 @@ class Connections {
 	 * @return \PDO
 	 */
 	public static function getNodeConnection( Node $node, bool $useNewConnection = false ): \PDO {
+		static::$lastNodeUsed = $node;
 		if ( isset( static::$connections[ $node->getName() ] ) && ! $useNewConnection ) {
 			return static::$connections[ $node->getName() ];
 		}
@@ -56,10 +58,31 @@ class Connections {
 		throw new Exception( 'No Node by name ' . $nodeName . ' Exists!' );
 	}
 
+
 	static public function closeConnections() {
 		foreach ( static::$connections as &$con ) {
 			$con = null;
 		}
 		static::$connections = [];
+	}
+
+	/**
+	 * @param bool $useNewConnection
+	 *
+	 * @return \PDO|null
+	 */
+	static public function getLastUsedConnection( bool $useNewConnection = false ): ?\PDO {
+		if ( static::$lastNodeUsed ) {
+			return static::getNodeConnection( static::$lastNodeUsed, $useNewConnection );
+		}
+
+		return null;
+	}
+
+	/**
+	 * @return Node|null
+	 */
+	static public function getLastUsedNode(): ?Node {
+		return static::$lastNodeUsed;
 	}
 }

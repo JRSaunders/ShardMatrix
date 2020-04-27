@@ -105,6 +105,27 @@ class ShardMatrixConnection extends Connection {
 	}
 
 	/**
+	 * @return \Illuminate\Database\Schema\Grammars\Grammar|\Illuminate\Database\Schema\Grammars\MySqlGrammar|\Illuminate\Database\Schema\Grammars\PostgresGrammar
+	 * @throws Exception
+	 */
+	public function getSchemaGrammar() {
+		$returnGrammar = $this->getDefaultSchemaGrammar();
+		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
+			case 'mysql':
+				$returnGrammar = new \Illuminate\Database\Schema\Grammars\MySqlGrammar();
+				break;
+			case 'pgsql':
+				$returnGrammar = new \Illuminate\Database\Schema\Grammars\PostgresGrammar();
+				break;
+			case 'sqlite':
+				throw new Exception( 'SQL LITE IS NOT SUPPORTED' );
+				break;
+		}
+
+		return $returnGrammar;
+	}
+
+	/**
 	 * @return \Illuminate\Database\Query\Grammars\Grammar|MySqlGrammar
 	 */
 	public function getDefaultQueryGrammar() {
@@ -186,6 +207,9 @@ class ShardMatrixConnection extends Connection {
 		return $this->table( $table, $as );
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function hasNodes(): bool {
 		return isset( $this->nodes );
 	}
@@ -203,12 +227,37 @@ class ShardMatrixConnection extends Connection {
 		return $clonedNodes;
 	}
 
+	/**
+	 * @param $uuid
+	 *
+	 * @return DBDataRowTransactionsInterface|null
+	 * @throws Exception
+	 * @throws \ShardMatrix\Exception
+	 */
 	public function getByUuid( $uuid ): ?DBDataRowTransactionsInterface {
 		if ( ! $uuid instanceof Uuid ) {
 			$uuid = new Uuid( $uuid );
 		}
 
 		return $this->table( $uuid->getTable()->getName() )->whereUuid( $uuid )->first( [ '*' ] );
+	}
+
+	/**
+	 * @return SchemaBuilder
+	 */
+	public function getSchemaBuilder() {
+		if ( is_null( $this->schemaGrammar ) ) {
+			$this->useDefaultSchemaGrammar();
+		}
+
+		return new SchemaBuilder( $this );
+	}
+
+	/**
+	 * @return \Illuminate\Database\Schema\Grammars\Grammar|\Illuminate\Database\Schema\Grammars\MySqlGrammar
+	 */
+	public function getDefaultSchemaGrammar() {
+		return new \Illuminate\Database\Schema\Grammars\MySqlGrammar();
 	}
 
 
