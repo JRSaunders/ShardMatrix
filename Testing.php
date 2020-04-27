@@ -19,7 +19,7 @@ ShardMatrix::setGeo( 'UK' );
 //var_dump($f->fetchRowArray());
 
 $shardDb = new ShardDB();
-DB::table( 'users')->sum();
+echo DB::table( 'users')->sum('created'); die;
 //$shardDb->nodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007'), "create table users
 //(
 //    uuid     varchar(50)  not null
@@ -30,12 +30,12 @@ DB::table( 'users')->sum();
 //    created  timestamp without time zone    null
 //);");
 
-Schema::create( 'visitors',
-	function ( \Illuminate\Database\Schema\Blueprint $table ) {
-		$table->string( 'uuid', 50 )->primary();
-		$table->dateTime( 'created' );
-
-	} );
+//Schema::create( 'visitors',
+//	function ( \Illuminate\Database\Schema\Blueprint $table ) {
+//		$table->string( 'uuid', 50 )->primary();
+//		$table->dateTime( 'created' );
+//
+//	} );
 
 //$tableName = 'users';
 //$con       = new ShardMatrixConnection(
