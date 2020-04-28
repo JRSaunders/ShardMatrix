@@ -5,11 +5,15 @@ namespace ShardMatrix\Db\Builder;
 
 use ShardMatrix\DB\Connections;
 use ShardMatrix\Node;
+use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
 
 /**
  * Class Schema
  * @package ShardMatrix\Db\Builder
+ * @method static SchemaBuilder silent()
+ * @method static SchemaBuilder node( Node $node )
+ * @method static SchemaBuilder nodes( Nodes $node )
  */
 class Schema extends \Illuminate\Support\Facades\Schema {
 	/**
@@ -28,8 +32,13 @@ class Schema extends \Illuminate\Support\Facades\Schema {
 		return ( new ShardMatrixConnection( Connections::getLastUsedNode() ) )->getSchemaBuilder();
 	}
 
-	public static function __callStatic($method, $args)
-	{
+	/**
+	 * @param string $method
+	 * @param array $args
+	 *
+	 * @return mixed
+	 */
+	public static function __callStatic( $method, $args ) {
 		$instance = new UnassignedConnection();
 
 		return $instance->getSchemaBuilder()->$method( ...$args );
