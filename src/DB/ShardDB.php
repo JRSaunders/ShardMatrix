@@ -11,6 +11,10 @@ use ShardMatrix\ShardMatrix;
 use ShardMatrix\Table;
 use ShardMatrix\Uuid;
 
+/**
+ * Class ShardDB
+ * @package ShardMatrix\DB
+ */
 class ShardDB {
 	/**
 	 *

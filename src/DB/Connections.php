@@ -8,6 +8,10 @@ use ShardMatrix\Exception;
 use ShardMatrix\Node;
 use ShardMatrix\ShardMatrix;
 
+/**
+ * Class Connections
+ * @package ShardMatrix\DB
+ */
 class Connections {
 
 	protected static $connections = [];
@@ -58,8 +62,7 @@ class Connections {
 		throw new Exception( 'No Node by name ' . $nodeName . ' Exists!' );
 	}
 
-
-	static public function closeConnections() {
+	static public function closeConnections(): void {
 		foreach ( static::$connections as &$con ) {
 			$con = null;
 		}
