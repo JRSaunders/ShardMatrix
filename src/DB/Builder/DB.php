@@ -5,6 +5,7 @@ namespace ShardMatrix\Db\Builder;
 
 
 use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+use ShardMatrix\ShardMatrix;
 
 
 /**
@@ -23,6 +24,18 @@ class DB extends \Illuminate\Support\Facades\DB {
 		$instance = new UnassignedConnection();
 
 		return $instance->$method( ...$args );
+	}
+
+	/**
+	 * node name
+	 * @param string $name
+	 *
+	 * @return ShardMatrixConnection
+	 */
+	static public function connection( string $name ) {
+		$node = ShardMatrix::getConfig()->getNodes()->getNodeByName( $name );
+
+		return ( new ShardMatrixConnection( $node ) );
 	}
 
 }

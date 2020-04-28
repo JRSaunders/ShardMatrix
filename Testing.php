@@ -20,7 +20,8 @@ ShardMatrix::setGeo( 'UK' );
 //Schema::silent()->table( 'users', function(\Illuminate\Database\Schema\Blueprint $table){
 //	$table->integer( 'something')->after( 'uuid');
 //});
-DB::updateByUuid( '06a00233-1ea82fe3-4937-626c-8f1e-444230303032', ['password' => 'onlypoo12']);
+//DB::updateByUuid( '06a00233-1ea82fe3-4937-626c-8f1e-444230303032', ['password' => 'onlypoo12']);
+
 //$shardDb = new ShardDB();
 //echo DB::table( 'users')->sum('created'); die;
 //$shardDb->nodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007'), "create table users
