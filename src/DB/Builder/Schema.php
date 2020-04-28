@@ -17,12 +17,16 @@ use ShardMatrix\ShardMatrix;
  */
 class Schema extends \Illuminate\Support\Facades\Schema {
 	/**
+	 * node name
+	 *
 	 * @param string|null $name
 	 *
 	 * @return SchemaBuilder
 	 */
 	static public function connection( $name ) {
-		return ( new ShardMatrixConnection( Connections::getNodeConnection( ShardMatrix::getConfig()->getNodes()->getNodeByName( $name ) ) ) )->getSchemaBuilder();
+		$node = ShardMatrix::getConfig()->getNodes()->getNodeByName( $name );
+
+		return ( new ShardMatrixConnection( $node ) )->getSchemaBuilder()->node( $node );
 	}
 
 	/**
