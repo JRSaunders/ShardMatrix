@@ -253,6 +253,9 @@ class ShardMatrixStatement {
 		return new Nodes( $nodes );
 	}
 
+	/**
+	 * @return Nodes
+	 */
 	public function getAllTableNodes(): Nodes {
 		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $this->getUuid()->getTable()->getName(), false );
 	}
@@ -275,18 +278,30 @@ class ShardMatrixStatement {
 		return $this->queryString;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isSelectQuery(): bool {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'select' ) === 0;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isUpdateQuery(): bool {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'update' ) === 0;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isInsertQuery(): bool {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'insert' ) === 0;
 	}
 
+	/**
+	 * @return bool
+	 */
 	public function isDeleteQuery(): bool {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'delete' ) === 0;
 	}

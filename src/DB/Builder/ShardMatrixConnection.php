@@ -17,6 +17,7 @@ use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\DB\Models\EloquentDataRowModel;
+use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\Nodes;
@@ -245,6 +246,28 @@ class ShardMatrixConnection extends Connection {
 	}
 
 	/**
+	 * @param $uuid
+	 * @param array $values
+	 *
+	 * @return bool
+	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function updateByUuid( $uuid, array $values ): bool {
+		if ( ! $uuid instanceof Uuid ) {
+			$uuid = new Uuid( $uuid );
+		}
+
+		$stmt = $this->table( $uuid->getTable()->getName() )->whereUuid( $uuid )->update( $values );
+		if ( $stmt && $stmt->isSuccessful() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * @return SchemaBuilder
 	 */
 	public function getSchemaBuilder() {
@@ -266,7 +289,7 @@ class ShardMatrixConnection extends Connection {
 	 * @return Driver|\Doctrine\DBAL\Driver\PDOPgSql\Driver
 	 * @throws Exception
 	 */
-	public function getDoctrineDriver(){
+	public function getDoctrineDriver() {
 
 		$returnProcessor = $this->getDefaultDoctrineDriver();
 		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
@@ -285,20 +308,20 @@ class ShardMatrixConnection extends Connection {
 
 	}
 
-	public function getDefaultDoctrineDriver(){
+	public function getDefaultDoctrineDriver() {
 		return new Driver();
 	}
 
 	public function getDoctrineConnection() {
-		if (is_null($this->doctrineConnection)) {
+		if ( is_null( $this->doctrineConnection ) ) {
 			$driver = $this->getDoctrineDriver();
 
-			$this->doctrineConnection = new DoctrineConnection(array_filter([
-				'pdo' => $this->getPdo(),
-				'dbname' => $this->getNode()->getDsn()->getDbname(),
-				'driver' => $driver->getName(),
-				'serverVersion' => $this->getConfig('server_version'),
-			]), $driver);
+			$this->doctrineConnection = new DoctrineConnection( array_filter( [
+				'pdo'           => $this->getPdo(),
+				'dbname'        => $this->getNode()->getDsn()->getDbname(),
+				'driver'        => $driver->getName(),
+				'serverVersion' => $this->getConfig( 'server_version' ),
+			] ), $driver );
 		}
 
 		return $this->doctrineConnection;

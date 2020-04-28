@@ -12,6 +12,7 @@ use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
  * @package ShardMatrix\Db\Illuminate
  * @method static QueryBuilder table( string $table, string $as = null )
  * @method static DBDataRowTransactionsInterface getByUuid( $uuid )
+ * @method static bool updateByUuid( $uuid, array $values )
  * @method static QueryBuilder allNodesTable( string $table, string $as = null )
  * @method static QueryBuilder shardTable( string $table, string $as = null )
  */
