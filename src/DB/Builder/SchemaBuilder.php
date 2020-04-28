@@ -117,4 +117,22 @@ class SchemaBuilder extends Builder {
 		}
 
 	}
+
+	public function table( $table, Closure $callback ) {
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $table );
+		if ( $nodes->countNodes() == 0 ) {
+			throw new BuilderException( null,'Table not specified in Shard Matrix Config' );
+		}
+		foreach ( $nodes as $node ) {
+			try {
+				$this->connection = new ShardMatrixConnection( $node );
+				$this->grammar    = $this->connection->getSchemaGrammar();
+				parent::table( $table, $callback );
+			} catch ( \Exception $exception ) {
+				throw new BuilderException( $node, $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+			}
+		}
+	}
+
+
 }

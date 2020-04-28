@@ -4,6 +4,8 @@
 namespace ShardMatrix\Db\Builder;
 
 
+use Doctrine\DBAL\Connection as DoctrineConnection;
+use Doctrine\DBAL\Driver\PDOMySql\Driver;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;
@@ -258,6 +260,48 @@ class ShardMatrixConnection extends Connection {
 	 */
 	public function getDefaultSchemaGrammar() {
 		return new \Illuminate\Database\Schema\Grammars\MySqlGrammar();
+	}
+
+	/**
+	 * @return Driver|\Doctrine\DBAL\Driver\PDOPgSql\Driver
+	 * @throws Exception
+	 */
+	public function getDoctrineDriver(){
+
+		$returnProcessor = $this->getDefaultDoctrineDriver();
+		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
+			case 'mysql':
+				$returnProcessor = new Driver();
+				break;
+			case 'pgsql':
+				$returnProcessor = new \Doctrine\DBAL\Driver\PDOPgSql\Driver();
+				break;
+			case 'sqlite':
+				throw new Exception( 'SQL LITE IS NOT SUPPORTED' );
+				break;
+		}
+
+		return $returnProcessor;
+
+	}
+
+	public function getDefaultDoctrineDriver(){
+		return new Driver();
+	}
+
+	public function getDoctrineConnection() {
+		if (is_null($this->doctrineConnection)) {
+			$driver = $this->getDoctrineDriver();
+
+			$this->doctrineConnection = new DoctrineConnection(array_filter([
+				'pdo' => $this->getPdo(),
+				'dbname' => $this->getNode()->getDsn()->getDbname(),
+				'driver' => $driver->getName(),
+				'serverVersion' => $this->getConfig('server_version'),
+			]), $driver);
+		}
+
+		return $this->doctrineConnection;
 	}
 
 

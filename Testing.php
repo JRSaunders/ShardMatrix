@@ -17,9 +17,11 @@ ShardMatrix::setGeo( 'UK' );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
-
-$shardDb = new ShardDB();
-echo DB::table( 'users')->sum('created'); die;
+Schema::table( 'users', function(\Illuminate\Database\Schema\Blueprint $table){
+	$table->integer( 'something')->after( 'uuid');
+});
+//$shardDb = new ShardDB();
+//echo DB::table( 'users')->sum('created'); die;
 //$shardDb->nodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007'), "create table users
 //(
 //    uuid     varchar(50)  not null
