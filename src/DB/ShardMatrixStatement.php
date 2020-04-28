@@ -84,7 +84,9 @@ class ShardMatrixStatement {
 	public function fetchAllObjects(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
-				return $this->pdoStatement->fetchAll( \PDO::FETCH_OBJ );
+				if($this->isSelectQuery()) {
+					return $this->pdoStatement->fetchAll( \PDO::FETCH_OBJ );
+				}
 			}
 		}
 		if ( $this->data ) {
@@ -105,7 +107,9 @@ class ShardMatrixStatement {
 	public function fetchRowArray(): ?array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
-				return $this->pdoStatement->fetch( \PDO::FETCH_ASSOC );
+				if($this->isSelectQuery()) {
+					return $this->pdoStatement->fetch( \PDO::FETCH_ASSOC );
+				}
 			}
 		}
 		if ( $this->data && isset( $this->data[0] ) ) {
@@ -121,7 +125,10 @@ class ShardMatrixStatement {
 	public function fetchRowObject(): ?\stdClass {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
-				return $this->pdoStatement->fetch( \PDO::FETCH_OBJ );
+				if ( $this->isSelectQuery() ) {
+					return $this->pdoStatement->fetch( \PDO::FETCH_OBJ );
+				}
+
 			}
 		}
 		if ( $this->data && isset( $this->data[0] ) ) {
@@ -155,7 +162,7 @@ class ShardMatrixStatement {
 	public function fetchDataRows(): DataRows {
 		$resultSet = new DataRows( [], $this->dataRowReturnClass );
 		if ( $results = $this->fetchAllObjects() ) {
-			$resultSet->setDataRows( $results , $this->getDataRowReturnClass());
+			$resultSet->setDataRows( $results, $this->getDataRowReturnClass() );
 		}
 
 		return $resultSet;
@@ -266,6 +273,22 @@ class ShardMatrixStatement {
 		}
 
 		return $this->queryString;
+	}
+
+	public function isSelectQuery(): bool {
+		return strpos( strtolower( trim( $this->getQueryString() ) ), 'select' ) === 0;
+	}
+
+	public function isUpdateQuery(): bool {
+		return strpos( strtolower( trim( $this->getQueryString() ) ), 'update' ) === 0;
+	}
+
+	public function isInsertQuery(): bool {
+		return strpos( strtolower( trim( $this->getQueryString() ) ), 'insert' ) === 0;
+	}
+
+	public function isDeleteQuery(): bool {
+		return strpos( strtolower( trim( $this->getQueryString() ) ), 'delete' ) === 0;
 	}
 
 	/**

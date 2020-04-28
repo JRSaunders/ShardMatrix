@@ -160,7 +160,13 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return null;
 	}
 
-
+	/**
+	 * @param array $values
+	 *
+	 * @return int|ShardMatrixStatement|ShardMatrixStatements|null
+	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
+	 */
 	public function update( array $values ) {
 
 		if ( $this->uuid ) {
@@ -171,6 +177,21 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 					$this->grammar->prepareBindingsForUpdate( $this->bindings, $values )
 				)
 			);
+		}
+
+
+		if ( $this->getConnection()->hasNodes() && ( $nodes = $this->getConnection()->getNodesClear() ) ) {
+			$nodeQueries = [];
+			foreach ( $nodes as $node ) {
+				$queryBuilder = clone( $this );
+				( new ShardMatrixConnection( $node ) )->prepareQuery( $queryBuilder );
+
+				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->getGrammar()->compileUpdate( $queryBuilder, $values ), $this->cleanBindings(
+					$queryBuilder->getGrammar()->prepareBindingsForUpdate( $this->bindings, $values )
+				) );
+			}
+
+			return ( new ShardDB() )->nodeQueries( new NodeQueries( $nodeQueries ), null, null, 'update' );
 		}
 
 		return parent::update( $values );

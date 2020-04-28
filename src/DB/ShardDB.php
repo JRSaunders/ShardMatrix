@@ -121,11 +121,14 @@ class ShardDB {
 	}
 
 	/**
-	 * @param Uuid $uuid
+	 * @param Uuid|null $uuid
 	 *
 	 * @return DataRow|null
 	 */
-	public function getByUuid( Uuid $uuid ): ?DataRow {
+	public function getByUuid( ?Uuid $uuid ): ?DataRow {
+		if ( ! $uuid ) {
+			return null;
+		}
 
 		return $this->uuidQuery(
 			$uuid,
