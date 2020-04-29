@@ -338,10 +338,13 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 *
 	 * @return QueryBuilder
 	 */
-	public function uuidMarkerPageAbove( ?Uuid $uuid = null, int $perPage = 15 ): QueryBuilder {
+	public function uuidMarkerPageAbove( $uuid = null, int $perPage = 15 ): QueryBuilder {
+		if(!is_null($uuid)){
+			$uuid = new Uuid($uuid);
+		}
 		$uuid ?? $this->uuid;
 		if ( $uuid ) {
-			return $this->where( 'uuid', '>', $uuid->toString() )->limit( $perPage );
+			return $this->where( 'uuid', '>', $uuid->toString() )->orderBy( 'uuid')->limit( $perPage );
 		}
 
 		return $this->limit( $perPage );
@@ -354,9 +357,13 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return QueryBuilder
 	 */
 	public function uuidMarkerPageBelow( ?Uuid $uuid = null, int $perPage = 15 ): QueryBuilder {
+		if(!is_null($uuid)){
+			$uuid = new Uuid($uuid);
+		}
 		$uuid ?? $this->uuid;
+
 		if ( $uuid ) {
-			return $this->where( 'uuid', '<', $uuid->toString() )->limit( $perPage );
+			return $this->where( 'uuid', '<', $uuid->toString() )->orderBy( 'uuid')->limit( $perPage );
 		}
 
 		return $this->limit( $perPage );
