@@ -33,6 +33,20 @@ class ShardMatrix {
 	}
 
 	/**
+	 * @param string|null $yamlString
+	 */
+	public static function initFromYamlString( string $yamlString = null ) {
+		static::$config = new Config( Yaml::parse( $yamlString ) );
+	}
+
+	/**
+	 * @param string|null $json
+	 */
+	public static function initFromJson( string $json = null ) {
+		static::$config = new Config( json_decode( $json ) );
+	}
+
+	/**
 	 * @return Config
 	 */
 	public static function getConfig(): Config {

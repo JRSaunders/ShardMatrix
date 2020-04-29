@@ -7,7 +7,9 @@ use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use ShardMatrix\DB\DataRow;
 use ShardMatrix\DB\Exception;
+use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\DB\NodeQueries;
@@ -25,7 +27,9 @@ use ShardMatrix\Uuid;
  * @package ShardMatrix\Db\Illuminate
  */
 class QueryBuilder extends \Illuminate\Database\Query\Builder {
-
+	/**
+	 * @var Uuid|null
+	 */
 	protected ? Uuid $uuid = null;
 
 	/**
@@ -39,6 +43,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		parent::__construct( $connection ?? new UnassignedConnection(), $grammar, $processor );
 	}
 
+	/**
+	 * @return ShardMatrixConnection
+	 */
 	public function getConnection(): ShardMatrixConnection {
 		return $this->connection;
 	}
@@ -58,7 +65,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $this;
 	}
 
-
+	/**
+	 * @return string|null
+	 */
 	protected function getPrimaryOrderColumn(): ?string {
 		if ( $this->orders ) {
 			$order = $this->orders[0];
@@ -69,6 +78,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return null;
 	}
 
+	/**
+	 * @return string|null
+	 */
 	protected function getPrimaryOrderDirection(): ?string {
 		if ( $this->orders ) {
 			$order = $this->orders[0];
@@ -119,6 +131,15 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $this;
 	}
 
+	/**
+	 * @param array|\Closure|string $column
+	 * @param null $operator
+	 * @param null $value
+	 * @param string $boolean
+	 *
+	 * @return QueryBuilder
+	 * @throws Exceptio
+	 */
 	public function where( $column, $operator = null, $value = null, $boolean = 'and' ) {
 		if ( $column == 'uuid' && $operator == '=' ) {
 			$this->uuid = new Uuid( $value );
@@ -274,13 +295,18 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				return new Collection( $result->fetchDataRows()->getDataRows() );
 			}
 
-
 			return new Collection( [] );
 		}
 
 		return $result;
 	}
 
+	/**
+	 * @param null $id
+	 *
+	 * @return int
+	 * @throws Exception
+	 */
 	public function delete( $id = null ) {
 		$uuid = new Uuid( $id );
 		if ( ! is_null( $uuid ) ) {
@@ -307,6 +333,17 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	}
 
 	/**
+	 * @param array|string[] $columns
+	 *
+	 * @return ResultsInterface
+	 */
+	public function getStatement( array $columns = [ '*' ] ): ResultsInterface {
+		$this->select( $columns );
+
+		return $this->returnResults( true );
+	}
+
+	/**
 	 * @param int|string $uuid
 	 * @param string[] $columns
 	 *
@@ -321,6 +358,31 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $this->whereUuid( $uuid )->first( $columns );
 	}
 
+	/**
+	 * @param string $function
+	 * @param string[] $columns
+	 *
+	 * @return mixed
+	 */
+	public function aggregate( $function, $columns = [ '*' ] ) {
+		$results      = $this->cloneWithout( $this->unions ? [] : [ 'columns' ] )
+		                     ->cloneWithoutBindings( $this->unions ? [] : [ 'select' ] )
+		                     ->setAggregate( $function, $columns )
+		                     ->getStatement( $columns );
+		$aggregateKey = 'aggregate';
+		if ( $results->isSuccessful() ) {
+			switch ( $function ) {
+				case 'sum':
+					return $results->sumColumn( $aggregateKey );
+					break;
+				case 'avg':
+					return $results->avgColumn( $aggregateKey );
+					break;
+				case 'min':
+					return $results->minColumn( $aggregateKey );
+			}
+		}
+	}
 
 
 }

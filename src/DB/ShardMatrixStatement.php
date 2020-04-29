@@ -4,6 +4,7 @@
 namespace ShardMatrix\DB;
 
 use mysql_xdevapi\RowResult;
+use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\Node;
 use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
@@ -13,15 +14,42 @@ use ShardMatrix\Uuid;
  * Class ShardMatrixStatement
  * @package ShardMatrix\DB
  */
-class ShardMatrixStatement {
+class ShardMatrixStatement implements ResultsInterface {
+	/**
+	 * @var \PDOStatement|null
+	 */
 	protected ?\PDOStatement $pdoStatement = null;
+	/**
+	 * @var string|null
+	 */
 	protected ?string $queryString = null;
+	/**
+	 * @var Node|null
+	 */
 	protected ?Node $node = null;
+	/**
+	 * @var Uuid|null
+	 */
 	protected ?Uuid $uuid = null;
+	/**
+	 * @var array
+	 */
 	protected array $data = [];
+	/**
+	 * @var bool
+	 */
 	protected bool $dataSuccess = false;
+	/**
+	 * @var bool|null
+	 */
 	protected ?bool $successChecked = null;
+	/**
+	 * @var Uuid|null
+	 */
 	protected ?Uuid $lastInsertUuid = null;
+	/**
+	 * @var string
+	 */
 	protected string $dataRowReturnClass;
 
 	/**
@@ -84,7 +112,7 @@ class ShardMatrixStatement {
 	public function fetchAllObjects(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
-				if($this->isSelectQuery()) {
+				if ( $this->isSelectQuery() ) {
 					return $this->pdoStatement->fetchAll( \PDO::FETCH_OBJ );
 				}
 			}
@@ -104,10 +132,10 @@ class ShardMatrixStatement {
 	/**
 	 * @return array|null
 	 */
-	public function fetchRowArray(): ?array {
+	public function fetchRowArray(): array {
 		if ( $this->pdoStatement ) {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
-				if($this->isSelectQuery()) {
+				if ( $this->isSelectQuery() ) {
 					return $this->pdoStatement->fetch( \PDO::FETCH_ASSOC );
 				}
 			}
@@ -116,7 +144,7 @@ class ShardMatrixStatement {
 			return $this->data[0];
 		}
 
-		return null;
+		return [];
 	}
 
 	/**
@@ -312,7 +340,7 @@ class ShardMatrixStatement {
 	 *
 	 * @return int
 	 */
-	public function sumColumn( string $column, ?string $groupByColumn = null ): int {
+	public function sumColumn( string $column ): float {
 		$sum = 0;
 		foreach ( $this->fetchDataRows() as $row ) {
 			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
@@ -321,6 +349,43 @@ class ShardMatrixStatement {
 		}
 
 		return $sum;
+	}
+
+	/**
+	 * @param string $column
+	 *
+	 * @return float
+	 */
+	public function avgColumn( string $column ): float {
+		$sum = 0;
+		$i   = 0;
+		foreach ( $this->fetchDataRows() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				$i ++;
+				$sum = $sum + $row->__toObject()->$column;
+			}
+		}
+		if($i==0){
+			return 0;
+		}
+		return $sum / $i;
+	}
+
+	public function minColumn( string $column ): ?float {
+		$result = null;
+
+		foreach ( $this->fetchDataRows() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				if ( ! isset( $result ) ) {
+					$result = $row->__toObject()->$column;
+				}
+				if ( $result > $row->__toObject()->$column ) {
+					$result = $row->__toObject()->$column;
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	/**

@@ -4,13 +4,14 @@
 namespace ShardMatrix\DB;
 
 use mysql_xdevapi\RowResult;
+use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\Uuid;
 
 /**
  * Class ShardMatrixStatements
  * @package ShardMatrix\DB
  */
-class ShardMatrixStatements implements \Iterator {
+class ShardMatrixStatements implements \Iterator, ResultsInterface {
 	/**
 	 * @var int
 	 */
@@ -268,12 +269,13 @@ class ShardMatrixStatements implements \Iterator {
 		return $results;
 	}
 
+
 	/**
 	 * @param string $column
 	 *
 	 * @return int
 	 */
-	public function sumColumn( string $column ): int {
+	public function sumColumn( string $column ): float {
 		$sum = 0;
 		foreach ( $this->fetchDataRows() as $row ) {
 			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
@@ -282,6 +284,48 @@ class ShardMatrixStatements implements \Iterator {
 		}
 
 		return $sum;
+	}
+
+	/**
+	 * @param string $column
+	 *
+	 * @return float
+	 */
+	public function avgColumn( string $column ): float {
+		$sum = 0;
+		$i   = 0;
+		foreach ( $this->fetchDataRows() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				$i ++;
+				$sum = $sum + $row->$column;
+			}
+		}
+
+		if($i==0){
+			return 0;
+		}
+		return $sum / $i;
+	}
+
+	/**
+	 * @param string $column
+	 *
+	 * @return float|null
+	 */
+	public function minColumn( string $column ): ?float {
+		$result = null;
+		foreach ( $this->fetchDataRows() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				if ( ! isset( $result ) ) {
+					$result = $row->__toObject()->$column;
+				}
+				if ( $result > $row->__toObject()->$column ) {
+					$result = $row->__toObject()->$column;
+				}
+			}
+		}
+
+		return $result;
 	}
 
 	/**
@@ -312,4 +356,14 @@ class ShardMatrixStatements implements \Iterator {
 
 	}
 
+	/**
+	 * @return Uuid|null
+	 */
+	public function getLastInsertUuid(): ?Uuid {
+		if ( $results = $this->getLastInsertUuids() ) {
+			return end( $results );
+		}
+
+		return null;
+	}
 }

@@ -14,6 +14,10 @@ include './vendor/autoload.php';
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 ShardMatrix::setGeo( 'UK' );
+
+echo DB::allNodesTable( 'users')->where( 'something','>','0')->min( 'something');
+
+
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "select * from users" ,null,'username','asc');
 //var_dump($f->fetchRowArray());
