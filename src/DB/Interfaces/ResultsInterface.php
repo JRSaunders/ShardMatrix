@@ -45,7 +45,7 @@ interface ResultsInterface {
 	/**
 	 * @return DataRow|null
 	 */
-	public function fetchDataRow(): ?DataRow ;
+	public function fetchDataRow(): ?ShardDataRowInterface ;
 
 	/**
 	 * @return bool
@@ -83,6 +83,13 @@ interface ResultsInterface {
 	 * @return float
 	 */
 	public function minColumn(string $column): ?float;
+
+	/**
+	 * @param string $column
+	 *
+	 * @return float
+	 */
+	public function maxColumn(string $column): ?float;
 
 	/**
 	 * @param string $column

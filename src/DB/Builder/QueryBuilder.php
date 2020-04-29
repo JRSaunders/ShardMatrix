@@ -333,6 +333,38 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	}
 
 	/**
+	 * @param string[] $columns
+	 *
+	 * @return array|ResultsInterface
+	 */
+	protected function runPaginationCountQuery($columns = ['*'])
+	{
+		$without = $this->unions ? ['orders', 'limit', 'offset'] : ['columns', 'orders', 'limit', 'offset'];
+
+		return $this->cloneWithout($without)
+		            ->cloneWithoutBindings($this->unions ? ['order'] : ['select', 'order'])
+		            ->setAggregate('count', $this->withoutSelectAliases($columns))
+		            ->getStatement($columns);
+	}
+
+	public function getCountForPagination($columns = ['*'])
+	{
+		$results = $this->runPaginationCountQuery($columns);
+		// Once we have run the pagination count query, we will get the resulting count and
+		// take into account what type of query it was. When there is a group by we will
+		// just return the count of the entire results set since that will be correct.
+		if (isset($this->groups)) {
+			return count($results->fetchAllArrays());
+		} elseif (!$results->isSuccessful()) {
+			return 0;
+		} elseif ($results->fetchDataRow()) {
+			return (int) $results->sumColumn( 'aggregate');
+		}
+
+		return (int) array_change_key_case((array) $results[0])['aggregate'];
+	}
+
+	/**
 	 * @param array|string[] $columns
 	 *
 	 * @return ResultsInterface
@@ -373,6 +405,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		if ( $results->isSuccessful() ) {
 			switch ( $function ) {
 				case 'sum':
+				case 'count':
 					return $results->sumColumn( $aggregateKey );
 					break;
 				case 'avg':
@@ -380,6 +413,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 					break;
 				case 'min':
 					return $results->minColumn( $aggregateKey );
+					break;
+				case 'max':
+					return $results->maxColumn( $aggregateKey );
+					break;
 			}
 		}
 	}

@@ -5,6 +5,7 @@ namespace ShardMatrix\DB;
 
 use mysql_xdevapi\RowResult;
 use ShardMatrix\DB\Interfaces\ResultsInterface;
+use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Uuid;
 
 /**
@@ -214,16 +215,16 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 	}
 
 	/**
-	 * @return DataRow|null
+	 * @return ShardDataRowInterface|null
 	 */
-	public function fetchDataRow(): ?DataRow {
+	public function fetchDataRow(): ?ShardDataRowInterface {
 		if ( $row = $this->fetchRowObject() ) {
 			$class = DataRow::class;
 			if ( isset( $this->getShardMatrixStatements()[0] ) ) {
 				$class = $this->getShardMatrixStatements()[0]->getDataRowReturnClass();
 			}
 
-			return new $class( $row );
+			return ( new DataRowFactory( $row, $class ) )->create();
 		}
 
 		return null;
@@ -301,9 +302,10 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 			}
 		}
 
-		if($i==0){
+		if ( $i == 0 ) {
 			return 0;
 		}
+
 		return $sum / $i;
 	}
 
@@ -320,6 +322,28 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 					$result = $row->__toObject()->$column;
 				}
 				if ( $result > $row->__toObject()->$column ) {
+					$result = $row->__toObject()->$column;
+				}
+			}
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param string $column
+	 *
+	 * @return float|null
+	 */
+	public function maxColumn( string $column ): ?float {
+		$result = null;
+
+		foreach ( $this->fetchDataRows() as $row ) {
+			if ( isset( $row->__toObject()->$column ) && is_numeric( $row->__toObject()->$column ) ) {
+				if ( ! isset( $result ) ) {
+					$result = $row->__toObject()->$column;
+				}
+				if ( $result < $row->__toObject()->$column ) {
 					$result = $row->__toObject()->$column;
 				}
 			}
