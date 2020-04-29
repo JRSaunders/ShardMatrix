@@ -15,7 +15,9 @@ ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 ShardMatrix::setGeo( 'UK' );
 
-echo DB::allNodesTable( 'users' )->getCountForPagination();
+$shardDb = new ShardDB();
+
+DB::allNodesTable( 'users' )->paginate(15,['*'],'page',3);
 
 
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
