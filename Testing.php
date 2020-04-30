@@ -26,14 +26,12 @@ $shardDb = new ShardDB();
 //
 //var_dump($shardDb->allNodesQuery( 'users', "select uuid from users limit 100;",null,'uuid','asc'));
 
-DB::allNodesTable( 'users')->getPagination();
-
-
+//DB::allNodesTable( 'users')->getPagination();
+//
 
 
 //var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());
 //
-
 
 
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
@@ -246,5 +244,16 @@ DB::allNodesTable( 'users')->getPagination();
 ////$x->save();
 //var_dump( $x->username);
 
-$cache = new \ShardMatrix\PdoCache();
-$cache->runCleanPolicy( new ShardDB());
+//$cache = new \ShardMatrix\PdoCache();
+//$cache->runCleanPolicy( new ShardDB());
+$nowString = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+
+var_dump( DB::table( 'users' )->insert( [
+	'username' => 'jackmaolne',
+	'password' => 'pooo',
+	'created'   => $nowString,
+	'email'    => 'jack.malone@yatti.com'
+] ) );
+
+var_dump(DB::allNodesThisGeoTable('users',null)->where( 'email','=','jack.malone@yatti.com')->first()->username);
+

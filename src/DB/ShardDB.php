@@ -277,6 +277,10 @@ class ShardDB {
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
+	public function allNodesGeoQuery(string $geo, string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null){
+
+	}
+
 
 	/**
 	 * @param PreStatement $preStatement
@@ -404,6 +408,9 @@ class ShardDB {
 		return $this->defaultDataRowClass;
 	}
 
+	/**
+	 * @param PreStatement $preStatement
+	 */
 	private function preExecuteProcesses( PreStatement $preStatement ) {
 
 		$calledMethod = str_replace( static::class . '::', '', $preStatement->getCalledMethod() );
@@ -516,7 +523,12 @@ class ShardDB {
 		return $this->dataRowClasses;
 	}
 
-
+	/**
+	 * @param QueryBuilder $queryBuilder
+	 * @param int $pageNumber
+	 * @param int $perPage
+	 * @param int|null $limitPages
+	 */
 	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null ) {
 
 		$paginationQuery    = clone( $queryBuilder );

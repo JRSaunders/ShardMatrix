@@ -65,12 +65,18 @@ class SchemaBuilder extends Builder {
 		return $this;
 	}
 
-	protected function getNodes( $table ) {
+	/**
+	 * @param $table
+	 * @param bool $useGeo
+	 *
+	 * @return Nodes
+	 */
+	protected function getNodes( $table, bool $useGeo = false ) {
 		if ( $this->nodes ) {
-			return $this->nodes->getNodesWithTableName( $table );
+			return $this->nodes->getNodesWithTableName( $table, $useGeo );
 		}
 
-		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $table );
+		return ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $table, $useGeo );
 	}
 
 	/**
@@ -80,7 +86,7 @@ class SchemaBuilder extends Builder {
 	 * @throws BuilderException
 	 */
 	public function create( $table, Closure $callback ) {
-		$nodes = $this->getNodes( $table );
+		$nodes = $this->getNodes( $table, false );
 		if ( $nodes->countNodes() == 0 ) {
 			throw new BuilderException( null, 'Table not specified in Shard Matrix Config' );
 		}
@@ -103,7 +109,7 @@ class SchemaBuilder extends Builder {
 	 * @throws BuilderException
 	 */
 	public function drop( $table ) {
-		$nodes = $this->getNodes( $table );
+		$nodes = $this->getNodes( $table, false );
 		if ( $nodes->countNodes() == 0 ) {
 			throw new BuilderException( null, 'Table not specified in Shard Matrix Config' );
 		}
@@ -126,7 +132,7 @@ class SchemaBuilder extends Builder {
 	 * @throws BuilderException
 	 */
 	public function dropIfExists( $table ) {
-		$nodes = $this->getNodes( $table );
+		$nodes = $this->getNodes( $table, false );
 		if ( $nodes->countNodes() == 0 ) {
 			throw new BuilderException( null, 'Table not specified in Shard Matrix Config' );
 		}
@@ -151,7 +157,7 @@ class SchemaBuilder extends Builder {
 	 * @throws BuilderException
 	 */
 	public function rename( $from, $to ) {
-		$nodes = $this->getNodes( $from );
+		$nodes = $this->getNodes( $from, false );
 		if ( $nodes->countNodes() == 0 ) {
 			throw new BuilderException( null, 'Table not specified in Shard Matrix Config' );
 		}
@@ -183,7 +189,7 @@ class SchemaBuilder extends Builder {
 	 * @throws BuilderException
 	 */
 	public function table( $table, Closure $callback ) {
-		$nodes = $this->getNodes( $table );
+		$nodes = $this->getNodes( $table, false );
 		if ( $nodes->countNodes() == 0 ) {
 			throw new BuilderException( null, 'Table not specified in Shard Matrix Config' );
 		}

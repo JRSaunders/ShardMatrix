@@ -153,7 +153,7 @@ class Nodes implements \Iterator {
 		$nodes = [];
 		foreach ( $this->getNodes() as $node ) {
 			if ( $node->containsTableName( $tableName ) ) {
-				if ( $useGeo && isset( $geo ) && $node->getGeo() != ShardMatrix::getGeo() && ! is_null( ShardMatrix::getGeo() ) ) {
+				if ( ( $useGeo && ! is_null( $node->getGeo() ) ) && $node->getGeo() != ShardMatrix::getGeo() && ! is_null( ShardMatrix::getGeo() ) ) {
 					continue;
 				}
 				$nodes[] = $node->setLastUsedTableName( $tableName );
@@ -161,6 +161,26 @@ class Nodes implements \Iterator {
 		}
 
 		return new Nodes( $nodes );
+	}
+
+	/**
+	 * @param string $tableName
+	 * @param string $geo
+	 *
+	 * @return Nodes
+	 */
+	public function getNodesWithTableNameAndGeo( string $tableName, string $geo ): Nodes {
+		$nodes = [];
+		foreach ( $this->getNodes() as $node ) {
+			if ( $node->containsTableName( $tableName ) && $node->getGeo() == $geo ) {
+
+				$nodes[] = $node->setLastUsedTableName( $tableName );
+			}
+		}
+
+		return new Nodes( $nodes );
+
+
 	}
 
 

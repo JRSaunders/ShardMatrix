@@ -199,13 +199,45 @@ class ShardMatrixConnection extends Connection {
 	/**
 	 * @param $table
 	 * @param null $as
+	 * @param bool $useGeo
 	 *
 	 * @return QueryBuilder
 	 * @throws \ShardMatrix\Exception
 	 */
-	public function allNodesTable( $table, $as = null ): QueryBuilder {
+	public function allNodesTable( string $table, $as = null, bool $useGeo = false ): QueryBuilder {
 
-		$this->nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $table );
+		$this->nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableName( $table, $useGeo );
+
+		return $this->table( $table, $as );
+	}
+
+	/**
+	 * @param string $geo
+	 * @param string $table
+	 * @param null $as
+	 *
+	 * @return QueryBuilder
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function allNodesGeoTable( string $geo, string $table, $as = null ): QueryBuilder {
+		$this->nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableNameAndGeo( $table, $geo );
+
+		return $this->table( $table, $as );
+	}
+
+	/**
+	 * @param string $table
+	 * @param null $as
+	 *
+	 * @return QueryBuilder
+	 * @throws \ShardMatrix\Exception
+	 */
+	public function allNodesThisGeoTable( string $table, $as = null ) {
+		if ( $geo = ShardMatrix::getGeo() ) {
+			$this->nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableNameAndGeo( $table, $geo );
+		} else {
+			return $this->allNodesTable( $table, $as );
+		}
 
 		return $this->table( $table, $as );
 	}
@@ -326,7 +358,6 @@ class ShardMatrixConnection extends Connection {
 
 		return $this->doctrineConnection;
 	}
-
 
 
 }
