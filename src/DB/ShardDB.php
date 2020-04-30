@@ -277,7 +277,7 @@ class ShardDB {
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
-	public function allNodesGeoQuery(string $geo, string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null){
+	public function allNodesGeoQuery( string $geo, string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null ) {
 
 	}
 
@@ -531,12 +531,14 @@ class ShardDB {
 	 */
 	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null ) {
 
-		$paginationQuery    = clone( $queryBuilder );
-		$uuidOrderDirection = null;
+		$paginationQuery      = clone( $queryBuilder );
+		$uuidOrderDirection   = null;
+		$originalUuidOrdering = false;
 		if ( $paginationQuery->orders ) {
 			foreach ( $paginationQuery->orders as $order ) {
 				if ( $order['column'] == 'uuid' ) {
-					$uuidOrderDirection = $order['direction'];
+					$uuidOrderDirection   = $order['direction'];
+					$originalUuidOrdering = true;
 				}
 			}
 		}
@@ -553,12 +555,18 @@ class ShardDB {
 			$paginationQuery->unionLimit = null;
 		}
 		$queryHash = 'pag-' . md5( $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
+		/**
+		 * TESTING
+		 */
+		//$this->getPdoCache()->write( 'test' . time(), $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
+		/**
+		 *
+		 */
+		$markerData = $this->getPdoCache()->read( $queryHash );
 
-		$pageMarkers = $this->getPdoCache()->read( $queryHash );
-
-		if ( ! $pageMarkers ) {
-			$pageMarkers = [];
-			$stmt        = $paginationQuery->getStatement( [ 'uuid' ] );
+		if ( ! $markerData ) {
+			$markerData = [];
+			$stmt       = $paginationQuery->getStatement( [ 'uuid' ] );
 
 			$stmt->fetchAllObjects();
 			$pages        = 0;
@@ -567,14 +575,45 @@ class ShardDB {
 			for ( $i = 0; $i < $objectsCount; $i ++ ) {
 				if ( $i % $perPage == 0 ) {
 					$pages ++;
-					$pageMarkers[] = $results[ $i ];
+					$markerData[] = $results[ $i ];
 				}
 				if ( $limitPages && $pages >= $limitPages ) {
 					break;
 				}
 			}
-			$this->getPdoCache()->write( $queryHash, $pageMarkers );
+			$this->getPdoCache()->write( $queryHash, $markerData );
 		}
+
+		$paginationStatement = new PaginationStatement( $markerData, $pageNumber, $perPage );
+		$operatorOne         = '>=';
+		$operatorTwo         = '<';
+		if ( $uuidOrderDirection == 'desc' ) {
+			$operatorOne = '<=';
+			$operatorTwo = '>';
+		}
+		if ( $pageNumber < $paginationStatement->countPages() ) {
+			$queryBuilder->where( 'uuid', $operatorTwo, $paginationStatement->getPageNumberUuid( $pageNumber + 1 )->toString() );
+		}
+		if ( $queryBuilder->orders && ! $originalUuidOrdering ) {
+			$originalOrders       = $queryBuilder->orders;
+			$queryBuilder->orders = null;
+			$queryBuilder->orderBy( 'uuid', $uuidOrderDirection );
+			$queryBuilder->orders = array_merge( $queryBuilder->orders, $originalOrders );
+		} else {
+			$queryBuilder->orderBy( 'uuid', $uuidOrderDirection );
+		}
+		$queryBuilder
+			->limit( $perPage )
+			->where(
+				'uuid', $operatorOne, $paginationStatement->getPageNumberUuid( $pageNumber )->toString()
+			);
+		$this->getPdoCache()->write( 'test'.time(), $queryBuilder->toSql().' '.join(' ',$queryBuilder->getBindings()));
+
+		$results = $queryBuilder->getStatement( $queryBuilder->columns );
+
+
+		return $paginationStatement->setResults( $results );
+
 
 	}
 

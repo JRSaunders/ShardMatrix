@@ -246,6 +246,7 @@ class ShardMatrixConnection extends Connection {
 	 * @return bool
 	 */
 	public function hasNodes(): bool {
+		var_dump($this->nodes);
 		return isset( $this->nodes );
 	}
 
@@ -256,7 +257,7 @@ class ShardMatrixConnection extends Connection {
 		$clonedNodes = null;
 		if ( $this->nodes ) {
 			$clonedNodes = clone( $this->nodes );
-			$this->nodes = null;
+			//$this->nodes = null;
 		}
 
 		return $clonedNodes;

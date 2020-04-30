@@ -246,14 +246,24 @@ $shardDb = new ShardDB();
 
 //$cache = new \ShardMatrix\PdoCache();
 //$cache->runCleanPolicy( new ShardDB());
-$nowString = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+//$nowString = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+//
+//var_dump( DB::table( 'users' )->insert( [
+//	'username' => 'jackmaolne',
+//	'password' => 'pooo',
+//	'created'   => $nowString,
+//	'email'    => 'jack.malone@yatti.com'
+//] ) );
+//
+//var_dump(DB::allNodesThisGeoTable('users',null)->where( 'email','=','jack.malone@yatti.com')->first()->username);
 
-var_dump( DB::table( 'users' )->insert( [
-	'username' => 'jackmaolne',
-	'password' => 'pooo',
-	'created'   => $nowString,
-	'email'    => 'jack.malone@yatti.com'
-] ) );
+//foreach ( DB::allNodesTable( 'users' )->orderBy( 'uuid', 'desc' )->getPagination()->getResults()->fetchDataRows() as $row ) {
+//	echo $row->getUuid()->toString() . ' ' . $row->created . ' ' . PHP_EOL;
+//	echo $row->getUuid()->getNode()->getName() . PHP_EOL;
+//}
 
-var_dump(DB::allNodesThisGeoTable('users',null)->where( 'email','=','jack.malone@yatti.com')->first()->username);
-
+foreach(DB::allNodesTable( 'users')->orderBy( 'uuid','desc')->limit(100)->getStatement(['*'])->fetchDataRows() as $object){
+	echo $object->getUuid().PHP_EOL;
+	echo $object->getUuid()->getNode()->getName().PHP_EOL;
+	echo $object->getUuid()->getNode()->getDsn()->getConnectionType().PHP_EOL;
+}

@@ -14,6 +14,7 @@ use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\NodeQuery;
+use ShardMatrix\DB\PaginationStatement;
 use ShardMatrix\DB\PreStatement;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\DB\ShardMatrixStatement;
@@ -286,6 +287,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	protected function returnResults( bool $asShardMatrixStatement = false ) {
 		if ( $this->getConnection()->hasNodes() ) {
+
 			$result = $this->returnNodesResults();
 		} else {
 			$result = $this->returnNodeResult();
@@ -461,10 +463,17 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		}
 	}
 
-	public function getPagination( array $columns = [ "*" ], int $pageNumber = 1, int $perPage = 15 ) {
+	/**
+	 * @param array|string[] $columns
+	 * @param int $pageNumber
+	 * @param int $perPage
+	 * @param int|null $limitPages
+	 */
+	public function getPagination( array $columns = [ "*" ], int $pageNumber = 1, int $perPage = 15, ?int $limitPages = 10 ): PaginationStatement {
 		$this->select( $columns );
 		$shard = new ShardDB();
-		$shard->paginationByQueryBuilder( $this, $pageNumber, $perPage );
+
+		return $shard->paginationByQueryBuilder( $this, $pageNumber, $perPage, $limitPages );
 	}
 
 

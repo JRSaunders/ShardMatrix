@@ -6,10 +6,7 @@ namespace ShardMatrix\DB\Interfaces;
 
 use ShardMatrix\DB\DataRow;
 use ShardMatrix\DB\DataRows;
-use ShardMatrix\DB\GroupSum;
 use ShardMatrix\DB\GroupSums;
-use ShardMatrix\DB\PageMarkers;
-use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\Uuid;
 
 interface ResultsInterface {
