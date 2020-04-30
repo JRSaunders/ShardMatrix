@@ -4,6 +4,7 @@ use ShardMatrix\Db\Builder\DB;
 use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\Db\Builder\Schema;
 use ShardMatrix\Db\Builder\ShardMatrixConnection;
+use ShardMatrix\DB\Connections;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\Dsn;
 use ShardMatrix\NodeDistributor;
@@ -17,8 +18,17 @@ ShardMatrix::setGeo( 'UK' );
 
 $shardDb = new ShardDB();
 
-var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());
+//
+//$shardDb->nodeQuery(
+//	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),
+//	"select uuid, username , ROW_NUMBER() OVER(ORDER BY uuid) as rowNum from users limit 10; "
+//);
 
+$shardDb->allNodesQuery( 'users', "select uuid from users;",null,'uuid','asc');
+
+
+//var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());
+//
 
 
 

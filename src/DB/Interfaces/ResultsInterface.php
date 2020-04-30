@@ -8,49 +8,48 @@ use ShardMatrix\DB\DataRow;
 use ShardMatrix\DB\DataRows;
 use ShardMatrix\DB\GroupSum;
 use ShardMatrix\DB\GroupSums;
+use ShardMatrix\DB\PageMarkers;
 use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\Uuid;
 
 interface ResultsInterface {
 
 
+	/**
+	 * @return array
+	 */
+	public function fetchAllArrays(): array;
 
 	/**
 	 * @return array
 	 */
-	public function fetchAllArrays(): array ;
+	public function fetchAllObjects(): array;
 
 	/**
 	 * @return array
 	 */
-	public function fetchAllObjects(): array ;
-
-	/**
-	 * @return array
-	 */
-	public function fetchRowArray(): array ;
+	public function fetchRowArray(): array;
 
 	/**
 	 * @return \stdClass|null
 	 */
-	public function fetchRowObject(): ?\stdClass ;
-
+	public function fetchRowObject(): ?\stdClass;
 
 
 	/**
 	 * @return DataRows
 	 */
-	public function fetchDataRows(): DataRows ;
+	public function fetchDataRows(): DataRows;
 
 	/**
 	 * @return DataRow|null
 	 */
-	public function fetchDataRow(): ?ShardDataRowInterface ;
+	public function fetchDataRow(): ?ShardDataRowInterface;
 
 	/**
 	 * @return bool
 	 */
-	public function isSuccessful(): bool ;
+	public function isSuccessful(): bool;
 
 	/**
 	 * @return Uuid|null
@@ -60,7 +59,7 @@ interface ResultsInterface {
 	/**
 	 * @return int
 	 */
-	public function rowCount(): int ;
+	public function rowCount(): int;
 
 
 	/**
@@ -68,28 +67,28 @@ interface ResultsInterface {
 	 *
 	 * @return float
 	 */
-	public function sumColumn( string $column ): float ;
+	public function sumColumn( string $column ): float;
 
 	/**
 	 * @param string $column
 	 *
 	 * @return float
 	 */
-	public function avgColumn( string $column ): float ;
+	public function avgColumn( string $column ): float;
 
 	/**
 	 * @param string $column
 	 *
 	 * @return float
 	 */
-	public function minColumn(string $column): ?float;
+	public function minColumn( string $column ): ?float;
 
 	/**
 	 * @param string $column
 	 *
 	 * @return float
 	 */
-	public function maxColumn(string $column): ?float;
+	public function maxColumn( string $column ): ?float;
 
 	/**
 	 * @param string $column
@@ -98,5 +97,12 @@ interface ResultsInterface {
 	 * @return GroupSums
 	 */
 	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSums;
+
+	/**
+	 * @param int $perPage
+	 *
+	 * @return PageMarkers
+	 */
+	public function getUuidPageMarkers( int $perPage = 15 ): PageMarkers;
 
 }
