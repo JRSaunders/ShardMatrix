@@ -517,7 +517,7 @@ class ShardDB {
 	}
 
 
-	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15 , ?int $limitPages = null) {
+	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null ) {
 
 		$paginationQuery    = clone( $queryBuilder );
 		$uuidOrderDirection = null;
@@ -534,10 +534,10 @@ class ShardDB {
 		}
 
 		$paginationQuery->select( [ 'uuid' ] );
-		if($limitPages) {
+		if ( $limitPages ) {
 			$paginationQuery->limit( $perPage * $limitPages );
-		}else{
-			$paginationQuery->limit = null;
+		} else {
+			$paginationQuery->limit      = null;
 			$paginationQuery->unionLimit = null;
 		}
 		$queryHash = 'pag-' . md5( $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
@@ -551,10 +551,9 @@ class ShardDB {
 			$stmt->fetchAllObjects();
 			$pages        = 0;
 			$objectsCount = $stmt->rowCount();
-			$results = $stmt->fetchAllObjects();
+			$results      = $stmt->fetchAllObjects();
 			for ( $i = 0; $i < $objectsCount; $i ++ ) {
-				if ( ( $i + 1 ) % $perPage == 0 ) {
-
+				if ( $i % $perPage == 0 ) {
 					$pages ++;
 					$pageMarkers[] = $results[ $i ];
 				}
@@ -577,6 +576,10 @@ class ShardDB {
 		$cacheClass = ShardMatrix::getPdoCacheClass();
 
 		return $this->pdoCache = new $cacheClass();
+	}
+
+	public function __destruct() {
+		$this->getPdoCache()->runCleanPolicy( $this );
 	}
 
 

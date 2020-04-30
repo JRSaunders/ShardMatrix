@@ -29,6 +29,8 @@ $shardDb = new ShardDB();
 DB::allNodesTable( 'users')->getPagination();
 
 
+
+
 //var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());
 //
 
@@ -94,7 +96,7 @@ DB::allNodesTable( 'users')->getPagination();
 //var_dump( $x->fetchAllObjects());
 //
 //$i = 0;
-//while ( $i < 100000 ) {
+//while ( $i < 100 ) {
 //	$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
 //	$password = 'cool!!' . rand( 5000, 100000 );
 //	$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
@@ -103,13 +105,14 @@ DB::allNodesTable( 'users')->getPagination();
 //	try {
 //		\ShardMatrix\DB\Connections::closeConnections();
 //		$shardDb = new ShardDB();
-//		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created) values (:uuid,:username,:password,:email,:created);", [
+//		$shardDb->newNodeInsert( 'users', "insert into users  (uuid,username,password,email,created,something) values (:uuid,:username,:password,:email,:created,:something);", [
 //			':username' => $username,
 //			':password' => $password,
 //			':email'    => $email,
-//			':created'  => $created
+//			':created'  => $created,
+//			':something' => 4
 //		] );
-//	} catch ( \ShardMatrix\DB\Exception $exception ) {
+//	} catch ( \Exception $exception ) {
 //		echo $exception->getMessage() . PHP_EOL;
 //	}
 //}
@@ -242,3 +245,6 @@ DB::allNodesTable( 'users')->getPagination();
 ////$x->username = 'tim48135';
 ////$x->save();
 //var_dump( $x->username);
+
+$cache = new \ShardMatrix\PdoCache();
+$cache->runCleanPolicy( new ShardDB());

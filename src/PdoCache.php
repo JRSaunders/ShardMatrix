@@ -3,6 +3,8 @@
 
 namespace ShardMatrix;
 
+use ShardMatrix\DB\ShardDB;
+
 /**
  * Class PdoCache
  * @package ShardMatrix
@@ -77,5 +79,16 @@ class PdoCache implements PdoCacheInterface {
 		}
 
 		return $results;
+	}
+
+	public function runCleanPolicy( ShardDB $shardDb ): void {
+		$cutoff = new \DateTime( 'now - 10 minute' );
+		foreach ( glob( ShardMatrix::getPdoCachePath() . '/*' ) as $filename ) {
+			if ( ( new \DateTime() )->setTimestamp( filemtime( $filename ) ) < $cutoff ) {
+				unlink( $filename );
+			}
+
+		}
+
 	}
 }
