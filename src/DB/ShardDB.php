@@ -607,7 +607,7 @@ class ShardDB {
 			->where(
 				'uuid', $operatorOne, $paginationStatement->getPageNumberUuid( $pageNumber )->toString()
 			);
-		$this->getPdoCache()->write( 'test'.time(), $queryBuilder->toSql().' '.join(' ',$queryBuilder->getBindings()));
+//		$this->getPdoCache()->write( 'test'.time(), $queryBuilder->toSql().' '.join(' ',$queryBuilder->getBindings()));
 
 		$results = $queryBuilder->getStatement( $queryBuilder->columns );
 
