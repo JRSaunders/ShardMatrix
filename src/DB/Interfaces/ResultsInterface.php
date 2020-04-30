@@ -98,11 +98,6 @@ interface ResultsInterface {
 	 */
 	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSums;
 
-	/**
-	 * @param int $perPage
-	 *
-	 * @return PageMarkers
-	 */
-	public function getUuidPageMarkers( int $perPage = 15 ): PageMarkers;
+
 
 }

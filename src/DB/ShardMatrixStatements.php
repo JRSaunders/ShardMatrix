@@ -390,4 +390,5 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 
 		return null;
 	}
+
 }

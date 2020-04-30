@@ -3,6 +3,7 @@
 
 namespace ShardMatrix\DB;
 
+use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
@@ -140,6 +141,13 @@ class ShardDB {
 		)->fetchDataRow();
 	}
 
+	/**
+	 * @param Uuid $uuid
+	 *
+	 * @return DataRow|null
+	 * @throws DuplicateException
+	 * @throws Exception
+	 */
 	protected function getByUuidSeparateConnection( Uuid $uuid ): ?DataRow {
 		return $this
 			->uuidBind( $uuid, $sql = "select * from {$uuid->getTable()->getName()} where uuid = :uuid limit 1;", $bind )
@@ -424,8 +432,6 @@ class ShardDB {
 	/**
 	 * @param ShardMatrixStatement $statement
 	 * @param PreStatement $preStatement
-	 *
-	 * @throws DuplicateException
 	 */
 	private function postExecuteProcesses( ShardMatrixStatement $statement, PreStatement $preStatement ) {
 		$calledMethod = str_replace( static::class . '::', '', $preStatement->getCalledMethod() );
@@ -453,6 +459,10 @@ class ShardDB {
 
 	}
 
+	/**
+	 * @param ShardDataRowInterface $dataRow
+	 * @param \Closure $handleDuplicateColumns
+	 */
 	protected function handleDuplicateColumns( ShardDataRowInterface $dataRow, \Closure $handleDuplicateColumns ): void {
 
 		if ( ! ( $uuid = $dataRow->getUuid() ) ) {
@@ -505,6 +515,46 @@ class ShardDB {
 	 */
 	private function getDataRowClasses(): array {
 		return $this->dataRowClasses;
+	}
+
+
+	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15 ) {
+
+		$paginationQuery    = clone( $queryBuilder );
+		$uuidOrderDirection = null;
+		if ( $paginationQuery->orders ) {
+			foreach ( $paginationQuery->orders as $order ) {
+				if ( $order['column'] == 'uuid' ) {
+					$uuidOrderDirection = $order['direction'];
+				}
+			}
+		}
+		if ( ! $uuidOrderDirection ) {
+			$uuidOrderDirection = $paginationQuery->getPrimaryOrderDirection() ?? 'asc';
+			$paginationQuery->orderBy( 'uuid', $uuidOrderDirection );
+		}
+
+		$paginationQuery->select( [ 'uuid' ] );
+		$paginationQuery->limit      = null;
+		$paginationQuery->unionLimit = null;
+		$queryHash                   = 'pag-' . md5( $paginationQuery->toSql(), join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
+		$pageMarkers                 = [];
+		if ( file_exists( $filename = ShardMatrix::getPdoCachePath() . '/' . $queryHash ) ) {
+			$pageMarkers = json_decode( file_get_contents( $filename ) );
+		} else {
+
+			$stmt = $this->allNodesQuery( $paginationQuery->from, $paginationQuery->toSql(), $paginationQuery->getBindings(), 'uuid', $uuidOrderDirection );
+
+			$stmt->fetchAllObjects();
+			for ( $i = 0; $i < count( $stmt->fetchAllObjects() ); $i ++ ) {
+				if ( ( $i + 1 ) % $perPage == 0 ) {
+					$pageMarkers[] = $stmt->fetchAllObjects()[ $i ];
+				}
+			}
+			
+
+		}
+
 	}
 
 

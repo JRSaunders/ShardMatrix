@@ -1,3 +1,5 @@
+version: 1
+
 table_groups:
   user:
     - users

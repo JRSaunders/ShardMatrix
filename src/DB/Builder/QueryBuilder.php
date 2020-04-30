@@ -68,7 +68,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	/**
 	 * @return string|null
 	 */
-	protected function getPrimaryOrderColumn(): ?string {
+	public function getPrimaryOrderColumn(): ?string {
 		if ( $this->orders ) {
 			$order = $this->orders[0];
 
@@ -81,7 +81,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	/**
 	 * @return string|null
 	 */
-	protected function getPrimaryOrderDirection(): ?string {
+	public function getPrimaryOrderDirection(): ?string {
 		if ( $this->orders ) {
 			$order = $this->orders[0];
 
@@ -339,12 +339,12 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return QueryBuilder
 	 */
 	public function uuidMarkerPageAbove( $uuid = null, int $perPage = 15 ): QueryBuilder {
-		if(!is_null($uuid)){
-			$uuid = new Uuid($uuid);
+		if ( ! is_null( $uuid ) ) {
+			$uuid = new Uuid( $uuid );
 		}
 		$uuid ?? $this->uuid;
 		if ( $uuid ) {
-			return $this->where( 'uuid', '>', $uuid->toString() )->orderBy( 'uuid')->limit( $perPage );
+			return $this->where( 'uuid', '>', $uuid->toString() )->orderBy( 'uuid' )->limit( $perPage );
 		}
 
 		return $this->limit( $perPage );
@@ -357,13 +357,13 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return QueryBuilder
 	 */
 	public function uuidMarkerPageBelow( ?Uuid $uuid = null, int $perPage = 15 ): QueryBuilder {
-		if(!is_null($uuid)){
-			$uuid = new Uuid($uuid);
+		if ( ! is_null( $uuid ) ) {
+			$uuid = new Uuid( $uuid );
 		}
 		$uuid ?? $this->uuid;
 
 		if ( $uuid ) {
-			return $this->where( 'uuid', '<', $uuid->toString() )->orderBy( 'uuid')->limit( $perPage );
+			return $this->where( 'uuid', '<', $uuid->toString() )->orderBy( 'uuid' )->limit( $perPage );
 		}
 
 		return $this->limit( $perPage );
@@ -459,6 +459,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 					break;
 			}
 		}
+	}
+
+	public function getPagination( array $columns = ["*"], ?string $queryHash = null, int $pageNumber = 1, int $perPage = 15 ) {
+
 	}
 
 

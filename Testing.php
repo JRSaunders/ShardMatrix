@@ -26,6 +26,8 @@ $shardDb = new ShardDB();
 
 $shardDb->allNodesQuery( 'users', "select uuid from users;",null,'uuid','asc');
 
+DB::table( 'users');
+
 
 //var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());
 //
