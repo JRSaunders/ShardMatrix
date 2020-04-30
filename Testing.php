@@ -17,7 +17,9 @@ ShardMatrix::setGeo( 'UK' );
 
 $shardDb = new ShardDB();
 
-DB::allNodesTable( 'users' )->paginate(15,['*'],'page',3);
+var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());
+
+
 
 
 //$f = ( new ShardDB() )->allNodesQuery( 'users', "ALTER TABLE users add created DATETIME null; " );
