@@ -461,8 +461,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		}
 	}
 
-	public function getPagination( array $columns = ["*"], ?string $queryHash = null, int $pageNumber = 1, int $perPage = 15 ) {
-
+	public function getPagination( array $columns = [ "*" ], int $pageNumber = 1, int $perPage = 15 ) {
+		$this->select( $columns );
+		$shard = new ShardDB();
+		$shard->paginationByQueryBuilder( $this, $pageNumber, $perPage );
 	}
 
 

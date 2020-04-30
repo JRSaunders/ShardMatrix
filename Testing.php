@@ -23,10 +23,10 @@ $shardDb = new ShardDB();
 //	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),
 //	"select uuid, username , ROW_NUMBER() OVER(ORDER BY uuid) as rowNum from users limit 10; "
 //);
+//
+//var_dump($shardDb->allNodesQuery( 'users', "select uuid from users limit 100;",null,'uuid','asc'));
 
-$shardDb->allNodesQuery( 'users', "select uuid from users;",null,'uuid','asc');
-
-DB::table( 'users');
+DB::allNodesTable( 'users')->getPagination();
 
 
 //var_dump(DB::allNodesTable( 'users' )->uuidMarkerPageAbove('06a00233-1ea82fe3-6a4d-6398-ab7b-444230303032')->getStatement()->fetchAllObjects());

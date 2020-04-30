@@ -8,6 +8,7 @@ use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\Nodes;
+use ShardMatrix\PdoCacheInterface;
 use ShardMatrix\ShardMatrix;
 use ShardMatrix\Table;
 use ShardMatrix\Uuid;
@@ -17,6 +18,7 @@ use ShardMatrix\Uuid;
  * @package ShardMatrix\DB
  */
 class ShardDB {
+
 	/**
 	 *
 	 * @var string
@@ -30,6 +32,10 @@ class ShardDB {
 	 * @var \Closure|null
 	 */
 	protected ?\Closure $checkSuccessFunction = null;
+	/**
+	 * @var PdoCacheInterface|null
+	 */
+	protected ?PdoCacheInterface $pdoCache = null;
 
 	/**
 	 * @param string $tableName
@@ -227,7 +233,7 @@ class ShardDB {
 				if ( $stmt ) {
 					$stmt->__preSerialize();
 				}
-				file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-' . getmypid(), serialize( $stmt ) );
+				$this->getPdoCache()->write( $queryPidUuid . '-' . getmypid(), $stmt );
 				exit;
 			}
 		}
@@ -244,14 +250,7 @@ class ShardDB {
 			usleep( 10000 );
 		}
 
-		$results = [];
-		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $queryPidUuid . '-*' ) as $filename ) {
-			$result = unserialize( file_get_contents( $filename ) );
-			if ( $result ) {
-				$results[] = $result;
-			}
-			unlink( $filename );
-		}
+		$results = $this->getPdoCache()->scanAndClean( $queryPidUuid . '-' );
 
 		if ( $results ) {
 			return new ShardMatrixStatements( $results, $orderByColumn, $orderByDirection );
@@ -518,7 +517,7 @@ class ShardDB {
 	}
 
 
-	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15 ) {
+	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15 , ?int $limitPages = null) {
 
 		$paginationQuery    = clone( $queryBuilder );
 		$uuidOrderDirection = null;
@@ -535,26 +534,49 @@ class ShardDB {
 		}
 
 		$paginationQuery->select( [ 'uuid' ] );
-		$paginationQuery->limit      = null;
-		$paginationQuery->unionLimit = null;
-		$queryHash                   = 'pag-' . md5( $paginationQuery->toSql(), join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
-		$pageMarkers                 = [];
-		if ( file_exists( $filename = ShardMatrix::getPdoCachePath() . '/' . $queryHash ) ) {
-			$pageMarkers = json_decode( file_get_contents( $filename ) );
-		} else {
+		if($limitPages) {
+			$paginationQuery->limit( $perPage * $limitPages );
+		}else{
+			$paginationQuery->limit = null;
+			$paginationQuery->unionLimit = null;
+		}
+		$queryHash = 'pag-' . md5( $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
 
-			$stmt = $this->allNodesQuery( $paginationQuery->from, $paginationQuery->toSql(), $paginationQuery->getBindings(), 'uuid', $uuidOrderDirection );
+		$pageMarkers = $this->getPdoCache()->read( $queryHash );
+
+		if ( ! $pageMarkers ) {
+			$pageMarkers = [];
+			$stmt        = $paginationQuery->getStatement( [ 'uuid' ] );
 
 			$stmt->fetchAllObjects();
-			for ( $i = 0; $i < count( $stmt->fetchAllObjects() ); $i ++ ) {
+			$pages        = 0;
+			$objectsCount = $stmt->rowCount();
+			$results = $stmt->fetchAllObjects();
+			for ( $i = 0; $i < $objectsCount; $i ++ ) {
 				if ( ( $i + 1 ) % $perPage == 0 ) {
-					$pageMarkers[] = $stmt->fetchAllObjects()[ $i ];
+
+					$pages ++;
+					$pageMarkers[] = $results[ $i ];
+				}
+				if ( $limitPages && $pages >= $limitPages ) {
+					break;
 				}
 			}
-			
-
+			$this->getPdoCache()->write( $queryHash, $pageMarkers );
 		}
 
+	}
+
+	/**
+	 * @return PdoCacheInterface
+	 */
+	protected function getPdoCache(): PdoCacheInterface {
+		if ( isset( $this->pdoCache ) ) {
+			return $this->pdoCache;
+		}
+		$cacheClass = ShardMatrix::getPdoCacheClass();
+
+		return $this->pdoCache = new $cacheClass();
 	}
 
 

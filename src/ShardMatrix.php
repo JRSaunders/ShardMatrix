@@ -21,6 +21,10 @@ class ShardMatrix {
 	 */
 	protected static string $pdoCachePath = '../../shard_matrix_cache';
 	/**
+	 * @var string
+	 */
+	protected static string $PdoCacheClass = PdoCache::class;
+	/**
 	 * @var string|null
 	 */
 	protected static ?string $geo = null;
@@ -82,6 +86,27 @@ class ShardMatrix {
 	 */
 	public static function getGeo(): ?string {
 		return static::$geo;
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getPdoCacheClass(): string {
+		return static::$PdoCacheClass;
+	}
+
+	/**
+	 * @param string $PdoCacheClass
+	 *
+	 * @throws Exception
+	 */
+	public static function setPdoCacheClass( string $PdoCacheClass ): void {
+		if(in_array( PdoCacheInterface::class, class_implements( $PdoCacheClass ) )){
+			static::$PdoCacheClass = $PdoCacheClass;
+		}else{
+			throw new Exception($PdoCacheClass.' needs to implement '.PdoCacheInterface::class);
+		}
+
 	}
 
 }
