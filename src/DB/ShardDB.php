@@ -7,6 +7,7 @@ use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
+use ShardMatrix\NodeQueriesAsyncInterface;
 use ShardMatrix\Nodes;
 use ShardMatrix\PdoCacheInterface;
 use ShardMatrix\ShardMatrix;
@@ -216,44 +217,9 @@ class ShardDB {
 	 */
 	public function nodeQueries( NodeQueries $nodeQueries, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ): ?ShardMatrixStatements {
 
-		$queryPidUuid = uniqid( getmypid() . '-' );
-		$pids         = [];
-
-		foreach ( $nodeQueries as $nodeQuery ) {
-			$pid = pcntl_fork();
-			Connections::closeConnections();
-			if ( $pid == - 1 ) {
-				die( 'could not fork' );
-			} else if ( $pid ) {
-
-				$pids[] = $pid;
-
-			} else {
-				$stmt = $this->execute( new PreStatement( $nodeQuery->getNode(), $nodeQuery->getSql(), $nodeQuery->getBinds(), null, null, $calledMethod ?? __METHOD__ ) );
-				if ( $stmt ) {
-					$stmt->__preSerialize();
-				}
-				$this->getPdoCache()->write( $queryPidUuid . '-' . getmypid(), $stmt );
-				exit;
-			}
-		}
-
-
-		while ( count( $pids ) > 0 ) {
-			foreach ( $pids as $key => $pid ) {
-				$res = pcntl_waitpid( $pid, $status, WNOHANG );
-				// If the process has already exited
-				if ( $res == - 1 || $res > 0 ) {
-					unset( $pids[ $key ] );
-				}
-			}
-			usleep( 10000 );
-		}
-
-		$results = $this->getPdoCache()->scanAndClean( $queryPidUuid . '-' );
-
+		$results = $this->getNodeQueriesAsync( $nodeQueries, $orderByColumn, $orderByDirection, $calledMethod ?? __METHOD__ )->getResults();
 		if ( $results ) {
-			return new ShardMatrixStatements( $results, $orderByColumn, $orderByDirection );
+			return $results;
 		}
 
 		return null;
@@ -657,13 +623,28 @@ class ShardDB {
 	/**
 	 * @return PdoCacheInterface
 	 */
-	protected function getPdoCache(): PdoCacheInterface {
+	public function getPdoCache(): PdoCacheInterface {
 		if ( isset( $this->pdoCache ) ) {
 			return $this->pdoCache;
 		}
 		$cacheClass = ShardMatrix::getPdoCacheClass();
 
 		return $this->pdoCache = new $cacheClass();
+	}
+
+	/**
+	 * @param NodeQueries $nodeQueries
+	 * @param string|null $orderByColumn
+	 * @param string|null $orderByDirection
+	 * @param string|null $calledMethod
+	 *
+	 * @return NodeQueriesAsyncInterface
+	 */
+	protected function getNodeQueriesAsync( NodeQueries $nodeQueries, ?string $orderByColumn = null, ?string $orderByDirection = null, ?string $calledMethod = null ): NodeQueriesAsyncInterface {
+
+		$asyncClass = ShardMatrix::getNodeQueriesAsyncClass();
+
+		return new $asyncClass( $this, $nodeQueries, $orderByColumn, $orderByDirection, $calledMethod );
 	}
 
 	public function __destruct() {

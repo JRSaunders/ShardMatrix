@@ -24,6 +24,8 @@ class ShardMatrix {
 	 * @var string
 	 */
 	protected static string $PdoCacheClass = PdoCache::class;
+
+	protected static string $NodeQueriesAsyncClass = NodeQueriesPcntlFork::class;
 	/**
 	 * @var string|null
 	 */
@@ -101,12 +103,32 @@ class ShardMatrix {
 	 * @throws Exception
 	 */
 	public static function setPdoCacheClass( string $PdoCacheClass ): void {
-		if(in_array( PdoCacheInterface::class, class_implements( $PdoCacheClass ) )){
+		if ( in_array( PdoCacheInterface::class, class_implements( $PdoCacheClass ) ) ) {
 			static::$PdoCacheClass = $PdoCacheClass;
-		}else{
-			throw new Exception($PdoCacheClass.' needs to implement '.PdoCacheInterface::class);
+		} else {
+			throw new Exception( $PdoCacheClass . ' needs to implement ' . PdoCacheInterface::class );
 		}
 
+	}
+
+	/**
+	 * @return string
+	 */
+	public static function getNodeQueriesAsyncClass(): string {
+		return static::$NodeQueriesAsyncClass;
+	}
+
+	/**
+	 * @param string $NodeQueriesAsyncClass
+	 *
+	 * @throws Exception
+	 */
+	public static function setNodeQueriesAsyncClass( string $NodeQueriesAsyncClass ): void {
+		if ( in_array( NodeQueriesAsyncInterface::class, class_implements( $NodeQueriesAsyncClass ) ) ) {
+			static::$NodeQueriesAsyncClass = $NodeQueriesAsyncClass;
+		} else {
+			throw new Exception( $NodeQueriesAsyncClass . ' needs to implement ' . NodeQueriesAsyncInterface::class );
+		}
 	}
 
 }
