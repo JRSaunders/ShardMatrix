@@ -5,6 +5,7 @@ namespace ShardMatrix\DB;
 
 use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
+use ShardMatrix\Exception;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\NodeQueriesAsyncInterface;
@@ -382,10 +383,15 @@ class ShardDB {
 	/**
 	 * @param string $defaultDataRowClass
 	 *
-	 * @return ShardDB
+	 * @return $this
+	 * @throws Exception
 	 */
 	public function setDefaultDataRowClass( string $defaultDataRowClass ): ShardDB {
-		$this->defaultDataRowClass = $defaultDataRowClass;
+		if ( in_array( ShardDataRowInterface::class, class_implements( $defaultDataRowClass ) ) ) {
+			$this->defaultDataRowClass = $defaultDataRowClass;
+		} else {
+			throw new Exception( $defaultDataRowClass . ' needs to implement ' . ShardDataRowInterface::class );
+		}
 
 		return $this;
 	}
@@ -506,8 +512,14 @@ class ShardDB {
 	 * @param array $dataRowClasses
 	 *
 	 * @return $this
+	 * @throws Exception
 	 */
 	public function setDataRowClasses( array $dataRowClasses ): ShardDB {
+		foreach ( $dataRowClasses as $class ) {
+			if ( ! in_array( ShardDataRowInterface::class, class_implements( $class ) ) ) {
+				throw new Exception( $dataRowClasses . ' needs to implement ' . ShardDataRowInterface::class );
+			}
+		}
 		$this->dataRowClasses = $dataRowClasses;
 
 		return $this;

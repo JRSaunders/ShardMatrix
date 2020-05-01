@@ -15,6 +15,7 @@ use ShardMatrix\DB\ShardMatrixStatements;
  * @package ShardMatrix
  */
 class NodeQueriesPcntlFork implements NodeQueriesAsyncInterface {
+
 	protected ShardDB $shardDb;
 	protected NodeQueries $nodeQueries;
 	protected ?string $orderByColumn = null;
