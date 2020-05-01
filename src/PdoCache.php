@@ -11,6 +11,10 @@ use ShardMatrix\DB\ShardDB;
  */
 class PdoCache implements PdoCacheInterface {
 	/**
+	 * @var bool
+	 */
+	protected bool $hasWritten = false;
+	/**
 	 * @param string $key
 	 *
 	 * @return mixed
@@ -29,6 +33,7 @@ class PdoCache implements PdoCacheInterface {
 	 * @param string $data
 	 */
 	public function write( string $key, $data ): bool {
+		$this->hasWritten = true;
 		return (bool) file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $key, serialize( $data ) );
 	}
 
@@ -81,14 +86,18 @@ class PdoCache implements PdoCacheInterface {
 		return $results;
 	}
 
+	/**
+	 * @param ShardDB $shardDb
+	 */
 	public function runCleanPolicy( ShardDB $shardDb ): void {
-		$cutoff = new \DateTime( 'now - 10 minute' );
-		foreach ( glob( ShardMatrix::getPdoCachePath() . '/*' ) as $filename ) {
-			if ( ( new \DateTime() )->setTimestamp( filemtime( $filename ) ) < $cutoff ) {
-				unlink( $filename );
+		if($this->hasWritten) {
+			$cutoff = new \DateTime( 'now - 10 minute' );
+			foreach ( glob( ShardMatrix::getPdoCachePath() . '/*' ) as $filename ) {
+				if ( ( new \DateTime() )->setTimestamp( filemtime( $filename ) ) < $cutoff ) {
+					@unlink( $filename );
+				}
+
 			}
-
 		}
-
 	}
 }
