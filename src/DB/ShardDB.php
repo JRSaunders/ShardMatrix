@@ -277,8 +277,27 @@ class ShardDB {
 		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
-	public function allNodesGeoQuery( string $geo, string $tableName, string $sql, ?array $bind = null, ?string $orderByColumn = null, ?string $orderByDirection = null ) {
+	/**
+	 * @param string $geo
+	 * @param string $tableName
+	 * @param string $sql
+	 * @param array|null $bind
+	 * @param string|null $orderByColumn
+	 * @param string|null $orderByDirection
+	 *
+	 * @return ShardMatrixStatements|null
+	 */
+	public function allNodesGeoQuery(
+		string $geo,
+		string $tableName,
+		string $sql,
+		?array $bind = null,
+		?string $orderByColumn = null,
+		?string $orderByDirection = null
+	): ?ShardMatrixStatements {
+		$nodes = ShardMatrix::getConfig()->getNodes()->getNodesWithTableNameAndGeo( $tableName, $geo );
 
+		return $this->nodesQuery( $nodes, $sql, $bind, $orderByColumn, $orderByDirection, __METHOD__ );
 	}
 
 
@@ -291,7 +310,11 @@ class ShardDB {
 	 * @throws DuplicateException
 	 * @throws Exception
 	 */
-	public function execute( PreStatement $preStatement, bool $useNewConnection = false, bool $rollbacks = false ): ?ShardMatrixStatement {
+	public function execute(
+		PreStatement $preStatement,
+		bool $useNewConnection = false,
+		bool $rollbacks = false
+	): ?ShardMatrixStatement {
 		$node         = $preStatement->getNode();
 		$sql          = $preStatement->getSql();
 		$bind         = $preStatement->getBind();
@@ -420,16 +443,20 @@ class ShardDB {
 			case 'update':
 				$dataRow = $preStatement->getDataRow() ?? $this->getByUuid( $preStatement->getUuid() );
 				if ( $dataRow ) {
-					$this->handleDuplicateColumns( $dataRow, function ( ShardDataRowInterface $dataRow, array $columnsIssue ) {
-						$columnsIssueString = '';
-						if ( $columnsIssue ) {
-							foreach ( $columnsIssue as $key => $val ) {
-								$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
+					$this->handleDuplicateColumns(
+						$dataRow,
+						function ( ShardDataRowInterface $dataRow, array $columnsIssue ) {
+							$columnsIssueString = '';
+							if ( $columnsIssue ) {
+								foreach ( $columnsIssue as $key => $val ) {
+									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
+								}
 							}
-						}
 
-						throw new DuplicateException( $columnsIssue, 'Update Duplicate Column violation ' . $columnsIssueString, 45 );
-					} );
+							throw new DuplicateException( $columnsIssue, 'Update Duplicate Column violation ' .
+							                                             $columnsIssueString, 45 );
+						}
+					);
 				}
 				break;
 		}
@@ -446,19 +473,22 @@ class ShardDB {
 			case 'uuidInsert':
 				$dataRow = $preStatement->getDataRow() ?? $this->getByUuid( $preStatement->getUuid() );
 				if ( $dataRow ) {
-					$this->handleDuplicateColumns( $dataRow, function ( ShardDataRowInterface $dataRow, array $columnsIssue ) {
-						$handleNote = '';
-						if ( $this->deleteByUuid( $dataRow->getUuid() ) ) {
-							$handleNote = '( Record Removed ' . $dataRow->getUuid()->toString() . ' )';
-						}
-						$columnsIssueString = '';
-						if ( $columnsIssue ) {
-							foreach ( $columnsIssue as $key => $val ) {
-								$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
+					$this->handleDuplicateColumns(
+						$dataRow,
+						function ( ShardDataRowInterface $dataRow, array $columnsIssue ) {
+							$handleNote = '';
+							if ( $this->deleteByUuid( $dataRow->getUuid() ) ) {
+								$handleNote = '( Record Removed ' . $dataRow->getUuid()->toString() . ' )';
 							}
-						}
-						throw new DuplicateException( $columnsIssue, 'Insert Duplicate Column violation ' . $columnsIssueString . $handleNote, 46 );
-					} );
+							$columnsIssueString = '';
+							if ( $columnsIssue ) {
+								foreach ( $columnsIssue as $key => $val ) {
+									$columnsIssueString .= ' - ( Column:' . $key . ' = ' . $val . ' ) ';
+								}
+							}
+							throw new DuplicateException( $columnsIssue, 'Insert Duplicate Column violation ' .
+							                                             $columnsIssueString . $handleNote, 46 );
+						} );
 				}
 				break;
 		}
@@ -485,7 +515,8 @@ class ShardDB {
 					$sqlArray[]          = " {$column} = :{$column} ";
 				}
 			}
-			$sql            = "select " . join( ', ', $selectColumns ) . " from {$dataRow->getUuid()->getTable()->getName()} where";
+			$sql            = "select " . join( ', ', $selectColumns ) .
+			                  " from {$dataRow->getUuid()->getTable()->getName()} where";
 			$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
 			$binds[':uuid'] = $uuid->toString();
 			$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
@@ -529,7 +560,9 @@ class ShardDB {
 	 * @param int $perPage
 	 * @param int|null $limitPages
 	 */
-	public function paginationByQueryBuilder( QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null ) {
+	public function paginationByQueryBuilder(
+		QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null
+	) {
 
 		$paginationQuery      = clone( $queryBuilder );
 		$uuidOrderDirection   = null;
@@ -592,7 +625,11 @@ class ShardDB {
 			$operatorTwo = '>';
 		}
 		if ( $pageNumber < $paginationStatement->countPages() ) {
-			$queryBuilder->where( 'uuid', $operatorTwo, $paginationStatement->getPageNumberUuid( $pageNumber + 1 )->toString() );
+			$queryBuilder->where(
+				'uuid',
+				$operatorTwo,
+				$paginationStatement->getPageNumberUuid( $pageNumber + 1 )->toString()
+			);
 		}
 		if ( $queryBuilder->orders && ! $originalUuidOrdering ) {
 			$originalOrders       = $queryBuilder->orders;
@@ -607,7 +644,7 @@ class ShardDB {
 			->where(
 				'uuid', $operatorOne, $paginationStatement->getPageNumberUuid( $pageNumber )->toString()
 			);
-//		$this->getPdoCache()->write( 'test'.time(), $queryBuilder->toSql().' '.join(' ',$queryBuilder->getBindings()));
+
 
 		$results = $queryBuilder->getStatement( $queryBuilder->columns );
 
