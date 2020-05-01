@@ -59,8 +59,8 @@ class PaginationStatement {
 	/**
 	 * @return ResultsInterface|null
 	 */
-	public function getResults(): ?ResultsInterface {
-		return $this->results;
+	public function getResults(): ResultsInterface {
+		return $this->results ?? new ShardMatrixStatement( null, null, null );
 	}
 
 	/**
@@ -72,5 +72,5 @@ class PaginationStatement {
 		$this->results = $results;
 
 		return $this;
-}
+	}
 }

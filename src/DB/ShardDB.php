@@ -562,7 +562,7 @@ class ShardDB {
 	 */
 	public function paginationByQueryBuilder(
 		QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null
-	) {
+	): PaginationStatement {
 
 		$paginationQuery      = clone( $queryBuilder );
 		$uuidOrderDirection   = null;
@@ -588,13 +588,7 @@ class ShardDB {
 			$paginationQuery->unionLimit = null;
 		}
 		$queryHash = 'pag-' . md5( $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
-		/**
-		 * TESTING
-		 */
-		//$this->getPdoCache()->write( 'test' . time(), $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
-		/**
-		 *
-		 */
+
 		$markerData = $this->getPdoCache()->read( $queryHash );
 
 		if ( ! $markerData ) {
@@ -610,7 +604,7 @@ class ShardDB {
 					$pages ++;
 					$markerData[] = $results[ $i ];
 				}
-				if ( $limitPages && $pages >= $limitPages ) {
+				if ( $limitPages && $pages >= ( $limitPages + 1 ) ) {
 					break;
 				}
 			}
@@ -618,12 +612,18 @@ class ShardDB {
 		}
 
 		$paginationStatement = new PaginationStatement( $markerData, $pageNumber, $perPage );
-		$operatorOne         = '>=';
-		$operatorTwo         = '<';
+
+		if ( isset( $limitPages ) && $limitPages < $pageNumber ) {
+			return $paginationStatement;
+		}
+
+		$operatorOne = '>=';
+		$operatorTwo = '<';
 		if ( $uuidOrderDirection == 'desc' ) {
 			$operatorOne = '<=';
 			$operatorTwo = '>';
 		}
+
 		if ( $pageNumber < $paginationStatement->countPages() ) {
 			$queryBuilder->where(
 				'uuid',

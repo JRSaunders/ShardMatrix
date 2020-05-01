@@ -262,12 +262,18 @@ $shardDb = new ShardDB();
 //	echo $row->getUuid()->getNode()->getName() . PHP_EOL;
 //}
 $i = 0;
-foreach ( DB::allNodesTable( 'users' )->orderBy( 'uuid', 'desc' )->getPagination( ["*"],11 )->getResults()->fetchDataRows() as $object ) {
+foreach ( DB::allNodesTable( 'users' )->orderBy( 'uuid', 'desc' )->getPagination( ["*"],2)->getResults()->fetchDataRows() as $object ) {
 	$i ++;
 	echo $object->getUuid() . ' ' . $object->username . PHP_EOL;
 	echo $object->getUuid()->getNode()->getName() . ' ' . $object->created . PHP_EOL;
 	echo $object->getUuid()->getNode()->getDsn()->getConnectionType() . PHP_EOL;
 	echo 'result: ' . $i . PHP_EOL;
+	$object->something = 6;
+	$object->save();
 }
+
+//Schema::table( 'users', function (\Illuminate\Database\Schema\Blueprint $table){
+//	$table->timestamp( 'modified')->useCurrent();
+//});
 
 
