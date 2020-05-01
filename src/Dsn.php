@@ -103,6 +103,19 @@ class Dsn {
 		return $port;
 	}
 
+	public function getCharacterSet(): ?string {
+		return $this->getAttribute( 'charset' );
+	}
+
+	public function getCharacterSetString(): ?string {
+		if ( $this->getConnectionType() == 'pgsql' ) {
+			return "options='--client_encoding=" . ( $this->getCharacterSet() ?? 'utf8' ) . "'";
+		} else {
+			return "charset=" . ( $this->getCharacterSet() ?? 'utf8mb4' );
+		}
+
+	}
+
 	/**
 	 * @return string
 	 */
@@ -113,7 +126,8 @@ class Dsn {
 			'port=' . $this->getPort(),
 			'dbname=' . $this->getDbname(),
 			'user=' . $this->getUsername(),
-			'password=' . $this->getPassword()
+			'password=' . $this->getPassword(),
+			$this->getCharacterSetString()
 		] );
 	}
 }
