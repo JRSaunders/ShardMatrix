@@ -7,7 +7,7 @@ namespace ShardMatrix\DB;
  * Class NodeQueries
  * @package ShardMatrix\DB
  */
-class NodeQueries implements \Iterator {
+class NodeQueries implements \Iterator, \JsonSerializable {
 
 	protected $position = 0;
 	/**
@@ -47,5 +47,9 @@ class NodeQueries implements \Iterator {
 
 	public function rewind() {
 		$this->position = 0;
+	}
+
+	public function jsonSerialize() {
+		return $this->nodeQueries;
 	}
 }

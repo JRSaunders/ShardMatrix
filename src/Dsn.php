@@ -7,7 +7,7 @@ namespace ShardMatrix;
  * Class Dsn
  * @package ShardMatrix
  */
-class Dsn {
+class Dsn implements \JsonSerializable {
 
 	public string $dsn;
 
@@ -23,7 +23,7 @@ class Dsn {
 	/**
 	 * @return string|null
 	 */
-	public function getConnectionType(): ?string {
+	public function getDriver(): ?string {
 		return ( $value = explode( ':', $this->dsn )[0] ) ? $value : null;
 	}
 
@@ -103,15 +103,19 @@ class Dsn {
 		return $port;
 	}
 
-	public function getCharacterSet(): ?string {
-		return $this->getAttribute( 'charset' );
+	public function getCharacterSet( bool $returnDefault = true ): ?string {
+		if ( $this->getDriver() == 'pgsql' ) {
+			return ( $this->getAttribute( 'charset' ) ?? 'utf8' );
+		} else {
+			return ( $this->getAttribute( 'charset' ) ?? 'utf8mb4' );
+		}
 	}
 
 	public function getCharacterSetString(): ?string {
-		if ( $this->getConnectionType() == 'pgsql' ) {
-			return "options='--client_encoding=" . ( $this->getCharacterSet() ?? 'utf8' ) . "'";
+		if ( $this->getDriver() == 'pgsql' ) {
+			return "options='--client_encoding=" . $this->getCharacterSet() . "'";
 		} else {
-			return "charset=" . ( $this->getCharacterSet() ?? 'utf8mb4' );
+			return "charset=" . $this->getCharacterSet();
 		}
 
 	}
@@ -122,12 +126,25 @@ class Dsn {
 	public function __toString() {
 
 		return join( ';', [
-			$this->getConnectionType() . ':host=' . $this->getHost( true ),
+			$this->getDriver() . ':host=' . $this->getHost( true ),
 			'port=' . $this->getPort(),
 			'dbname=' . $this->getDbname(),
 			'user=' . $this->getUsername(),
 			'password=' . $this->getPassword(),
 			$this->getCharacterSetString()
 		] );
+	}
+
+
+	public function jsonSerialize() {
+		return [
+			'driver'   => $this->getDriver(),
+			'host'     => $this->getHost(),
+			'port'     => $this->getPort(),
+			'dbname'   => $this->getDbname(),
+			'user'     => $this->getUsername(),
+			'password' => $this->getPassword(),
+			'charset'  => $this->getCharacterSet()
+		];
 	}
 }

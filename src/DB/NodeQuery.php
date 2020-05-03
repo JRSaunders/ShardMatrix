@@ -10,7 +10,7 @@ use ShardMatrix\Node;
  * Class NodeQuery
  * @package ShardMatrix\DB
  */
-class NodeQuery {
+class NodeQuery implements \JsonSerializable {
 	protected Node $node;
 	protected string $sql;
 	protected ?array $binds;
@@ -43,4 +43,11 @@ class NodeQuery {
 		return $this->binds;
 	}
 
+	public function jsonSerialize() {
+		return [
+			'node'  => $this->getNode(),
+			'sql'   => $this->getSql(),
+			'binds' => $this->getBinds()
+		];
+	}
 }

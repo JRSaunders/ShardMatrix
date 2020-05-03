@@ -5,6 +5,8 @@ use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\Db\Builder\Schema;
 use ShardMatrix\Db\Builder\ShardMatrixConnection;
 use ShardMatrix\DB\Connections;
+use ShardMatrix\DB\NodeQueries;
+use ShardMatrix\DB\NodeQuery;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\Dsn;
 use ShardMatrix\NodeDistributor;
@@ -261,20 +263,34 @@ $shardDb = new ShardDB();
 //	echo $row->getUuid()->toString() . ' ' . $row->created . ' ' . PHP_EOL;
 //	echo $row->getUuid()->getNode()->getName() . PHP_EOL;
 //}
-$i = 0;
-foreach ( DB::allNodesTable( 'users' )->orderBy( 'uuid', 'desc' )->getPagination( ["*"],2)->getResults()->fetchDataRows() as $object ) {
-	$i ++;
-	echo $object->getUuid() . ' ' . $object->username . PHP_EOL;
-	echo $object->getUuid()->getNode()->getName() . ' ' . $object->created . PHP_EOL;
-	echo $object->getUuid()->getNode()->getDsn()->getConnectionType() . PHP_EOL;
-	echo 'result: ' . $i . PHP_EOL;
-	$object->something = 6;
-
-}
+//$i = 0;
+//foreach ( DB::allNodesTable( 'users' )->orderBy( 'uuid', 'desc' )->getPagination( ["*"],2)->getResults()->fetchDataRows() as $object ) {
+//	$i ++;
+//	echo $object->getUuid() . ' ' . $object->username . PHP_EOL;
+//	echo $object->getUuid()->getNode()->getName() . ' ' . $object->created . PHP_EOL;
+//	echo $object->getUuid()->getNode()->getDsn()->getConnectionType() . PHP_EOL;
+//	echo 'result: ' . $i . PHP_EOL;
+//	$object->something = 6;
+//
+//}
 
 //Schema::table( 'users', function (\Illuminate\Database\Schema\Blueprint $table){
 //	$table->timestamp( 'modified')->useCurrent();
 //});
+
+$handle = fsockopen( "localhost:1534" );
+$i = 0;
+//while ($c = fgets($handle)){
+//	echo $c.$i++;
+//}
+
+$nQs = new NodeQueries([new NodeQuery(ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),"select * from users where created > ?", ["2020-01-01 23:12:12"])]);
+
+fwrite( $handle, json_encode( $nQs));
+
+var_dump(fgets($handle));
+
+fclose( $handle );
 
 
 

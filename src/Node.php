@@ -7,7 +7,7 @@ namespace ShardMatrix;
  * Class Node
  * @package ShardMatrix
  */
-class Node {
+class Node implements \JsonSerializable {
 	/**
 	 * @var string
 	 */
@@ -120,5 +120,11 @@ class Node {
 	}
 
 
-
+	public function jsonSerialize() {
+		return [
+			'name' => $this->getName(),
+			'dsn' => $this->getDsn(),
+			'geo' => $this->getGeo()
+		];
+	}
 }
