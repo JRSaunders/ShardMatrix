@@ -278,17 +278,17 @@ $shardDb = new ShardDB();
 //	$table->timestamp( 'modified')->useCurrent();
 //});
 
-$handle = fsockopen( "localhost:1534" );
+$handle = fsockopen( "localhost", 1534 );
+
 $i = 0;
 //while ($c = fgets($handle)){
 //	echo $c.$i++;
 //}
 
-$nQs = new NodeQueries([new NodeQuery(ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),"select * from users where created > ?", ["2020-01-01 23:12:12"])]);
+$nQs = new NodeQueries( [ new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > :created", [ ":created" => "2020-01-01 23:12:12" ] ) ] );
 
-fwrite( $handle, json_encode( $nQs));
-
-var_dump(fgets($handle));
+fwrite( $handle, json_encode( [ 'node_queries' => $nQs ] ) );
+var_dump( fgets( $handle ) );
 
 fclose( $handle );
 

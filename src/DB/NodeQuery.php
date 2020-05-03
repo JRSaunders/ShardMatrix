@@ -44,10 +44,20 @@ class NodeQuery implements \JsonSerializable {
 	}
 
 	public function jsonSerialize() {
+
+		$bindsArray = [];
+
+		foreach ( $this->getBinds() as $key => $value ) {
+			$bind         = new \stdClass();
+			$bind->key    = $key;
+			$bind->value  = $value;
+			$bindsArray[] = $bind;
+		}
+
 		return [
 			'node'  => $this->getNode(),
 			'sql'   => $this->getSql(),
-			'binds' => $this->getBinds()
+			'binds' => $bindsArray
 		];
 	}
 }
