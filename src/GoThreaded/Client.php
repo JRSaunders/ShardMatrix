@@ -7,15 +7,46 @@ namespace ShardMatrix\GoThreaded;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\ShardMatrixStatements;
 
+/**
+ * Class Client
+ * @package ShardMatrix\GoThreaded
+ */
 class Client {
+	/**
+	 * @var
+	 */
 	protected $resource;
+	/**
+	 * @var string
+	 */
 	protected string $host;
+	/**
+	 * @var int
+	 */
 	protected int $port;
+	/**
+	 * @var int
+	 */
 	protected int $timeout;
+	/**
+	 * @var
+	 */
 	protected $errorNumber;
+	/**
+	 * @var
+	 */
 	protected $errorString;
 
-	public function __construct( string $hostname = 'localhost', int $port = 1534, int $timeout ) {
+	/**
+	 * Client constructor.
+	 *
+	 * @param string $hostname
+	 * @param int $port
+	 * @param int $timeout
+	 *
+	 * @throws GoThreadedException
+	 */
+	public function __construct( string $hostname = 'localhost', int $port = 1534, int $timeout = 30) {
 		$this->host    = $hostname;
 		$this->port    = $port;
 		$this->timeout = $timeout;
@@ -50,5 +81,19 @@ class Client {
 
 	public function __destruct() {
 		$this->close();
+	}
+
+	/**
+	 * @return int|null
+	 */
+	public function getErrorNumber(): ?int {
+		return $this->errorNumber;
+	}
+
+	/**
+	 * @return string|null
+	 */
+	public function getErrorString(): ?string {
+		return $this->errorString;
 	}
 }

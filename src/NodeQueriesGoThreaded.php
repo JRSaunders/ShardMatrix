@@ -42,8 +42,6 @@ class NodeQueriesGoThreaded implements NodeQueriesAsyncInterface {
 
 	/**
 	 * @return ShardMatrixStatements
-	 * @throws DB\DuplicateException
-	 * @throws DB\Exception
 	 */
 	public function getResults(): ShardMatrixStatements {
 		$client = new Client();
