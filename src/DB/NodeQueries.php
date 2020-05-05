@@ -15,6 +15,11 @@ class NodeQueries implements \Iterator, \JsonSerializable {
 	 */
 	protected $nodeQueries = [];
 
+	/**
+	 * NodeQueries constructor.
+	 *
+	 * @param array $nodeQueries
+	 */
 	public function __construct( array $nodeQueries ) {
 		$this->nodeQueries = $nodeQueries;
 	}

@@ -285,12 +285,25 @@ $i = 0;
 //	echo $c.$i++;
 //}
 
-$nQs = new NodeQueries( [ new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > :created", [ ":created" => "2020-01-01 23:12:12" ] ) ] );
+$nQs = new NodeQueries( [
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10;", [
+		"2020-04-20 11:58:10",
+		"2020-04-21 11:58:10"
+	] ),
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0002' ), "select * from users where created > ? and created < ? limit 10;", [
+
+		"2020-04-20 11:58:10",
+		"2020-04-21 11:58:10"
+	] )
+] );
 
 fwrite( $handle, json_encode( [ 'node_queries' => $nQs ] ) );
 var_dump( fgets( $handle ) );
 
+
 fclose( $handle );
+
+echo json_encode( [ 'node_queries' => $nQs ] ) ;
 
 
 
