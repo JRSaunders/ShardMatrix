@@ -290,10 +290,9 @@ $nQs = new NodeQueries( [
 		"2020-04-20 11:58:10",
 		"2020-04-21 11:58:10"
 	] ),
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0002' ), "select * from users where created > ? and created < ? limit 10;", [
-
-		"2020-04-20 11:58:10",
-		"2020-04-21 11:58:10"
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10;", [
+		"2020-04-19 11:58:10",
+		"2020-05-04 11:58:10"
 	] )
 ] );
 

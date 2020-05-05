@@ -6,6 +6,7 @@ namespace ShardMatrix\DB;
 use mysql_xdevapi\RowResult;
 use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
+use ShardMatrix\GoThreaded\NodeResult;
 use ShardMatrix\Node;
 use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
@@ -365,9 +366,10 @@ class ShardMatrixStatement implements ResultsInterface {
 				$sum = $sum + $row->__toObject()->$column;
 			}
 		}
-		if($i==0){
+		if ( $i == 0 ) {
 			return 0;
 		}
+
 		return $sum / $i;
 	}
 
@@ -442,6 +444,13 @@ class ShardMatrixStatement implements ResultsInterface {
 
 		return new GroupSums( $results );
 
+	}
+
+	/**
+	 * @param NodeResult $nodeResult
+	 */
+	public function setDataFromGoThreadedResult( NodeResult $nodeResult ) {
+		$this->data = $nodeResult->getData();
 	}
 
 
