@@ -303,7 +303,7 @@ var_dump( fgets( $handle ) );
 
 fclose( $handle );
 
-echo json_encode( [ 'node_queries' => $nQs ] ) ;
+//echo json_encode( [ 'node_queries' => $nQs ] ) ;
 
 
 
