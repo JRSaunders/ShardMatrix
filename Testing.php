@@ -277,30 +277,28 @@ $shardDb = new ShardDB();
 //Schema::table( 'users', function (\Illuminate\Database\Schema\Blueprint $table){
 //	$table->timestamp( 'modified')->useCurrent();
 //});
-
-$handle = fsockopen( "localhost", 1534 );
-
-$i = 0;
-//while ($c = fgets($handle)){
-//	echo $c.$i++;
-//}
-
-$nQs = new NodeQueries( [
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10;", [
+//
+//$handle = fsockopen( "localhost", 1534 );
+//
+//$i = 0;
+////while ($c = fgets($handle)){
+////	echo $c.$i++;
+////}
+$client      = new \ShardMatrix\GoThreaded\Client();
+$nodeQueries = new NodeQueries( [
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 1000;", [
 		"2020-04-20 11:58:10",
 		"2020-04-21 11:58:10"
 	] ),
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10;", [
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 1000;", [
 		"2020-04-19 11:58:10",
 		"2020-05-04 11:58:10"
 	] )
 ] );
 
-fwrite( $handle, json_encode( [ 'node_queries' => $nQs ] ) );
-var_dump( fgets( $handle ) );
+$client->execQueries( $nodeQueries );
 
-
-fclose( $handle );
+var_dump( $client->getResults()->getNodes() );
 
 //echo json_encode( [ 'node_queries' => $nQs ] ) ;
 

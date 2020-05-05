@@ -57,7 +57,7 @@ class Client {
 	 * @throws GoThreadedException
 	 */
 	private function connect() {
-		$this->resource = fsockopen( $this->hostname, $this->port, $this->errorNumber, $this->errorString, $this->timeout );
+		$this->resource = fsockopen( $this->host, $this->port, $this->errorNumber, $this->errorString, $this->timeout );
 
 		if ( ! $this->resource ) {
 			throw new GoThreadedException( $this->errorString, $this->errorNumber );
