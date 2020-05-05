@@ -286,12 +286,12 @@ $shardDb = new ShardDB();
 ////}
 $client      = new \ShardMatrix\GoThreaded\Client();
 $nodeQueries = new NodeQueries( [
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 1000;", [
-		"2020-04-20 11:58:10",
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10000;", [
+		"2020-04-10 11:58:10",
 		"2020-04-21 11:58:10"
 	] ),
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 1000;", [
-		"2020-04-19 11:58:10",
+	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10000;", [
+		"2020-04-10 11:58:10",
 		"2020-05-04 11:58:10"
 	] )
 ] );
