@@ -5,7 +5,6 @@ namespace ShardMatrix\GoThreaded;
 
 
 use ShardMatrix\DB\NodeQueries;
-use ShardMatrix\DB\ShardMatrixStatements;
 
 /**
  * Class Client
@@ -31,11 +30,11 @@ class Client {
 	/**
 	 * @var
 	 */
-	protected $errorNumber;
+	protected ?string $errorNumber = null;
 	/**
 	 * @var
 	 */
-	protected $errorString;
+	protected ?string $errorString = null;
 
 	/**
 	 * Client constructor.
@@ -46,37 +45,53 @@ class Client {
 	 *
 	 * @throws GoThreadedException
 	 */
-	public function __construct( string $hostname = 'localhost', int $port = 1534, int $timeout = 30) {
+	public function __construct( string $hostname = 'localhost', int $port = 1534, int $timeout = 30 ) {
 		$this->host    = $hostname;
 		$this->port    = $port;
 		$this->timeout = $timeout;
-		$this->connect();
 	}
 
 	/**
 	 * @throws GoThreadedException
 	 */
 	private function connect() {
-		$this->resource = fsockopen( $this->host, $this->port, $this->errorNumber, $this->errorString, $this->timeout );
+		if ( ! is_resource( $this->resource ) ) {
+			$this->resource = @fsockopen( $this->host, $this->port, $this->errorNumber, $this->errorString, $this->timeout );
 
-		if ( ! $this->resource ) {
-			throw new GoThreadedException( $this->errorString, $this->errorNumber );
+			if ( ! $this->resource ) {
+				throw new GoThreadedException( $this->errorString, $this->errorNumber );
+			}
 		}
 	}
 
 	public function execQueries( NodeQueries $nodeQueries ): Client {
+		$this->connect();
 		fwrite( $this->resource, json_encode( [ 'node_queries' => $nodeQueries ] ) );
 
 		return $this;
 	}
 
+	/**
+	 * @return Results
+	 * @throws GoThreadedException
+	 */
 	public function getResults(): Results {
-		return new Results( json_decode( fgets( $this->resource ) ) );
+		try {
+			$results = new Results( json_decode( fgets( $this->resource ) ) );
+			$this->close();
 
+			return $results;
+		} catch ( \Error | \Exception $e ) {
+			throw new GoThreadedException( $e->getMessage(), $e->getCode() );
+		}
 	}
 
 	public function close(): bool {
-		return (bool) fclose( $this->resource );
+		if ( is_resource( $this->resource ) ) {
+			return (bool) fclose( $this->resource );
+		}
+
+		return true;
 	}
 
 	public function __destruct() {
