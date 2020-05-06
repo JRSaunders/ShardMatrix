@@ -91,7 +91,7 @@ class ShardMatrixStatement implements ResultsInterface {
 	}
 
 	/**
-	 * @return array
+	 * @return array[]
 	 */
 	public function fetchAllArrays(): array {
 		if ( $this->pdoStatement ) {
@@ -102,6 +102,15 @@ class ShardMatrixStatement implements ResultsInterface {
 			}
 		}
 		if ( $this->data ) {
+			if ( ! $this->isDataInArrayFormat() ) {
+				$returnArray = [];
+				foreach ( $this->data as $data ) {
+					$returnArray[] = (array) $data;
+				}
+
+				return $returnArray;
+			}
+
 			return $this->data;
 		}
 
@@ -109,7 +118,7 @@ class ShardMatrixStatement implements ResultsInterface {
 	}
 
 	/**
-	 * @return array
+	 * @return \stdClass[]
 	 */
 	public function fetchAllObjects(): array {
 		if ( $this->pdoStatement ) {
@@ -120,19 +129,32 @@ class ShardMatrixStatement implements ResultsInterface {
 			}
 		}
 		if ( $this->data ) {
-			$returnArray = [];
-			foreach ( $this->data as $data ) {
-				$returnArray[] = (object) $data;
+
+			if ( $this->isDataInArrayFormat() ) {
+				$returnArray = [];
+				foreach ( $this->data as $data ) {
+					$returnArray[] = (object) $data;
+				}
+
+				return $returnArray;
 			}
 
-			return $returnArray;
+			return $this->data;
 		}
 
 		return [];
 	}
 
+	private function isDataInArrayFormat(): bool {
+		if ( isset( $this->data[0] ) && is_object( $this->data[0] ) ) {
+			return false;
+		}
+
+		return true;
+	}
+
 	/**
-	 * @return array|null
+	 * @return array
 	 */
 	public function fetchRowArray(): array {
 		if ( $this->pdoStatement ) {
@@ -143,7 +165,7 @@ class ShardMatrixStatement implements ResultsInterface {
 			}
 		}
 		if ( $this->data && isset( $this->data[0] ) ) {
-			return $this->data[0];
+			return (array) $this->data[0];
 		}
 
 		return [];
@@ -449,8 +471,10 @@ class ShardMatrixStatement implements ResultsInterface {
 	/**
 	 * @param NodeResult $nodeResult
 	 */
-	public function setDataFromGoThreadedResult( NodeResult $nodeResult ) {
+	public function setDataFromGoThreadedResult( NodeResult $nodeResult ): ShardMatrixStatement {
 		$this->data = $nodeResult->getData();
+
+		return $this;
 	}
 
 

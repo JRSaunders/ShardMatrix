@@ -5,7 +5,7 @@ namespace ShardMatrix\GoThreaded;
 
 
 class NodeResult {
-	
+
 	protected ?\stdClass $nodeResult = null;
 
 	public function __construct( ?\stdClass $nodeResult = null ) {

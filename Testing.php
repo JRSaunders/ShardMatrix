@@ -16,13 +16,13 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-//ShardMatrix::setNodeQueriesAsyncClass( \ShardMatrix\NodeQueriesGoThreaded::class );
+ShardMatrix::setNodeQueriesAsyncClass( \ShardMatrix\NodeQueriesGoThreaded::class );
 ShardMatrix::setGeo( 'UK' );
 
 $shardDb   = new ShardDB();
-$statement = DB::allNodesTable( 'users' )->where( 'created', '>', '2020-01-01 00:00:00' )->limit( 100 )->getStatement();
+$statement = DB::allNodesTable( 'users' )->where( 'created', '>', '2020-01-01 00:00:00' )->limit( 100 )->getPagination(["*"],3,15,null);
 
-echo $statement->rowCount();
+var_dump( $statement->getResults()->fetchAllObjects());
 //
 //$shardDb->nodeQuery(
 //	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),

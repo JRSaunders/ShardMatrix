@@ -33,7 +33,7 @@ class DataRowFactory implements CreatorInterface {
 		$rowReturnClass = $this->rowReturnClass;
 		if ( ! $row instanceof ShardDataRowInterface ) {
 			if ( in_array( ConstructObjectInterface::class, class_implements( $rowReturnClass ) ) ) {
-				$row = new $rowReturnClass( $row );
+				$row = new $rowReturnClass( (object) $row );
 			}
 			if ( in_array( ConstructArrayInterface::class, class_implements( $rowReturnClass ) ) ) {
 				$row = new $rowReturnClass( (array) $row );
