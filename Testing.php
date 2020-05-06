@@ -284,21 +284,25 @@ $shardDb = new ShardDB();
 ////while ($c = fgets($handle)){
 ////	echo $c.$i++;
 ////}
-$client      = new \ShardMatrix\GoThreaded\Client();
-$nodeQueries = new NodeQueries( [
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10000;", [
-		"2020-04-10 11:58:10",
-		"2020-04-21 11:58:10"
-	] ),
-	new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10000;", [
-		"2020-04-10 11:58:10",
-		"2020-05-04 11:58:10"
-	] )
-] );
+try {
+	$client      = new \ShardMatrix\GoThreaded\Client();
+	$nodeQueries = new NodeQueries( [
+		new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10000;", [
+			"2020-04-10 11:58:10",
+			"2020-04-21 11:58:10"
+		] ),
+		new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10000;", [
+			"2020-04-10 11:58:10",
+			"2020-05-04 11:58:10"
+		] )
+	] );
 
-$client->execQueries( $nodeQueries );
+	$client->execQueries( $nodeQueries )->getResults();
+	var_dump($client->execQueries( $nodeQueries )->getResults());
+} catch ( \Exception $e ) {
+	echo $e->getCode().PHP_EOL;
+}
 
-var_dump( $client->getResults()->getNodes() );
 
 //echo json_encode( [ 'node_queries' => $nQs ] ) ;
 
