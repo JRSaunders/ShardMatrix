@@ -92,7 +92,7 @@ class ShardMatrixConnection extends Connection {
 	 */
 	public function getQueryGrammar() {
 		$returnGrammar = $this->getDefaultQueryGrammar();
-		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
+		switch ( $this->getNode()->getDsn()->getDriver() ) {
 			case 'mysql':
 				$returnGrammar = new MySqlGrammar();
 				break;
@@ -113,7 +113,7 @@ class ShardMatrixConnection extends Connection {
 	 */
 	public function getSchemaGrammar() {
 		$returnGrammar = $this->getDefaultSchemaGrammar();
-		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
+		switch ( $this->getNode()->getDsn()->getDriver() ) {
 			case 'mysql':
 				$returnGrammar = new \Illuminate\Database\Schema\Grammars\MySqlGrammar();
 				break;
@@ -141,7 +141,7 @@ class ShardMatrixConnection extends Connection {
 	 */
 	public function getPostProcessor() {
 		$returnProcessor = $this->getDefaultPostProcessor();
-		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
+		switch ( $this->getNode()->getDsn()->getDriver() ) {
 			case 'mysql':
 				$returnProcessor = new MySqlProcessor();
 				break;
@@ -324,7 +324,7 @@ class ShardMatrixConnection extends Connection {
 	public function getDoctrineDriver() {
 
 		$returnProcessor = $this->getDefaultDoctrineDriver();
-		switch ( $this->getNode()->getDsn()->getConnectionType() ) {
+		switch ( $this->getNode()->getDsn()->getDriver() ) {
 			case 'mysql':
 				$returnProcessor = new Driver();
 				break;

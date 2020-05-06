@@ -159,7 +159,6 @@ class Nodes implements \Iterator {
 				$nodes[] = $node->setLastUsedTableName( $tableName );
 			}
 		}
-
 		return new Nodes( $nodes );
 	}
 

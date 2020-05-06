@@ -36,6 +36,7 @@ class Connections {
 		if ( isset( static::$connections[ $node->getName() ] ) && ! $useNewConnection ) {
 			return static::$connections[ $node->getName() ];
 		}
+
 		$db = new \PDO( $node->getDsn()->__toString() );
 		foreach ( static::$dbAttributes as $attribute => $value ) {
 			$db->setAttribute( $attribute, $value );

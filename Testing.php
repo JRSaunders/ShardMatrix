@@ -16,10 +16,13 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
+//ShardMatrix::setNodeQueriesAsyncClass( \ShardMatrix\NodeQueriesGoThreaded::class );
 ShardMatrix::setGeo( 'UK' );
 
-$shardDb = new ShardDB();
+$shardDb   = new ShardDB();
+$statement = DB::allNodesTable( 'users' )->where( 'created', '>', '2020-01-01 00:00:00' )->limit( 100 )->getStatement();
 
+echo $statement->rowCount();
 //
 //$shardDb->nodeQuery(
 //	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),
@@ -284,24 +287,24 @@ $shardDb = new ShardDB();
 ////while ($c = fgets($handle)){
 ////	echo $c.$i++;
 ////}
-try {
-	$client      = new \ShardMatrix\GoThreaded\Client();
-	$nodeQueries = new NodeQueries( [
-		new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10000;", [
-			"2020-04-10 11:58:10",
-			"2020-04-21 11:58:10"
-		] ),
-		new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10000;", [
-			"2020-04-10 11:58:10",
-			"2020-05-04 11:58:10"
-		] )
-	] );
-
-	$client->execQueries( $nodeQueries )->getResults();
-	var_dump($client->execQueries( $nodeQueries )->getResults());
-} catch ( \Exception $e ) {
-	echo $e->getCode().PHP_EOL;
-}
+//try {
+//	$client      = new \ShardMatrix\GoThreaded\Client();
+//	$nodeQueries = new NodeQueries( [
+//		new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001' ), "select * from users where created > ? and created < ? limit 10000;", [
+//			"2020-04-10 11:58:10",
+//			"2020-04-21 11:58:10"
+//		] ),
+//		new NodeQuery( ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0007' ), "select * from users where created > ? and created < ? limit 10000;", [
+//			"2020-04-10 11:58:10",
+//			"2020-05-04 11:58:10"
+//		] )
+//	] );
+//
+//	$client->execQueries( $nodeQueries )->getResults();
+//	var_dump( $client->execQueries( $nodeQueries )->getResults() );
+//} catch ( \Exception $e ) {
+//	echo $e->getCode() . PHP_EOL;
+//}
 
 
 //echo json_encode( [ 'node_queries' => $nQs ] ) ;
