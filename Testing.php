@@ -20,9 +20,9 @@ ShardMatrix::setNodeQueriesAsyncClass( \ShardMatrix\NodeQueriesGoThreaded::class
 ShardMatrix::setGeo( 'UK' );
 
 $shardDb   = new ShardDB();
-$statement = DB::allNodesTable( 'users' )->where( 'created', '>', '2020-01-01 00:00:00' )->limit( 100 )->getPagination(["*"],3,15,null);
+$statement = DB::allNodesTable( 'users' )->where( 'created', '>', '2020-01-01 00:00:00' )->orderBy( 'something')->limit( 10000 )->getPagination( [ "*" ], 1, 15, null );
 
-var_dump( $statement->getResults()->fetchAllObjects());
+var_dump( $statement->getResults()->fetchAllArrays());
 //
 //$shardDb->nodeQuery(
 //	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),

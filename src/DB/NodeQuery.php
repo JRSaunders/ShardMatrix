@@ -48,9 +48,9 @@ class NodeQuery implements \JsonSerializable {
 		$bindsArray = [];
 		if ( $binds = $this->getBinds() ) {
 			foreach ( $binds as $key => $value ) {
-				$bind = new \stdClass();
-				$bind->value  = $value;
-				$bind->key    = $key;
+				$bind         = new \stdClass();
+				$bind->value  = (string) $value;
+				$bind->key    = (string) $key;
 				$bindsArray[] = $bind;
 			}
 		}

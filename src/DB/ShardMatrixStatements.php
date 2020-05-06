@@ -118,7 +118,6 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 					return strcmp( $b->$orderByColumn, $a->$orderByColumn );
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
-
 					return strcmp( $a->$orderByColumn, $b->$orderByColumn );
 				}
 

@@ -150,6 +150,18 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return parent::where( $column, $operator, $value, $boolean );
 	}
 
+	/**
+	 * @return string
+	 */
+	public function toSqlHash(): string {
+		return md5( str_replace( [
+			'"',
+			'`',
+			"'",
+			"$",
+			"?"
+		], '-', strtolower( $this->toSql() . ( join( '-', $this->getBindings() ) ) ) ) );
+	}
 
 	/**
 	 * @param array $values
@@ -287,7 +299,6 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	protected function returnResults( bool $asShardMatrixStatement = false ) {
 		if ( $this->getConnection()->hasNodes() ) {
-
 			$result = $this->returnNodesResults();
 		} else {
 			$result = $this->returnNodeResult();

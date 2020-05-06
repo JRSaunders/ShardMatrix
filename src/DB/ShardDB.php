@@ -542,9 +542,10 @@ class ShardDB {
 		QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null
 	): PaginationStatement {
 
-		$paginationQuery      = clone( $queryBuilder );
-		$uuidOrderDirection   = null;
-		$originalUuidOrdering = false;
+		$paginationQuery        = clone( $queryBuilder );
+		$uuidOrderDirection     = null;
+		$originalUuidOrdering   = false;
+
 		if ( $paginationQuery->orders ) {
 			foreach ( $paginationQuery->orders as $order ) {
 				if ( $order['column'] == 'uuid' ) {
@@ -565,13 +566,14 @@ class ShardDB {
 			$paginationQuery->limit      = null;
 			$paginationQuery->unionLimit = null;
 		}
-		$queryHash = 'pag-' . md5( $paginationQuery->toSql() . join( '', $paginationQuery->getBindings() ) . '--' . $perPage );
+		$queryHash = 'pag-' . $paginationQuery->toSqlHash() . '-' . $perPage;
+
 
 		$markerData = $this->getPdoCache()->read( $queryHash );
 
 		if ( ! $markerData ) {
 			$markerData = [];
-			$stmt       = $paginationQuery->getStatement( [ 'uuid' ] );
+			$stmt       = $paginationQuery->getStatement( ["uuid"] );
 
 			$stmt->fetchAllObjects();
 			$pages        = 0;
@@ -617,12 +619,10 @@ class ShardDB {
 		} else {
 			$queryBuilder->orderBy( 'uuid', $uuidOrderDirection );
 		}
-		$queryBuilder
-			->limit( $perPage )
-			->where(
-				'uuid', $operatorOne, $paginationStatement->getPageNumberUuid( $pageNumber )->toString()
-			);
-
+		$queryBuilder->limit( $perPage );
+		if ( $pageUuid = $paginationStatement->getPageNumberUuid( $pageNumber ) ) {
+			$queryBuilder->where( 'uuid', $operatorOne, $pageUuid->toString() );
+		}
 
 		$results = $queryBuilder->getStatement( $queryBuilder->columns );
 
