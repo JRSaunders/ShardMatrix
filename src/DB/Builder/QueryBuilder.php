@@ -292,10 +292,13 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return ( new ShardDB() )->setDefaultDataRowClass( EloquentDataRowModel::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
 	}
 
+
 	/**
 	 * @param bool $asShardMatrixStatement
 	 *
-	 * @return Collection | ShardMatrixStatements | ShardMatrixStatement | null
+	 * @return Collection|ShardMatrixStatement|ShardMatrixStatements|null
+	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
 	 */
 	protected function returnResults( bool $asShardMatrixStatement = false ) {
 		if ( $this->getConnection()->hasNodes() ) {

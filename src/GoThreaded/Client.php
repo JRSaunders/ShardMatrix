@@ -20,6 +20,14 @@ class Client {
 	 */
 	protected string $host;
 	/**
+	 * @var string
+	 */
+	protected string $username;
+	/**
+	 * @var string
+	 */
+	protected string $password;
+	/**
 	 * @var int
 	 */
 	protected int $port;
@@ -41,14 +49,16 @@ class Client {
 	 *
 	 * @param string $hostname
 	 * @param int $port
+	 * @param string $username
+	 * @param string $password
 	 * @param int $timeout
-	 *
-	 * @throws GoThreadedException
 	 */
-	public function __construct( string $hostname = 'localhost', int $port = 1534, int $timeout = 30 ) {
-		$this->host    = $hostname;
-		$this->port    = $port;
-		$this->timeout = $timeout;
+	public function __construct( string $hostname = 'localhost', int $port = 1534, string $username = 'gothread', $password = 'password', int $timeout = 30 ) {
+		$this->host     = $hostname;
+		$this->port     = $port;
+		$this->timeout  = $timeout;
+		$this->username = $username;
+		$this->password = $password;
 	}
 
 	/**
@@ -66,7 +76,13 @@ class Client {
 
 	public function execQueries( NodeQueries $nodeQueries ): Client {
 		$this->connect();
-		fwrite( $this->resource, json_encode( [ 'node_queries' => $nodeQueries ] ) );
+		fwrite( $this->resource, json_encode( [
+			'auth'         => [
+				'username' => $this->username,
+				'password' => $this->password
+			],
+			'node_queries' => $nodeQueries
+		] ) );
 
 		return $this;
 	}
