@@ -34,6 +34,7 @@ services:
     ports:
       - 3303:3306
 
+
   DB0004:
     restart: always
     image: percona:5.7
@@ -43,6 +44,7 @@ services:
       - ./data/db04/mysql:/var/lib/mysql:cached
     ports:
       - 3304:3306
+
 
   DB0005:
     restart: always
@@ -54,6 +56,7 @@ services:
     ports:
       - 3305:3306
 
+
   DB0006:
     restart: always
     image: percona:5.7
@@ -64,6 +67,7 @@ services:
     ports:
       - 3306:3306
 
+
   DB0007:
     restart: always
     image: postgres
@@ -73,6 +77,14 @@ services:
       - ./data/db07/postgres:/data/postgres
     ports:
       - 5407:5432
+
+  gothreaded:
+    image: jrsaunders/gothreaded
+    environment:
+      GOTHREADED_DEBUG: "true"
+    ports:
+      - 1534:1534
+
 
 
 

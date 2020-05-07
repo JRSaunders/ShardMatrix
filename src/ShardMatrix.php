@@ -31,6 +31,8 @@ class ShardMatrix {
 	 */
 	protected static ?string $geo = null;
 
+	protected static bool $docker = false;
+
 	/**
 	 * @param string|null $configPath
 	 */
@@ -129,6 +131,20 @@ class ShardMatrix {
 		} else {
 			throw new Exception( $NodeQueriesAsyncClass . ' needs to implement ' . NodeQueriesAsyncInterface::class );
 		}
+	}
+
+	/**
+	 * @return bool
+	 */
+	public static function isDocker(): bool {
+		return static::$docker;
+	}
+
+	/**
+	 * @param bool $docker
+	 */
+	public static function setDocker( bool $docker ): void {
+		static::$docker = $docker;
 	}
 
 }

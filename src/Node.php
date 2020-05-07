@@ -40,7 +40,14 @@ class Node implements \JsonSerializable {
 	 * @return Dsn
 	 */
 	public function getDsn(): Dsn {
-		return new Dsn( $this->nodeData['dsn'] ?? null );
+		return new Dsn( $this->nodeData['dsn'] ?? null, $this->getDockerNetwork() );
+	}
+
+	/**
+	 * @return DockerNetwork
+	 */
+	public function getDockerNetwork(): DockerNetwork {
+		return new DockerNetwork( $this->nodeData['docker_network'] ?? null );
 	}
 
 	/**
@@ -122,9 +129,10 @@ class Node implements \JsonSerializable {
 
 	public function jsonSerialize() {
 		return [
-			'name' => $this->getName(),
-			'dsn' => $this->getDsn(),
-			'geo' => $this->getGeo()
+			'name'           => $this->getName(),
+			'dsn'            => $this->getDsn(),
+			'geo'            => $this->getGeo(),
+			'docker_network' => $this->getDockerNetwork()
 		];
 	}
 }

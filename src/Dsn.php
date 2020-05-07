@@ -9,15 +9,19 @@ namespace ShardMatrix;
  */
 class Dsn implements \JsonSerializable {
 
-	public string $dsn;
+	protected string $dsn;
+	protected ?DockerNetwork $dockerNetwork = null;
 
 	/**
 	 * Dsn constructor.
 	 *
-	 * @param string $dsn
+	 * @param string|null $dsn
+	 * @param DockerNetwork|null $dockerNetwork
 	 */
-	public function __construct( ?string $dsn ) {
-		$this->dsn = $dsn ?? '';
+	public function __construct( ?string $dsn, ?DockerNetwork $dockerNetwork = null ) {
+		$this->dsn           = $dsn ?? '';
+		$this->dockerNetwork = $dockerNetwork;
+
 	}
 
 	/**
@@ -124,10 +128,20 @@ class Dsn implements \JsonSerializable {
 	 * @return string
 	 */
 	public function __toString() {
+		$host = $this->getHost( true );
+		$port = $this->getPort();
+		if ( ShardMatrix::isDocker() ) {
+			if ( $this->dockerNetwork && $this->dockerNetwork->getHost() ) {
+				$host = $this->dockerNetwork->getHost();
+			}
+			if ( $this->dockerNetwork && $this->dockerNetwork->getHost() ) {
+				$host = $this->dockerNetwork->getHost();
+			}
+		}
 
 		return join( ';', [
-			$this->getDriver() . ':host=' . $this->getHost( true ),
-			'port=' . $this->getPort(),
+			$this->getDriver() . ':host=' . $host,
+			'port=' . $port,
 			'dbname=' . $this->getDbname(),
 			'user=' . $this->getUsername(),
 			'password=' . $this->getPassword(),

@@ -53,7 +53,7 @@ class Client {
 	 * @param string $password
 	 * @param int $timeout
 	 */
-	public function __construct( string $hostname = 'localhost', int $port = 1534, string $username = 'gothreaded', $password = 'password', int $timeout = 30 ) {
+	public function __construct( string $hostname = '127.0.0.1', int $port = 1534, string $username = 'gothreaded', $password = 'password', int $timeout = 30 ) {
 		$this->host     = $hostname;
 		$this->port     = $port;
 		$this->timeout  = $timeout;
