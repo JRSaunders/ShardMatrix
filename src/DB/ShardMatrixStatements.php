@@ -129,6 +129,7 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 
 	}
 
+
 	/**
 	 * @return array
 	 */
@@ -388,6 +389,28 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param string|null $orderByColumn
+	 *
+	 * @return ShardMatrixStatements
+	 */
+	public function setOrderByColumn( ?string $orderByColumn ): ShardMatrixStatements {
+		$this->orderByColumn = $orderByColumn;
+
+		return $this;
+	}
+
+	/**
+	 * @param string|null $orderByDirection
+	 *
+	 * @return ShardMatrixStatements
+	 */
+	public function setOrderByDirection( ?string $orderByDirection ): ShardMatrixStatements {
+		$this->orderByDirection = $orderByDirection;
+
+		return $this;
 	}
 
 }

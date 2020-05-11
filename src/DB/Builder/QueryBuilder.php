@@ -28,6 +28,12 @@ use ShardMatrix\Uuid;
  * @package ShardMatrix\Db\Illuminate
  */
 class QueryBuilder extends \Illuminate\Database\Query\Builder {
+
+
+	protected ?string $primaryOrderDirection = null;
+
+	protected ?string $primaryOrderColumn = null;
+
 	/**
 	 * @var Uuid|null
 	 */
@@ -70,6 +76,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return string|null
 	 */
 	public function getPrimaryOrderColumn(): ?string {
+		if ( isset( $this->primaryOrderColumn ) ) {
+			return $this->primaryOrderColumn;
+		}
 		if ( $this->orders ) {
 			$order = $this->orders[0];
 
@@ -83,6 +92,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return string|null
 	 */
 	public function getPrimaryOrderDirection(): ?string {
+		if ( isset( $this->primaryOrderDirection ) ) {
+			return $this->primaryOrderDirection;
+		}
 		if ( $this->orders ) {
 			$order = $this->orders[0];
 
@@ -488,6 +500,28 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		$shard = new ShardDB();
 
 		return $shard->paginationByQueryBuilder( $this, $pageNumber, $perPage, $limitPages );
+	}
+
+	/**
+	 * @param string|null $primaryOrderDirection
+	 *
+	 * @return $this
+	 */
+	public function setPrimaryOrderDirection( ?string $primaryOrderDirection ): QueryBuilder {
+		$this->primaryOrderDirection = $primaryOrderDirection;
+
+		return $this;
+	}
+
+	/**
+	 * @param string|null $primaryOrderColumn
+	 *
+	 * @return QueryBuilder
+	 */
+	public function setPrimaryOrderColumn( ?string $primaryOrderColumn ): QueryBuilder {
+		$this->primaryOrderColumn = $primaryOrderColumn;
+
+		return $this;
 	}
 
 

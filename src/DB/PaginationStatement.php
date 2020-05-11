@@ -33,19 +33,28 @@ class PaginationStatement {
 	}
 
 	/**
-	 * @param int $pageNumber
+	 * @param $pageNumber
 	 *
-	 * @return Uuid|null
+	 * @return array
 	 */
-	public function getPageNumberUuid( int $pageNumber ): ?Uuid {
-		if ( isset( $this->markerData[ ( $pageNumber - 1 ) ] ) ) {
-			return new Uuid( $this->markerData[ ( $pageNumber - 1 ) ]->uuid );
+	public function getUuidsFromPageNumber( $pageNumber ): array {
+		$returnUuids = [];
+		$initIndex   = ( $pageNumber - 1 ) * $this->resultsPerPage;
+		if ( isset( $this->markerData[ $initIndex ] ) ) {
+			for ( $i = 0; $i < $this->resultsPerPage; $i ++ ) {
+				if ( isset( $this->markerData[ $initIndex + $i ] ) ) {
+					$returnUuids[] = $this->markerData[ $initIndex + $i ];
+				} else {
+					break;
+				}
+			}
 		}
 
-		return null;
+		return $returnUuids;
+
 	}
 
-	public function countPages(): int {
+	public function countResults(): int {
 		return count( $this->markerData );
 	}
 

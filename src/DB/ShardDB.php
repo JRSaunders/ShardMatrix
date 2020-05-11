@@ -3,6 +3,7 @@
 
 namespace ShardMatrix\DB;
 
+use ShardMatrix\Db\Builder\DB;
 use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Exception;
@@ -542,9 +543,9 @@ class ShardDB {
 		QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null
 	): PaginationStatement {
 
-		$paginationQuery        = clone( $queryBuilder );
-		$uuidOrderDirection     = null;
-		$originalUuidOrdering   = false;
+		$paginationQuery      = clone( $queryBuilder );
+		$uuidOrderDirection   = null;
+		$originalUuidOrdering = false;
 
 		if ( $paginationQuery->orders ) {
 			foreach ( $paginationQuery->orders as $order ) {
@@ -559,7 +560,6 @@ class ShardDB {
 			$paginationQuery->orderBy( 'uuid', $uuidOrderDirection );
 		}
 
-		$paginationQuery->select( [ 'uuid' ] );
 		if ( $limitPages ) {
 			$paginationQuery->limit( $perPage * $limitPages );
 		} else {
@@ -570,23 +570,25 @@ class ShardDB {
 
 
 		$markerData = $this->getPdoCache()->read( $queryHash );
-
+		$orders     = $paginationQuery->orders;
 		if ( ! $markerData ) {
 			$markerData = [];
-			$stmt       = $paginationQuery->getStatement( ["uuid"] );
 
+			$orderColumns = [];
+			foreach ( $orders as $order ) {
+				$orderColumns[] = $order['column'];
+			}
+			$concatString = join( ",'-',", $orderColumns );
+			$stmt         = $paginationQuery->getStatement( array_merge( [ "uuid" ], [ DB::raw( "CONCAT({$concatString}) as pag_hash" ) ] ) );
+			if ( $stmt instanceof ShardMatrixStatements ) {
+				$stmt->setOrderByColumn( 'pag_hash' );
+			}
 			$stmt->fetchAllObjects();
-			$pages        = 0;
 			$objectsCount = $stmt->rowCount();
 			$results      = $stmt->fetchAllObjects();
+
 			for ( $i = 0; $i < $objectsCount; $i ++ ) {
-				if ( $i % $perPage == 0 ) {
-					$pages ++;
-					$markerData[] = $results[ $i ];
-				}
-				if ( $limitPages && $pages >= ( $limitPages + 1 ) ) {
-					break;
-				}
+				$markerData[] = $results[ $i ]->uuid;
 			}
 			$this->getPdoCache()->write( $queryHash, $markerData );
 		}
@@ -597,32 +599,9 @@ class ShardDB {
 			return $paginationStatement;
 		}
 
-		$operatorOne = '>=';
-		$operatorTwo = '<';
-		if ( $uuidOrderDirection == 'desc' ) {
-			$operatorOne = '<=';
-			$operatorTwo = '>';
-		}
-
-		if ( $pageNumber < $paginationStatement->countPages() ) {
-			$queryBuilder->where(
-				'uuid',
-				$operatorTwo,
-				$paginationStatement->getPageNumberUuid( $pageNumber + 1 )->toString()
-			);
-		}
-		if ( $queryBuilder->orders && ! $originalUuidOrdering ) {
-			$originalOrders       = $queryBuilder->orders;
-			$queryBuilder->orders = null;
-			$queryBuilder->orderBy( 'uuid', $uuidOrderDirection );
-			$queryBuilder->orders = array_merge( $queryBuilder->orders, $originalOrders );
-		} else {
-			$queryBuilder->orderBy( 'uuid', $uuidOrderDirection );
-		}
 		$queryBuilder->limit( $perPage );
-		if ( $pageUuid = $paginationStatement->getPageNumberUuid( $pageNumber ) ) {
-			$queryBuilder->where( 'uuid', $operatorOne, $pageUuid->toString() );
-		}
+
+		$queryBuilder->whereIn( 'uuid', $paginationStatement->getUuidsFromPageNumber( $pageNumber ) );
 
 		$results = $queryBuilder->getStatement( $queryBuilder->columns );
 
