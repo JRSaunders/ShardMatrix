@@ -21,13 +21,13 @@ ShardMatrix::setGeo( 'UK' );
 
 $shardDb   = new ShardDB();
 $statement = DB::allNodesTable( 'users' )
-               ->orderBy( 'something', 'desc' )
-               ->getPagination( [ "*" ], 1, 15 ,30);
+               ->orderBy( 'created', 'desc' )
+               ->getPagination( [ "*" ], 1, 15 );
 
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();
 //$statement = DB::allNodesTable( 'users')->limit('10')->getPagination()->getResults();
 
-var_dump( $statement->getResults()->fetchAllObjects() );
+var_dump( $statement->getResults()->fetchDataRows() );
 
 
 

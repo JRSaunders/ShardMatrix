@@ -544,15 +544,13 @@ class ShardDB {
 		QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null
 	): PaginationStatement {
 
-		$paginationQuery      = clone( $queryBuilder );
-		$uuidOrderDirection   = null;
-		$originalUuidOrdering = false;
+		$paginationQuery    = clone( $queryBuilder );
+		$uuidOrderDirection = null;
 
 		if ( $paginationQuery->orders ) {
 			foreach ( $paginationQuery->orders as $order ) {
 				if ( $order['column'] == 'uuid' ) {
-					$uuidOrderDirection   = $order['direction'];
-					$originalUuidOrdering = true;
+					$uuidOrderDirection = $order['direction'];
 				}
 			}
 		}
