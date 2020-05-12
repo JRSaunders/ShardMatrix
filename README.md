@@ -8,10 +8,11 @@
     * Multiple Geo Locations
     * Fast Asynchronous DB queries (using a purpose built GoThreaded service or PHP Forking )
     * UUIDs bakes in all relevant data for tables and on which node it belongs
+    * Unique table columns across nodes
     * Using the popular ORM from Laravel (though your project does not need be in Laravel )
-    * QueryBuilding database being agnostic
+    * QueryBuilding being database agnostic
     * Efficient pagination system across Nodes
-    * Raw Sql Queries
+    * Raw SQL Queries
     * Docker
     * Kubernetes
     
