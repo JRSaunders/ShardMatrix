@@ -3,6 +3,7 @@
 
 namespace ShardMatrix\DB;
 
+use ShardMatrix\Config;
 use ShardMatrix\Db\Builder\DB;
 use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
@@ -589,6 +590,9 @@ class ShardDB {
 
 			for ( $i = 0; $i < $objectsCount; $i ++ ) {
 				$markerData[] = $results[ $i ]->uuid;
+				if ( ( isset( $limitPages ) ) && ( $i / $perPage > $limitPages ) ) {
+					break;
+				}
 			}
 			$this->getPdoCache()->write( $queryHash, $markerData );
 		}
@@ -600,15 +604,51 @@ class ShardDB {
 		}
 
 		$queryBuilder->limit( $perPage );
+		if ( $uuidArray = $paginationStatement->getUuidsFromPageNumber( $pageNumber ) ) {
+			$modifiers = $this->getUuidModifiers( $queryBuilder, $uuidArray, function ( QueryBuilder $modifiedBuilder, array $reducedUuidArray ) {
 
-		$queryBuilder->whereIn( 'uuid', $paginationStatement->getUuidsFromPageNumber( $pageNumber ) );
-
-		$results = $queryBuilder->getStatement( $queryBuilder->columns );
-
-
-		return $paginationStatement->setResults( $results );
+				$modifiedBuilder->whereIn( 'uuid', $reducedUuidArray );
 
 
+				return $modifiedBuilder;
+			} );
+			$paginationStatement->setResults( $queryBuilder->getNodeModifierStatement( $queryBuilder->columns, $modifiers ) );
+		}
+
+		return $paginationStatement;
+
+
+	}
+
+	/**
+	 * @param QueryBuilder $queryBuilder
+	 * @param array $uuidArray
+	 * @param \Closure $queryChanges
+	 *
+	 * @return NodeQueryModifiers
+	 */
+	private function getUuidModifiers( QueryBuilder $queryBuilder, array $uuidArray, \Closure $queryChanges ): NodeQueryModifiers {
+		$nodeUuids = [];
+		foreach ( $uuidArray as & $uuid ) {
+			if ( ! $uuid instanceof Uuid ) {
+				$uuid = new Uuid( $uuid );
+			}
+			if ( ! isset( $nodeUuids[ $uuid->getNode()->getName() ] ) ) {
+				$nodeUuids[ $uuid->getNode()->getName() ] = [];
+			}
+			$nodeUuids[ $uuid->getNode()->getName() ][] = $uuid->toString();
+		}
+
+		$modifiers = [];
+
+		foreach ( $nodeUuids as $nodeName => $reducedIds ) {
+			$modifiedBuilder = clone( $queryBuilder );
+			$modifiedBuilder = call_user_func_array( $queryChanges, [ $modifiedBuilder, $reducedIds ] );
+			$modifiers[]     = new NodeQueryModifier( ShardMatrix::getConfig()->getNodes()->getNodeByName( $nodeName ), $modifiedBuilder );
+
+		}
+
+		return new NodeQueryModifiers( $modifiers );
 	}
 
 	/**

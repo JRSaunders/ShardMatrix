@@ -11,13 +11,9 @@ use Illuminate\Database\Query\Grammars\MySqlGrammar;
 use Illuminate\Database\Query\Grammars\PostgresGrammar;
 use Illuminate\Database\Query\Processors\MySqlProcessor;
 use Illuminate\Database\Query\Processors\PostgresProcessor;
-use ShardMatrix\Config;
 use ShardMatrix\DB\Connections;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
-use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
-use ShardMatrix\DB\Models\EloquentDataRowModel;
-use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\Node;
 use ShardMatrix\NodeDistributor;
 use ShardMatrix\Nodes;
@@ -252,11 +248,10 @@ class ShardMatrixConnection extends Connection {
 	/**
 	 * @return Nodes|null
 	 */
-	public function getNodesClear(): ?Nodes {
+	public function getNodes(): ?Nodes {
 		$clonedNodes = null;
 		if ( $this->nodes ) {
 			$clonedNodes = clone( $this->nodes );
-			//$this->nodes = null;
 		}
 
 		return $clonedNodes;

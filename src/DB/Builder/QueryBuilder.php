@@ -14,6 +14,7 @@ use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\DB\Models\EloquentDataRowModel;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\NodeQuery;
+use ShardMatrix\DB\NodeQueryModifiers;
 use ShardMatrix\DB\PaginationStatement;
 use ShardMatrix\DB\PreStatement;
 use ShardMatrix\DB\ShardDB;
@@ -226,7 +227,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		}
 
 
-		if ( $this->getConnection()->hasNodes() && ( $nodes = $this->getConnection()->getNodesClear() ) ) {
+		if ( $this->getConnection()->hasNodes() && ( $nodes = $this->getConnection()->getNodes() ) ) {
 			$nodeQueries = [];
 			foreach ( $nodes as $node ) {
 				$queryBuilder = clone( $this );
@@ -279,16 +280,26 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return false;
 	}
 
+
 	/**
+	 * @param NodeQueryModifiers|null $modifiers
+	 *
 	 * @return ShardMatrixStatements|null
 	 * @throws Exception
 	 * @throws \ShardMatrix\DB\DuplicateException
+	 * @throws \ShardMatrix\Exception
 	 */
-	protected function returnNodesResults(): ?ShardMatrixStatements {
-		if ( $nodes = $this->getConnection()->getNodesClear() ) {
+	protected function returnNodesResults( ?NodeQueryModifiers $modifiers = null ): ?ShardMatrixStatements {
+		if ( $nodes = $this->getConnection()->getNodes() ) {
 			$nodeQueries = [];
 			foreach ( $nodes as $node ) {
 				$queryBuilder = clone( $this );
+				if ( $modifiers ) {
+					$queryBuilder = $modifiers->modifyQueryForNode( $node, $queryBuilder );
+					if ( ! $queryBuilder ) {
+						continue;
+					}
+				}
 				( new ShardMatrixConnection( $node ) )->prepareQuery( $queryBuilder );
 				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
 			}
@@ -441,6 +452,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		$this->select( $columns );
 
 		return $this->returnResults( true );
+	}
+
+	public function getNodeModifierStatement( array $columns = [ '*' ], NodeQueryModifiers $modifiers ): ResultsInterface {
+		return $this->returnNodesResults( $modifiers );
 	}
 
 	/**

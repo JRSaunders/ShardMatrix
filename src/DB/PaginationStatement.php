@@ -58,6 +58,10 @@ class PaginationStatement {
 		return count( $this->markerData );
 	}
 
+	public function countPages(): int {
+		return ceil( count( $this->markerData ) / $this->resultsPerPage );
+	}
+
 	/**
 	 * @return int
 	 */
