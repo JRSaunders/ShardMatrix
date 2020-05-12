@@ -40,6 +40,8 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	protected ? Uuid $uuid = null;
 
+	protected string $rowDataClass = EloquentDataRowModel::class;
+
 	/**
 	 * QueryBuilder constructor.
 	 *
@@ -312,7 +314,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return ShardMatrixStatement|null
 	 */
 	protected function returnNodeResult(): ?ShardMatrixStatement {
-		return ( new ShardDB() )->setDefaultDataRowClass( EloquentDataRowModel::class )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+		return ( new ShardDB() )->setDefaultDataRowClass( $this->getRowDataClass() )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
 	}
 
 
@@ -537,6 +539,24 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		$this->primaryOrderColumn = $primaryOrderColumn;
 
 		return $this;
+	}
+
+	/**
+	 * @param string $rowDataClass
+	 *
+	 * @return QueryBuilder
+	 */
+	public function setRowDataClass( string $rowDataClass ): QueryBuilder {
+		$this->rowDataClass = $rowDataClass;
+
+		return $this;
+	}
+
+	/**
+	 * @return string
+	 */
+	public function getRowDataClass(): string {
+		return $this->rowDataClass;
 	}
 
 
