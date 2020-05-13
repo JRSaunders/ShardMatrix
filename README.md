@@ -26,6 +26,8 @@
 
 ## Installing ShardMatrix for PHP
 
+Use Composer to install ShardMatrix, or pull the repo from github.
+
 ```
 composer require jrsaunders/shard-matrix
 ```
@@ -36,12 +38,12 @@ ShardMatrix needs to know how your tables and columns and databases interact, so
 
 [Reference Yaml file](shard_matrix.yaml)
 
-State the version.  The most recent version is 1.
+Define the version.  The most recent version is 1.
 ```yaml
 version: 1
 ```
 ### Table Groups
-State the table groups.  As you add tables to your Application you will need to explicitly add them here to.
+Define the table groups.  As you add tables to your Application you will need to explicitly add them here to.
 
 The group name is only used in ShardMatrix.
 
@@ -65,7 +67,7 @@ table_groups:
     - published_offers
 ```
 ### Unique Columns in Tables
-Unique Columns can be stated here.  So in the `users` table `email` and `username` must be unique across all Nodes (shard databases).
+Unique Columns can be defined here.  So in the `users` table `email` and `username` must be unique across all Nodes (shard databases).
 ```yaml
 unique_columns:
   users:
@@ -75,4 +77,46 @@ unique_columns:
     - fb_id
 ```
 ### Nodes
+
+This is where you define your database connections, credentials, and what table groups and geos the node maybe using.
+
+Nodes can extended and added to as you go.
+
+Node names must remain the same though as must the table groups they correspond to.
+
+The anatomy of the node section.
+```yaml
+nodes: #denotes the where the nodes are defined
+  DBUK01: #Node Name
+    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password #DSN for connection to DB
+    docker_network: DBUK:3306 # *optional docker service name if you have one and port
+    geo: UK # *optional geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
+    insert_data: false # *optional stop new data being written here, unless connected to an existing UUID from this node
+    table_groups: #table groups that use this node must be defined here
+      - user #table group user (that comprises of the users, offers, payments tables)
+      - published
+```
+The Node Section as it may appear in the config yaml.
+```yaml
+nodes:
+  DBUK01:
+    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password
+    docker_network: DBUK:3306
+    geo: UK
+    table_groups:
+      - user
+      - published
+  postg1:
+    dsn: pgsql:dbname=shard;host=localhost:5407;user=postgres;password=password
+    docker_network: postg1_db:5432
+    table_groups:
+      - tracking
+  DB0001:
+    dsn: mysql:dbname=shard;host=localhost:3304;user=root;password=password
+    docker_network: DB0001:3306
+    insert_data: false
+    table_groups:
+      - user
+      - published
+```
 
