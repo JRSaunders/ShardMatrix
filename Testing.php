@@ -16,16 +16,18 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-ShardMatrix::setNodeQueriesAsyncClass( \ShardMatrix\NodeQueriesGoThreaded::class );
+ShardMatrix::useGoThreadedForAsyncQueries();
 ShardMatrix::setPdoCacheService( function () {
 	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
 } );
+ShardMatrix::setGoThreadedService( function () {
+	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
+} );
 ShardMatrix::setGeo( 'UK' );
 
-$shardDb   = new ShardDB();
 $statement = DB::allNodesTable( 'users' )
                ->orderBy( 'created', 'desc' )
-               ->getPagination( [ "*" ], 1, 15 );
+               ->getPagination( [ "*" ], 1, 15, 150 );
 
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();
 //$statement = DB::allNodesTable( 'users')->limit('10')->getPagination()->getResults();

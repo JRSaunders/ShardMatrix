@@ -3,6 +3,7 @@
 namespace ShardMatrix;
 
 
+use ShardMatrix\DB\ShardDB;
 use ShardMatrix\GoThreaded\Client;
 use Symfony\Component\Yaml\Yaml;
 
@@ -48,9 +49,9 @@ class ShardMatrix {
 		static::setServiceClosure( PdoCacheInterface::class, function () {
 			return new PdoCache();
 		} );
-		static::setServiceClosure( Client::class, function(){
+		static::setServiceClosure( Client::class, function () {
 			return new Client();
-		});
+		} );
 	}
 
 	/**
@@ -58,6 +59,7 @@ class ShardMatrix {
 	 */
 	public static function initFromYaml( string $configPath = null ) {
 		static::$config = new Config( Yaml::parse( file_get_contents( $configPath ) ) );
+		static::init();
 	}
 
 	/**
@@ -65,6 +67,7 @@ class ShardMatrix {
 	 */
 	public static function initFromYamlString( string $yamlString = null ) {
 		static::$config = new Config( Yaml::parse( $yamlString ) );
+		static::init();
 	}
 
 	/**
@@ -140,6 +143,14 @@ class ShardMatrix {
 		}
 	}
 
+	public static function useGoThreadedForAsyncQueries() {
+		static::setNodeQueriesAsyncClass( NodeQueriesGoThreaded::class );
+	}
+
+	public static function usePhpForkingForAsyncQueries() {
+		static::setNodeQueriesAsyncClass( NodeQueriesPcntlFork::class );
+	}
+
 	/**
 	 * @return bool
 	 */
@@ -189,22 +200,27 @@ class ShardMatrix {
 	/**
 	 * @param \Closure $closure
 	 */
-	public static function setPdoCacheService(\Closure $closure){
-		static::setServiceClosure( PdoCacheInterface::class, $closure);
+	public static function setPdoCacheService( \Closure $closure ) {
+		static::setServiceClosure( PdoCacheInterface::class, $closure );
 	}
 
 	/**
 	 * @param \Closure $closure
 	 */
-	public static function setGoThreadedService(\Closure$closure){
-		static::setServiceClosure( Client::class, $closure);
+	public static function setGoThreadedService( \Closure $closure ) {
+		static::setServiceClosure( Client::class, $closure );
 	}
+
 	/**
 	 * @return Client
 	 * @throws Exception
 	 */
 	public static function getGoThreadedService(): Client {
 		return static::getService( Client::class );
+	}
+
+	public static function db(): ShardDB {
+		return new ShardDB();
 	}
 
 

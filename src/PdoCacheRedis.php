@@ -21,9 +21,9 @@ class PdoCacheRedis implements PdoCacheInterface {
 	}
 
 	public function read( string $key ) {
-		$result = unserialize( $this->redis->get( $key ) );
-		if ( $result && strlen( $result ) ) {
-			return $result;
+		$raw = $this->redis->get( $key );
+		if ( strlen( $raw ) ) {
+			return unserialize( gzinflate( $raw ) );
 		}
 
 		return null;
@@ -54,8 +54,8 @@ class PdoCacheRedis implements PdoCacheInterface {
 		return $results;
 	}
 
-	public function write( string $key, string $data ): bool {
-		return (bool) $this->redis->setex( $key, 600, serialize( $data ) );
+	public function write( string $key, $data ): bool {
+		return (bool) $this->redis->setex( $key, 600, gzdeflate( serialize( $data ) ) );
 	}
 
 	public function clean( string $key ): bool {

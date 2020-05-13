@@ -34,7 +34,7 @@ interface PdoCacheInterface {
 	 *
 	 * @return bool
 	 */
-	public function write( string $key, string $data ): bool;
+	public function write( string $key, $data ): bool;
 
 	/**
 	 * @param string $key

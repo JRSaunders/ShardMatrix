@@ -14,6 +14,7 @@ class PdoCache implements PdoCacheInterface {
 	 * @var bool
 	 */
 	protected bool $hasWritten = false;
+
 	/**
 	 * @param string $key
 	 *
@@ -22,7 +23,7 @@ class PdoCache implements PdoCacheInterface {
 	public function read( string $key ) {
 		$filename = ShardMatrix::getPdoCachePath() . '/' . $key;
 		if ( file_exists( $filename ) ) {
-			return unserialize( file_get_contents( $filename ) );
+			return unserialize( gzinflate( file_get_contents( $filename ) ) );
 		}
 
 		return null;
@@ -34,7 +35,8 @@ class PdoCache implements PdoCacheInterface {
 	 */
 	public function write( string $key, $data ): bool {
 		$this->hasWritten = true;
-		return (bool) file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $key, serialize( $data ) );
+
+		return (bool) file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $key, gzdeflate( serialize( $data ) ) );
 	}
 
 	/**
@@ -58,7 +60,7 @@ class PdoCache implements PdoCacheInterface {
 		$key     = rtrim( $key, "*" );
 		$results = [];
 		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $key . '*' ) as $filename ) {
-			$result = unserialize( file_get_contents( $filename ) );
+			$result = unserialize( gzinflate( file_get_contents( $filename ) ) );
 			if ( $result ) {
 				$results[] = $result;
 			}
@@ -76,7 +78,7 @@ class PdoCache implements PdoCacheInterface {
 		$key     = rtrim( $key, "*" );
 		$results = [];
 		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $key . '*' ) as $filename ) {
-			$result = unserialize( file_get_contents( $filename ) );
+			$result = unserialize( gzinflate( file_get_contents( $filename ) ) );
 			if ( $result ) {
 				$results[] = $result;
 			}
@@ -90,7 +92,7 @@ class PdoCache implements PdoCacheInterface {
 	 * @param ShardDB $shardDb
 	 */
 	public function runCleanPolicy( ShardDB $shardDb ): void {
-		if($this->hasWritten) {
+		if ( $this->hasWritten ) {
 			$cutoff = new \DateTime( 'now - 10 minute' );
 			foreach ( glob( ShardMatrix::getPdoCachePath() . '/*' ) as $filename ) {
 				if ( ( new \DateTime() )->setTimestamp( filemtime( $filename ) ) < $cutoff ) {
