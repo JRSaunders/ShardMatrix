@@ -30,6 +30,42 @@
 composer require jrsaunders/shard-matrix
 ```
 
+## Preparing the YAML config file
 
+[Reference Yaml file](shard_matrix.yaml)
 
+State the version.  The most recent version is 1.
+```yaml
+version: 1
+```
+State the table groups.  As you add tables to your Application you will need to explicitly add them here to.
+
+The group name is only used in ShardMatrix.
+
+The table names are attributed to the groups.  A table can only be in one group at a time and once you have written to the Databases, it is best not to change any table assigned to a group.
+```yaml
+table_groups: #denotes the table groups section on config
+  user: #denotes the name of a group of tables
+    - users #denotes the table name
+```
+This section as it may appear.
+```yaml
+table_groups:
+  user:
+    - users
+    - payments
+    - offers
+  tracking:
+    - visitors
+    - sign_ups
+  published:
+    - published_offers
+```
+Unique Columns can be stated here.  So in the `users` table `email` and `username` must be unique across all Nodes (shard databases).
+```yaml
+unique_columns:
+  users:
+    - email
+    - username
+```
     
