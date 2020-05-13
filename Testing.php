@@ -23,6 +23,7 @@ ShardMatrix::setPdoCacheService( function () {
 ShardMatrix::setGoThreadedService( function () {
 	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
 } );
+ShardMatrix::setTableToDataRowClassMap( [ 'users' => \ShardMatrix\DB\DataRow::class ] );
 ShardMatrix::setGeo( 'UK' );
 
 $statement = DB::allNodesTable( 'users' )

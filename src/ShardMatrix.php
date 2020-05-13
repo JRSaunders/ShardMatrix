@@ -12,23 +12,27 @@ use Symfony\Component\Yaml\Yaml;
  * @package ShardMatrix
  */
 class ShardMatrix {
-
+	/**
+	 * @var array
+	 */
+	protected static $tableToDataRowMap = [];
 	/**
 	 * @var string
 	 */
 	protected static string $pdoCachePath = '../../shard_matrix_cache';
-	/**
-	 * @var string
-	 */
-	protected static string $PdoCacheClass = PdoCache::class;
+
 	/**
 	 * @var string
 	 */
 	protected static string $NodeQueriesAsyncClass = NodeQueriesPcntlFork::class;
 
-
+	/**
+	 * @var array
+	 */
 	protected static array $services = [];
-
+	/**
+	 * @var array
+	 */
 	protected static array $serviceInstances = [];
 
 	/**
@@ -117,13 +121,6 @@ class ShardMatrix {
 	 */
 	public static function getGeo(): ?string {
 		return static::$geo;
-	}
-
-	/**
-	 * @return string
-	 */
-	public static function getPdoCacheClass(): string {
-		return static::$PdoCacheClass;
 	}
 
 
@@ -223,8 +220,19 @@ class ShardMatrix {
 		return static::getService( Client::class );
 	}
 
+	/**
+	 * @param array $map
+	 */
+	public static function setTableToDataRowClassMap( array $map ) {
+		static::$tableToDataRowMap = $map;
+	}
+
+	/**
+	 * @return ShardDB
+	 * @throws Exception
+	 */
 	public static function db(): ShardDB {
-		return new ShardDB();
+		return ( new ShardDB() )->setDataRowClasses( static::$tableToDataRowMap );
 	}
 
 

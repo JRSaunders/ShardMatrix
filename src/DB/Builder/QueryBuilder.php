@@ -21,6 +21,7 @@ use ShardMatrix\DB\ShardDB;
 use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\DB\ShardMatrixStatements;
 use ShardMatrix\NodeDistributor;
+use ShardMatrix\ShardMatrix;
 use ShardMatrix\Table;
 use ShardMatrix\Uuid;
 
@@ -559,12 +560,16 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $this->rowDataClass;
 	}
 
+	/**
+	 * @return ShardDB
+	 * @throws \ShardMatrix\Exception
+	 */
 	protected function getShardDB(): ShardDB {
 		if ( isset( $this->shardDB ) ) {
 			return $this->shardDB->setDefaultDataRowClass( $this->getRowDataClass() );
 		}
 
-		return $this->shardDB = ( new ShardDB() )->setDefaultDataRowClass( $this->getRowDataClass() );
+		return $this->shardDB = ShardMatrix::db()->setDefaultDataRowClass( $this->getRowDataClass() );
 	}
 
 
