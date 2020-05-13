@@ -199,3 +199,43 @@ nodes:
       - published
 ```
 
+### Once Yaml Config File is Complete
+
+Save the file to either where the application in a protected or externally inaccessible directory.
+
+Alternatively it can be made into a Kubernetes Secret and given to your application that way.
+
+
+## Initiate in PHP
+
+In these examples we have saved our Config file as `shard_matrix.yaml` and placed it in the same directory as our applications index php.
+
+#### Basic Setup Using Only PHP and Webserver Resources
+
+```php
+
+use ShardMatrix\ShardMatrix;
+
+ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' ); # Our config file
+ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' ); # Specifying a local directory to write db data to when it needs to
+
+```
+#### Setup Using Only GoThreaded and Redis
+
+```php
+
+use ShardMatrix\ShardMatrix;
+
+ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' ); # Our config file
+
+ShardMatrix::useGoThreadedForAsyncQueries();# changes the service from PHP forking for asynchronous queries to GoThreaded
+
+ShardMatrix::setGoThreadedService( function () {
+	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password' );
+} ); # Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
+
+ShardMatrix::setPdoCacheService( function () {
+	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
+} ); # This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
+
+```
