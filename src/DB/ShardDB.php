@@ -3,7 +3,6 @@
 
 namespace ShardMatrix\DB;
 
-use ShardMatrix\Config;
 use ShardMatrix\Db\Builder\DB;
 use ShardMatrix\Db\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
