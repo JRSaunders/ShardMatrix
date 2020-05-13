@@ -370,7 +370,7 @@ class ShardDB {
 	 *
 	 * @return string
 	 */
-	private function getDataRowClassByNode( Node $node ): string {
+	public function getDataRowClassByNode( Node $node ): string {
 
 		if ( $node->getLastUsedTableName() && isset( $this->getDataRowClasses()[ $node->getLastUsedTableName() ] ) ) {
 			return $this->getDataRowClasses()[ $node->getLastUsedTableName() ];

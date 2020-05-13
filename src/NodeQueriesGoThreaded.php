@@ -54,7 +54,7 @@ class NodeQueriesGoThreaded implements NodeQueriesAsyncInterface {
 			foreach ( $resultNodes as $nodeResult ) {
 				foreach ( $this->nodeQueries->getNodeQueries() as $query ) {
 					if ( $query->getNode()->getName() == $nodeResult->getNodeName() ) {
-						$statementResult[] = ( new ShardMatrixStatement( null, $query->getNode(), null ) )->setDataFromGoThreadedResult( $nodeResult );
+						$statementResult[] = ( new ShardMatrixStatement( null, $query->getNode(), null, $this->shardDb->getDataRowClassByNode( $query->getNode() ) ) )->setDataFromGoThreadedResult( $nodeResult );
 					}
 				}
 
