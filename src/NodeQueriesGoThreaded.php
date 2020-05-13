@@ -44,7 +44,7 @@ class NodeQueriesGoThreaded implements NodeQueriesAsyncInterface {
 	 * @return ShardMatrixStatements
 	 */
 	public function getResults(): ShardMatrixStatements {
-		$client = new Client();
+		$client = ShardMatrix::getGoThreadedService();
 
 		$results = $client->execQueries( $this->nodeQueries )->getResults();
 		$client->close();

@@ -3,6 +3,7 @@
 namespace ShardMatrix;
 
 
+use ShardMatrix\GoThreaded\Client;
 use Symfony\Component\Yaml\Yaml;
 
 /**
@@ -10,12 +11,7 @@ use Symfony\Component\Yaml\Yaml;
  * @package ShardMatrix
  */
 class ShardMatrix {
-	/**
-	 * @var Config
-	 */
-	protected static Config $config;
 
-	const TABLE_ALGO = 'adler32';
 	/**
 	 * @var string
 	 */
@@ -24,14 +20,38 @@ class ShardMatrix {
 	 * @var string
 	 */
 	protected static string $PdoCacheClass = PdoCache::class;
-
+	/**
+	 * @var string
+	 */
 	protected static string $NodeQueriesAsyncClass = NodeQueriesPcntlFork::class;
+
+
+	protected static array $services = [];
+
+	protected static array $serviceInstances = [];
+
+	/**
+	 * @var Config
+	 */
+	protected static Config $config;
+
+	const TABLE_ALGO = 'adler32';
+
 	/**
 	 * @var string|null
 	 */
 	protected static ?string $geo = null;
 
 	protected static bool $docker = false;
+
+	private static function init() {
+		static::setServiceClosure( PdoCacheInterface::class, function () {
+			return new PdoCache();
+		} );
+		static::setServiceClosure( Client::class, function(){
+			return new Client();
+		});
+	}
 
 	/**
 	 * @param string|null $configPath
@@ -99,19 +119,6 @@ class ShardMatrix {
 		return static::$PdoCacheClass;
 	}
 
-	/**
-	 * @param string $PdoCacheClass
-	 *
-	 * @throws Exception
-	 */
-	public static function setPdoCacheClass( string $PdoCacheClass ): void {
-		if ( in_array( PdoCacheInterface::class, class_implements( $PdoCacheClass ) ) ) {
-			static::$PdoCacheClass = $PdoCacheClass;
-		} else {
-			throw new Exception( $PdoCacheClass . ' needs to implement ' . PdoCacheInterface::class );
-		}
-
-	}
 
 	/**
 	 * @return string
@@ -146,5 +153,59 @@ class ShardMatrix {
 	public static function setDocker( bool $docker ): void {
 		static::$docker = $docker;
 	}
+
+	/**
+	 * @param string $service
+	 * @param \Closure $closure
+	 */
+	public static function setServiceClosure( string $service, \Closure $closure ) {
+		static::$services[ $service ] = $closure;
+	}
+
+	/**
+	 * @param string $service
+	 *
+	 * @return object
+	 * @throws Exception
+	 */
+	public static function getService( string $service ): object {
+		if ( isset( static::$serviceInstances[ $service ] ) ) {
+			return static::$serviceInstances[ $service ];
+		}
+		if ( isset( static::$services[ $service ] ) ) {
+			return static::$serviceInstances[ $service ] = call_user_func( static::$services[ $service ] );
+		}
+		throw new Exception( 'Service ' . $service . ' Closure not set!' );
+	}
+
+	/**
+	 * @return PdoCacheInterface
+	 * @throws Exception
+	 */
+	public static function getPdoCacheService(): PdoCacheInterface {
+		return static::getService( PdoCacheInterface::class );
+	}
+
+	/**
+	 * @param \Closure $closure
+	 */
+	public static function setPdoCacheService(\Closure $closure){
+		static::setServiceClosure( PdoCacheInterface::class, $closure);
+	}
+
+	/**
+	 * @param \Closure $closure
+	 */
+	public static function setGoThreadedService(\Closure$closure){
+		static::setServiceClosure( Client::class, $closure);
+	}
+	/**
+	 * @return Client
+	 * @throws Exception
+	 */
+	public static function getGoThreadedService(): Client {
+		return static::getService( Client::class );
+	}
+
 
 }

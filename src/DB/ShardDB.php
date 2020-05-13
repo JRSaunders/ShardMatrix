@@ -36,10 +36,7 @@ class ShardDB {
 	 * @var \Closure|null
 	 */
 	protected ?\Closure $checkSuccessFunction = null;
-	/**
-	 * @var PdoCacheInterface|null
-	 */
-	protected ?PdoCacheInterface $pdoCache = null;
+
 
 	/**
 	 * @param string $tableName
@@ -653,12 +650,7 @@ class ShardDB {
 	 * @return PdoCacheInterface
 	 */
 	public function getPdoCache(): PdoCacheInterface {
-		if ( isset( $this->pdoCache ) ) {
-			return $this->pdoCache;
-		}
-		$cacheClass = ShardMatrix::getPdoCacheClass();
-
-		return $this->pdoCache = new $cacheClass();
+		return  ShardMatrix::getPdoCacheService();
 	}
 
 	/**

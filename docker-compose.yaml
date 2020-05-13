@@ -80,11 +80,20 @@ services:
 
   gothreaded:
     image: jrsaunders/gothreaded
+    restart: always
     environment:
       GOTHREADED_DEBUG: "true"
     ports:
       - 1534:1534
 
-
+  pdocache:
+    container_name: pdocache
+    image: redis
+    restart: always
+    volumes:
+      - ./data:/data
+    entrypoint: redis-server --appendonly yes
+    ports:
+      - 6379:6379
 
 
