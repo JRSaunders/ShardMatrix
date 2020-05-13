@@ -16,7 +16,7 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-ShardMatrix::useGoThreadedForAsyncQueries();
+//ShardMatrix::useGoThreadedForAsyncQueries();
 ShardMatrix::setPdoCacheService( function () {
 	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
 } );

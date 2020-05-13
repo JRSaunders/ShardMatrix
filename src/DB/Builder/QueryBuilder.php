@@ -30,6 +30,7 @@ use ShardMatrix\Uuid;
  */
 class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
+	private ?ShardDB $shardDB = null;
 
 	protected ?string $primaryOrderDirection = null;
 
@@ -201,7 +202,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			}
 		}
 
-		$result = ( new ShardDB() )->uuidInsert( $uuid, $this->grammar->compileInsert( $this, $values ), $this->cleanBindings( Arr::flatten( $values, 1 ) ) );
+		$result = $this->getShardDB()->uuidInsert( $uuid, $this->grammar->compileInsert( $this, $values ), $this->cleanBindings( Arr::flatten( $values, 1 ) ) );
 		if ( $result ) {
 			return $result->getLastInsertUuid();
 		}
@@ -219,7 +220,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	public function update( array $values ) {
 
 		if ( $this->uuid ) {
-			return ( new ShardDB() )->uuidUpdate(
+			return $this->getShardDB()->uuidUpdate(
 				$this->uuid,
 				$this->grammar->compileUpdate( $this, $values ),
 				$this->cleanBindings(
@@ -240,7 +241,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				) );
 			}
 
-			return ( new ShardDB() )->nodeQueries( new NodeQueries( $nodeQueries ), null, null, 'update' );
+			return $this->getShardDB()->nodeQueries( new NodeQueries( $nodeQueries ), null, null, 'update' );
 		}
 
 		return parent::update( $values );
@@ -266,7 +267,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		}
 		$this->from( $dataRow->getUuid()->getTable()->getName() )->whereUuid( $dataRow->getUuid() );
 
-		$update = ( new ShardDB() )->execute( new PreStatement(
+		$update = $this->getShardDB()->execute( new PreStatement(
 			$dataRow->getUuid()->getNode(), $this->grammar->compileUpdate( $this, $values ),
 			$this->cleanBindings(
 				$this->grammar->prepareBindingsForUpdate( $this->bindings, $values )
@@ -306,7 +307,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
 			}
 
-			return ( new ShardDB() )->setDefaultDataRowClass( EloquentDataRowModel::class )->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
+			return $this->getShardDB()->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
 		}
 	}
 
@@ -314,7 +315,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return ShardMatrixStatement|null
 	 */
 	protected function returnNodeResult(): ?ShardMatrixStatement {
-		return ( new ShardDB() )->setDefaultDataRowClass( $this->getRowDataClass() )->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+		return $this->getShardDB()->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
 	}
 
 
@@ -514,9 +515,8 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	public function getPagination( array $columns = [ "*" ], int $pageNumber = 1, int $perPage = 15, ?int $limitPages = 10 ): PaginationStatement {
 		$this->select( $columns );
-		$shard = new ShardDB();
 
-		return $shard->paginationByQueryBuilder( $this, $pageNumber, $perPage, $limitPages );
+		return $this->getShardDB()->paginationByQueryBuilder( $this, $pageNumber, $perPage, $limitPages );
 	}
 
 	/**
@@ -557,6 +557,14 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	public function getRowDataClass(): string {
 		return $this->rowDataClass;
+	}
+
+	protected function getShardDB(): ShardDB {
+		if ( isset( $this->shardDB ) ) {
+			return $this->shardDB->setDefaultDataRowClass( $this->getRowDataClass() );
+		}
+
+		return $this->shardDB = ( new ShardDB() )->setDefaultDataRowClass( $this->getRowDataClass() );
 	}
 
 
