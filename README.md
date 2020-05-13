@@ -108,7 +108,7 @@ nodes:
       - tracking
 
 ```
-
+### Version
 Define the version.  The most recent version is 1.
 ```yaml
 version: 1
