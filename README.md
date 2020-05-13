@@ -38,6 +38,77 @@ ShardMatrix needs to know how your tables and columns and databases interact, so
 
 [Reference Yaml file](shard_matrix.yaml)
 
+### Example
+
+```yaml
+version: 1
+
+table_groups:
+  user:
+    - users
+    - payments
+    - offers
+  tracking:
+    - visitors
+    - sign_ups
+  published:
+    - published_offers
+
+unique_columns:
+  users:
+    - email
+    - username
+
+nodes:
+  DB0001:
+    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password
+    docker_network: DB0001:3306
+    geo: UK
+    table_groups:
+      - user
+      - published
+  DB0002:
+    dsn: mysql:dbname=shard;host=localhost:3302;user=root;password=password
+    docker_network: DB0002:3306
+    geo: UK
+    table_groups:
+      - user
+      - published
+  DB0003:
+    dsn: mysql:dbname=shard;host=localhost:3303;user=root;password=password
+    docker_network: DB0003:3306
+    geo: UK
+    table_groups:
+      - user
+      - published
+  DB0004:
+    dsn: mysql:dbname=shard;host=localhost:3304;user=root;password=password
+    docker_network: DB0004:3306
+    geo: UK
+    table_groups:
+      - published
+  DB0005:
+    dsn: mysql:dbname=shard;host=localhost:3305;user=root;password=password
+    docker_network: DB0005:3306
+    table_groups:
+      - tracking
+  DB0006:
+    dsn: mysql:dbname=shard;host=localhost:3306;user=root;password=password
+    docker_network: DB0006:3306
+    geo: UK
+    insert_data: false
+    table_groups:
+      - tracking
+  DB0007:
+    dsn: pgsql:dbname=shard;host=localhost:5407;user=postgres;password=password
+    docker_network: DB0007:5432
+    geo: UK
+    table_groups:
+      - user
+      - tracking
+
+```
+
 Define the version.  The most recent version is 1.
 ```yaml
 version: 1
