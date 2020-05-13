@@ -32,12 +32,15 @@ composer require jrsaunders/shard-matrix
 
 ## Preparing the YAML config file
 
+ShardMatrix needs to know how your tables and columns and databases interact, so this config file will define this in a simple yaml file.
+
 [Reference Yaml file](shard_matrix.yaml)
 
 State the version.  The most recent version is 1.
 ```yaml
 version: 1
 ```
+### Table Groups
 State the table groups.  As you add tables to your Application you will need to explicitly add them here to.
 
 The group name is only used in ShardMatrix.
@@ -61,11 +64,15 @@ table_groups:
   published:
     - published_offers
 ```
+### Unique Columns in Tables
 Unique Columns can be stated here.  So in the `users` table `email` and `username` must be unique across all Nodes (shard databases).
 ```yaml
 unique_columns:
   users:
     - email
     - username
+  facebook_users:
+    - fb_id
 ```
-    
+### Nodes
+
