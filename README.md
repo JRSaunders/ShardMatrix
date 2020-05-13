@@ -162,7 +162,7 @@ unique_columns:
 
 This is where you define your database connections, credentials, and what table groups and geos the node maybe using.
 
-Nodes can extended and added to as you go.
+Nodes can be extended and added to as you go.
 
 Node names must remain the same though as must the table groups they correspond to.
 
