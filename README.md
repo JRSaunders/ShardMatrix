@@ -87,13 +87,21 @@ Node names must remain the same though as must the table groups they correspond 
 The anatomy of the node section.
 ```yaml
 nodes: #denotes the where the nodes are defined
+
   DBUK01: #Node Name
+
     dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password #DSN for connection to DB
+
     docker_network: DBUK:3306 # *optional docker service name if you have one and port
+    
     geo: UK # *optional geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
+    
     insert_data: false # *optional stop new data being written here, unless connected to an existing UUID from this node
+    
     table_groups: #table groups that use this node must be defined here
+      
       - user #table group user (that comprises of the users, offers, payments tables)
+      
       - published
 ```
 The Node Section as it may appear in the config yaml.
