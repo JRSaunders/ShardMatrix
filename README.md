@@ -226,9 +226,9 @@ nodes:
 
 ### Once Yaml Config File is Complete
 
-Save the file to either where the application in a protected or externally inaccessible directory.
+Save the **file** to where the application is, in either a protected directory or externally inaccessible directory.
 
-Alternatively it can be made into a Kubernetes Secret and given to your application that way.
+Alternatively it can be made into a **Kubernetes Secret** and given to your application that way.
 
 
 ## Initiate in PHP
