@@ -194,6 +194,7 @@ nodes:
 
     #Table groups that use this node must be defined here
     table_groups:
+
       #Table group user (that consists of the users, offers, payments tables)
       - user
       
