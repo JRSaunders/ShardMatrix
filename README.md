@@ -119,10 +119,14 @@ Define the table groups.  As you add tables to your Application you will need to
 The group name is only used in ShardMatrix.
 
 The table names are attributed to the groups.  A table can only be in one group at a time and once you have written to the Databases, it is best not to change any table assigned to a group.
+* Denotes the table groups section on config
+* Denotes the name of a group of tables
+* Denotes the table name
+
 ```yaml
-table_groups: #denotes the table groups section on config
-  user: #denotes the name of a group of tables
-    - users #denotes the table name
+table_groups:  #Denotes the table groups section on config
+  user:  #Denotes the name of a group of tables
+    - users  #Denotes the table name
 ```
 This section as it may appear.
 ```yaml
@@ -156,22 +160,30 @@ Nodes can extended and added to as you go.
 Node names must remain the same though as must the table groups they correspond to.
 
 The anatomy of the node section.
+* Denotes the where the nodes are defined
+* Node Name
+* DSN for connection to DB
+* *optional Docker service name and port number
+* *optional Geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
+* *optional Stop new data being written here, unless connected to an existing UUID from this node
+* Table groups that use this node must be defined here
+* Table group user (that consists of the users, offers, payments tables)
 ```yaml
-nodes: #denotes the where the nodes are defined
+nodes:  #Denotes the where the nodes are defined
 
-  DBUK01: #Node Name
+  DBUK01:  #Node Name
 
-    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password #DSN for connection to DB
+    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password  #DSN for connection to DB
 
-    docker_network: DBUK:3306 # *optional docker service name if you have one and port
+    docker_network: DBUK:3306  # *optional docker service name and port number
     
-    geo: UK # *optional geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
+    geo: UK # *optional Geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
     
-    insert_data: false # *optional stop new data being written here, unless connected to an existing UUID from this node
+    insert_data: false # *optional Stop new data being written here, unless connected to an existing UUID from this node
     
-    table_groups: #table groups that use this node must be defined here
+    table_groups: #Table groups that use this node must be defined here
       
-      - user #table group user (that comprises of the users, offers, payments tables)
+      - user #Table group user (that consists of the users, offers, payments tables)
       
       - published
 ```
@@ -211,31 +223,36 @@ Alternatively it can be made into a Kubernetes Secret and given to your applicat
 In these examples we have saved our Config file as `shard_matrix.yaml` and placed it in the same directory as our applications index php.
 
 #### Basic Setup Using Only PHP and Webserver Resources
-
+* Our config file
+* Specifying a local directory to write db data to when it needs to
 ```php
 
 use ShardMatrix\ShardMatrix;
 
-ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' ); # Our config file
-ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' ); # Specifying a local directory to write db data to when it needs to
+ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  #Our config file
+
+ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );  #Specifying a local directory to write db data to when it needs to
 
 ```
 #### Setup Using Only GoThreaded and Redis
-
+* Our config file
+* Changes the service from PHP forking for asynchronous queries to GoThreaded
+* Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
+* This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
 ```php
 
 use ShardMatrix\ShardMatrix;
 
-ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' ); # Our config file
+ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  #Our config file
 
-ShardMatrix::useGoThreadedForAsyncQueries();# changes the service from PHP forking for asynchronous queries to GoThreaded
+ShardMatrix::useGoThreadedForAsyncQueries();# Changes the service from PHP forking for asynchronous queries to GoThreaded
 
 ShardMatrix::setGoThreadedService( function () {
 	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password' );
-} ); # Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
+} );  #Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
 
 ShardMatrix::setPdoCacheService( function () {
 	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
-} ); # This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
+} );  #This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
 
 ```
