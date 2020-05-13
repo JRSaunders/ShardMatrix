@@ -124,9 +124,14 @@ The table names are attributed to the groups.  A table can only be in one group 
 * Denotes the table name
 
 ```yaml
-table_groups:  #Denotes the table groups section on config
-  user:  #Denotes the name of a group of tables
-    - users  #Denotes the table name
+#Denotes the table groups section on config
+table_groups:
+
+  #Denotes the name of a group of tables
+  user:
+
+    #Denotes the table name
+    - users
 ```
 This section as it may appear.
 ```yaml
@@ -169,21 +174,28 @@ The anatomy of the node section.
 * Table groups that use this node must be defined here
 * Table group user (that consists of the users, offers, payments tables)
 ```yaml
-nodes:  #Denotes the where the nodes are defined
+#Denotes the where the nodes are defined
+nodes:
 
-  DBUK01:  #Node Name
+  #Node Name
+  DBUK01:
 
-    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password  #DSN for connection to DB
+    #DSN for connection to DB
+    dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password
 
-    docker_network: DBUK:3306  # *optional docker service name and port number
+    # *optional docker service name and port number
+    docker_network: DBUK:3306
     
-    geo: UK # *optional Geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
-    
-    insert_data: false # *optional Stop new data being written here, unless connected to an existing UUID from this node
-    
-    table_groups: #Table groups that use this node must be defined here
-      
-      - user #Table group user (that consists of the users, offers, payments tables)
+    # *optional Geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
+    geo: UK
+
+    # *optional Stop new data being written here, unless connected to an existing UUID from this node
+    insert_data: false
+
+    #Table groups that use this node must be defined here
+    table_groups:
+      #Table group user (that consists of the users, offers, payments tables)
+      - user
       
       - published
 ```
@@ -229,9 +241,13 @@ In these examples we have saved our Config file as `shard_matrix.yaml` and place
 
 use ShardMatrix\ShardMatrix;
 
-ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  #Our config file
 
-ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );  #Specifying a local directory to write db data to when it needs to
+#Our config file
+ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  
+
+
+#Specifying a local directory to write db data to when it needs to
+ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );  
 
 ```
 #### Setup Using Only GoThreaded and Redis
@@ -243,16 +259,23 @@ ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );  #Specifying a 
 
 use ShardMatrix\ShardMatrix;
 
-ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  #Our config file
 
-ShardMatrix::useGoThreadedForAsyncQueries();# Changes the service from PHP forking for asynchronous queries to GoThreaded
+#Our config file
+ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  
 
+
+#Changes the service from PHP forking for asynchronous queries to GoThreaded
+ShardMatrix::useGoThreadedForAsyncQueries();
+
+
+#Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
 ShardMatrix::setGoThreadedService( function () {
 	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password' );
-} );  #Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
+} );
 
+#This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
 ShardMatrix::setPdoCacheService( function () {
 	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
-} );  #This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
+} );  
 
 ```
