@@ -54,6 +54,10 @@ class ShardMatrix {
 		} );
 	}
 
+	public static function clearServiceInstances() {
+		static::$serviceInstances = [];
+	}
+
 	/**
 	 * @param string|null $configPath
 	 */

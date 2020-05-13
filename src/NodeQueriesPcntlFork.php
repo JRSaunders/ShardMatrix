@@ -52,6 +52,7 @@ class NodeQueriesPcntlFork implements NodeQueriesAsyncInterface {
 		foreach ( $this->nodeQueries as $nodeQuery ) {
 			$pid = pcntl_fork();
 			Connections::closeConnections();
+			ShardMatrix::clearServiceInstances();
 			if ( $pid == - 1 ) {
 				die( 'could not fork' );
 			} else if ( $pid ) {

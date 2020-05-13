@@ -44,7 +44,6 @@ class PdoCacheRedis implements PdoCacheInterface {
 		$matches = [];
 		$results = [];
 		foreach ( new Keyspace( $this->redis, $key . '*', 1000 ) as $matchKey ) {
-
 			$matches[] = $matchKey;
 			$results[] = $this->read( $matchKey );
 		}

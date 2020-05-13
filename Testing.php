@@ -27,7 +27,7 @@ ShardMatrix::setGeo( 'UK' );
 
 $statement = DB::allNodesTable( 'users' )
                ->orderBy( 'created', 'desc' )
-               ->getPagination( [ "*" ], 1, 15, 150 );
+               ->getPagination( [ "*" ], 10, 15 );
 
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();
 //$statement = DB::allNodesTable( 'users')->limit('10')->getPagination()->getResults();
