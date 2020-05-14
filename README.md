@@ -304,15 +304,18 @@ ShardMatrix::setPdoCacheService( function () {
 
 Once you have initiated it as above - here are some quick examples of usage.
 
-#### Create A Table
+_If you are familiar with the ORM in Laravel - this is just an extension of that._
+
+#### Create Table
 * Creates Table across all appropriate Nodes.  This follows the guidance given in your Yaml Config file.
 ```php
+use ShardMatrix\Db\Builder\Schema;
 
-#Creates Table across all appropriate Nodes.  This follows the guidance given in your Yaml Config file.
+#Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).  This follows the guidance given in your Yaml Config file.
 
 Schema::create( 'users',
     function ( \Illuminate\Database\Schema\Blueprint $table ) {
-
+          
         $table->string( 'uuid', 50 )->primary();
         $table->string('username',255)->unique();
         $table->string('email',255)->unique();
