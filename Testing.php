@@ -282,14 +282,15 @@ var_dump( $statement->getResults()->fetchDataRows() );
 
 //$cache = new \ShardMatrix\PdoCache();
 //$cache->runCleanPolicy( new ShardDB());
-//$nowString = ( new DateTime() )->format( 'Y-m-d H:i:s' );
-//
-//var_dump( DB::table( 'users' )->insert( [
-//	'username' => 'jackmaolne',
-//	'password' => 'pooo',
-//	'created'   => $nowString,
-//	'email'    => 'jack.malone@yatti.com'
-//] ) );
+$nowString = ( new DateTime() )->format( 'Y-m-d H:i:s' );
+
+var_dump( DB::table( 'users' )->insert( [
+	'username' => 'jackmaolne',
+	'password' => 'pooo',
+	'created'   => $nowString,
+	'something' => 5,
+	'email'    => 'jack.malone@yatti.com'
+] ) );
 //
 //var_dump(DB::allNodesThisGeoTable('users',null)->where( 'email','=','jack.malone@yatti.com')->first()->username);
 

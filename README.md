@@ -127,12 +127,15 @@ The table names are attributed to the groups.  A table can only be in one group 
 
 ```yaml
 #Denotes the table groups section on config
+
 table_groups:
 
   #Denotes the name of a group of tables
+
   user:
 
     #Denotes the table name
+
     - users
 ```
 This section as it may appear.
@@ -177,27 +180,35 @@ The anatomy of the node section.
 * Table group user (that consists of the users, offers, payments tables)
 ```yaml
 #Denotes the where the nodes are defined
+
 nodes:
 
   #Node Name
+
   DBUK01:
 
     #DSN for connection to DB
+
     dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password
 
     # *optional docker service name and port number
+
     docker_network: DBUK:3306
     
     # *optional Geo - if a geo is stated the application inserting data will use this to choose this node to write new inserts to it
+
     geo: UK
 
     # *optional Stop new data being written here, unless connected to an existing UUID from this node
+
     insert_data: false
 
     #Table groups that use this node must be defined here
+
     table_groups:
 
       #Table group user (that consists of the users, offers, payments tables)
+
       - user
       
       - published
@@ -246,10 +257,12 @@ use ShardMatrix\ShardMatrix;
 
 
 #Our config file
+
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  
 
 
 #Specifying a local directory to write db data to when it needs to
+
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );  
 
 ```
@@ -264,21 +277,57 @@ use ShardMatrix\ShardMatrix;
 
 
 #Our config file
+
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  
 
 
 #Changes the service from PHP forking for asynchronous queries to GoThreaded
+
 ShardMatrix::useGoThreadedForAsyncQueries();
 
 
 #Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
+
 ShardMatrix::setGoThreadedService( function () {
 	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password' );
 } );
 
-#This overwrites the PdoCache Service that was using writing to file, and now instead uses Redis caching
+#This overwrites the PdoCache Service that was used to write to file, and now instead uses Redis caching
+
 ShardMatrix::setPdoCacheService( function () {
 	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
 } );  
 
 ```
+
+## Quick Usage
+
+Once you have initiated it as above - here are some quick examples of usage.
+
+#### Insert Record
+* Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
+```php
+use ShardMatrix\Db\Builder\DB;
+
+#Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
+
+DB::table( 'users' )->insert( [
+	'username' => 'jack-malone',
+	'password' => 'poootpooty',
+	'created'   => (new \DateTime())->format('Y-m-d H:i:s'),
+	'something' => 5,
+	'email'    => 'jack.malone@yatti.com'
+] );
+
+```
+**Inserted Data**
+```
+uuid        06a00233-1ea8af83-9b6f-6104-b465-444230303037
+username    jack-malone
+password    poootpooty
+email       jack.malone@yatti.com
+created     2020-04-30 15:35:31.000000
+something   5
+```
+
+* Any further inserts done in this php process will be inserted into the same shard, if in the correct table group
