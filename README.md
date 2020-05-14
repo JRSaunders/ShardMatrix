@@ -24,7 +24,7 @@
     * Efficient pagination system across Nodes using caching
     * Raw SQL Queries
     
-# Guide
+# Installation
 
 ## Installing ShardMatrix for PHP
 
@@ -37,7 +37,7 @@ composer require jrsaunders/shard-matrix
 ## Preparing the YAML config file
 
 ShardMatrix needs to know how your tables and columns and databases interact, so this config file will define this in a simple yaml file.
-
+* You will need your credentials for your databases, and access privileges setup.
 [Reference Yaml file](shard_matrix.yaml)
 
 ### Example
@@ -246,7 +246,7 @@ Save the **file** to where the application is, in either a protected directory o
 Alternatively it can be made into a **Kubernetes Secret** and given to your application that way.
 
 
-## Initiate in PHP
+# Initiate in PHP
 
 In these examples we have saved our Config file as `shard_matrix.yaml` and placed it in the same directory as our applications index php.
 
