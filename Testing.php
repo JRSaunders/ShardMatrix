@@ -36,24 +36,6 @@ $statement = DB::allNodesTable( 'users' )
 var_dump( $statement->getResults()->fetchDataRows() );
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 //
 //$shardDb->nodeQuery(
 //	ShardMatrix::getConfig()->getNodes()->getNodeByName( 'DB0001'),
@@ -90,12 +72,12 @@ var_dump( $statement->getResults()->fetchDataRows() );
 //    created  timestamp without time zone    null
 //);");
 
-//Schema::create( 'visitors',
-//	function ( \Illuminate\Database\Schema\Blueprint $table ) {
-//		$table->string( 'uuid', 50 )->primary();
-//		$table->dateTime( 'created' );
-//
-//	} );
+Schema::create( 'visitors',
+	function ( \Illuminate\Database\Schema\Blueprint $table ) {
+		$table->string( 'uuid', 50 )->primary();
+		$table->dateTime( 'created' );
+
+	} );
 
 //$tableName = 'users';
 //$con       = new ShardMatrixConnection(
@@ -285,11 +267,11 @@ var_dump( $statement->getResults()->fetchDataRows() );
 $nowString = ( new DateTime() )->format( 'Y-m-d H:i:s' );
 
 var_dump( DB::table( 'users' )->insert( [
-	'username' => 'jackmaolne',
-	'password' => 'pooo',
+	'username'  => 'jackmaolne',
+	'password'  => 'pooo',
 	'created'   => $nowString,
 	'something' => 5,
-	'email'    => 'jack.malone@yatti.com'
+	'email'     => 'jack.malone@yatti.com'
 ] ) );
 //
 //var_dump(DB::allNodesThisGeoTable('users',null)->where( 'email','=','jack.malone@yatti.com')->first()->username);

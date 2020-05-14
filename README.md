@@ -304,6 +304,26 @@ ShardMatrix::setPdoCacheService( function () {
 
 Once you have initiated it as above - here are some quick examples of usage.
 
+#### Create A Table
+* Creates Table across all appropriate Nodes.  This follows the guidance given in your Yaml Config file.
+```php
+
+#Creates Table across all appropriate Nodes.  This follows the guidance given in your Yaml Config file.
+
+Schema::create( 'users',
+    function ( \Illuminate\Database\Schema\Blueprint $table ) {
+
+        $table->string( 'uuid', 50 )->primary();
+        $table->string('username',255)->unique();
+        $table->string('email',255)->unique();
+        $table->integer('something');
+        $table->dateTime( 'created' );
+
+    } 
+);
+```
+
+
 #### Insert Record
 * Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
 ```php
@@ -311,14 +331,15 @@ use ShardMatrix\Db\Builder\DB;
 
 #Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
 
-DB::table( 'users' )->insert( [
+DB::table( 'users' )->insert( 
+    [
 	'username' => 'jack-malone',
 	'password' => 'poootpooty',
 	'created'   => (new \DateTime())->format('Y-m-d H:i:s'),
 	'something' => 5,
-	'email'    => 'jack.malone@yatti.com'
-] );
-
+	'email'    => 'jack.malone@yatti.com',
+    ]
+);
 ```
 **Inserted Data**
 ```
