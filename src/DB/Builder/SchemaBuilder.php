@@ -97,7 +97,7 @@ class SchemaBuilder extends Builder {
 				parent::create( $table, $callback );
 			} catch ( \Exception $exception ) {
 				if ( $this->throwExceptions ) {
-					throw new BuilderException( $node, $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+					throw new BuilderException( $node, $exception->getMessage(), (int)$exception->getCode(), $exception->getPrevious() );
 				}
 			}
 		}

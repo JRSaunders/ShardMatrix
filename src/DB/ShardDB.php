@@ -136,7 +136,7 @@ class ShardDB {
 	 *
 	 * @return DataRow|null
 	 */
-	public function getByUuid( ?Uuid $uuid ): ?DataRow {
+	public function getByUuid( ?Uuid $uuid ): ?ShardDataRowInterface {
 		if ( ! $uuid ) {
 			return null;
 		}
@@ -154,7 +154,7 @@ class ShardDB {
 	 * @throws DuplicateException
 	 * @throws Exception
 	 */
-	protected function getByUuidSeparateConnection( Uuid $uuid ): ?DataRow {
+	protected function getByUuidSeparateConnection( Uuid $uuid ): ?ShardDataRowInterface {
 		return $this
 			->uuidBind( $uuid, $sql = "select * from {$uuid->getTable()->getName()} where uuid = :uuid limit 1;", $bind )
 			->execute( new PreStatement( $uuid->getNode(), $sql, $bind, $uuid, null, __METHOD__ ), true )->fetchDataRow();
@@ -480,15 +480,15 @@ class ShardDB {
 			$selectColumns = [];
 			foreach ( $uniqueColumns as $column ) {
 				if ( $dataRow->__columnIsset( $column ) ) {
-					$binds[":{$column}"] = $dataRow->$column;
+					$binds[$column] = $dataRow->$column;
 					$selectColumns[]     = $column;
-					$sqlArray[]          = " {$column} = :{$column} ";
+					$sqlArray[]          = " {$column} = ? ";
 				}
 			}
 			$sql            = "select " . join( ', ', $selectColumns ) .
 			                  " from {$dataRow->getUuid()->getTable()->getName()} where";
-			$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != :uuid limit 1;";
-			$binds[':uuid'] = $uuid->toString();
+			$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
+			$binds['uuid'] = $uuid->toString();
 			$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
 			if ( $nodesResults && $nodesResults->isSuccessful() ) {
 				$columnsIssue = [];

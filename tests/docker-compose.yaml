@@ -1,0 +1,77 @@
+version: "3.5"
+
+services:
+
+  DB0001:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    ports:
+      - 3308:3306
+
+  DB0002:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    ports:
+      - 3309:3306
+
+  DB0003:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    ports:
+      - 3310:3306
+
+  DB0004:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    ports:
+      - 3311:3306
+
+  DB0005:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    ports:
+      - 3012:3306
+
+  DB0006:
+    restart: always
+    image: percona:5.7
+    env_file:
+      - .mysql-dev-env
+    ports:
+      - 3313:3306
+
+  DB0007:
+    restart: always
+    image: postgres
+    env_file:
+      - .postgres-dev-env
+    ports:
+      - 5414:5432
+
+  gothreaded:
+    image: jrsaunders/gothreaded
+    restart: always
+    environment:
+      GOTHREADED_DEBUG: "true"
+    ports:
+      - 1541:1534
+
+  pdocache:
+    container_name: pdocache
+    image: redis
+    restart: always
+    entrypoint: redis-server --appendonly yes
+    ports:
+      - 6386:6379
+
+

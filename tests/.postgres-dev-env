@@ -1,0 +1,4 @@
+POSTGRES_PASSWORD=password
+POSTGRES_DB=shard
+POSTGRES_USER=postgres
+PGDATA=/data/postgres

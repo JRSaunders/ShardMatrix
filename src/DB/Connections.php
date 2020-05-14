@@ -38,6 +38,7 @@ class Connections {
 		}
 
 		$db = new \PDO( $node->getDsn()->__toString() );
+
 		foreach ( static::$dbAttributes as $attribute => $value ) {
 			$db->setAttribute( $attribute, $value );
 		}
