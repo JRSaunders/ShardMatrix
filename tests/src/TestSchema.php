@@ -6,14 +6,16 @@ use ShardMatrix\DB\Builder\DB;
 use ShardMatrix\DB\Builder\Schema;
 use ShardMatrix\DB\Connections;
 use ShardMatrix\ShardMatrix;
+use ShardMatrix\Uuid;
 
 class TestSchema extends TestCase {
+	protected $uuid;
 
 	protected function initGoThreaded() {
 		ShardMatrix::initFromYaml( __DIR__ . '/../shard_matrix.yaml' );
 		ShardMatrix::useGoThreadedForAsyncQueries();
 		ShardMatrix::setPdoCacheService( function () {
-			return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://pdocache:6386' ) );
+			return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6386' ) );
 		} );
 		ShardMatrix::setGoThreadedService( function () {
 			return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1541, 'gothreaded', 'password', 20 );
@@ -52,12 +54,12 @@ class TestSchema extends TestCase {
 				'username'  => 'jack-malone',
 				'password'  => 'poootpooty',
 				'created'   => ( new \DateTime() )->format( 'Y-m-d H:i:s' ),
-				'something' => 5,
+				'something' => 4,
 				'email'     => 'jack.malone@yatti.com',
 			]
 		);
 
-		$this->assertTrue( $uuid instanceof \ShardMatrix\Uuid, 'UUID Created' );
+		$this->assertTrue( $uuid instanceof Uuid, 'UUID Created' );
 
 		$data = DB::getByUuid( $uuid );
 
@@ -66,7 +68,7 @@ class TestSchema extends TestCase {
 
 	}
 
-	public function testNodeInserts() {
+	public function testGeneralDBUsage() {
 		$i = 0;
 		while ( $i < 300 ) {
 			$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
@@ -75,7 +77,6 @@ class TestSchema extends TestCase {
 			$created  = ( new DateTime() )->format( 'Y-m-d H:i:s' );
 			$i ++;
 			try {
-
 				DB::shardTable( 'users' )->insert( [
 					'username'  => $username,
 					'password'  => $password,
@@ -87,7 +88,30 @@ class TestSchema extends TestCase {
 				echo $exception->getNode()->getName() . ' ' . $exception->getMessage() . PHP_EOL;
 			}
 		}
-		$count = DB::table( 'users' )->count();
-		$this->assertTrue( DB::allNodesTable( 'users' )->count() == 500 ,$count.' inerted records');
+		$count = DB::allNodesTable( 'users' )->count();
+		$this->assertTrue( $count == 301, $count . ' inserted records' );
+		$avg = DB::allNodesTable( 'users' )->avg( 'something' );
+		$this->assertTrue( $avg == 4, $avg . ' average of something column' );
+		$sum = DB::allNodesTable( 'users' )->sum( 'something' );
+		$this->assertTrue( $sum == ( 300 * 4 ) + 4, $sum . ' sum of something column' );
+
+		$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 3, 15, 10 );
+		$results    = $pagination->countResults();
+		$this->assertTrue( $results == 152, $results . ' pagination results count' );
+		$pages = $pagination->countPages();
+		$this->assertTrue( $pages == 11, $pages . ' pagination pages count' );
+		$nodes = [];
+		foreach ( $pagination->getResults()->fetchDataRows() as $result ) {
+			$uuid = $result->getUuid();
+			$this->assertTrue( $uuid instanceof Uuid, 'Uuids are correct' );
+			$nodes[ $uuid->getNode()->getName() ] = $uuid->getNode()->getName();
+			$result->password                     = 'sillybilly69';
+			$result->save();
+			$this->uuid = $result->getUuid();
+		}
+
+		$this->assertTrue( count( $nodes ) == 4, 'Has Written to different Nodes' );
+		$changeCount = DB::allNodesTable( 'users' )->where( 'password', '=', 'sillybilly69' )->count();
+		$this->assertTrue( $changeCount == 15, $changeCount . ' update via transaction datarow' );
 	}
 }

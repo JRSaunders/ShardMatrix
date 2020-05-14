@@ -251,6 +251,8 @@ class ShardMatrixStatement implements ResultsInterface {
 			if ( $this->pdoStatement->rowCount() > 0 ) {
 				$success = true;
 			}
+		} else if ( $this->data ) {
+			$success = true;
 		} else {
 			$success = $this->dataSuccess;
 		}
