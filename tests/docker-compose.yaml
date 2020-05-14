@@ -67,7 +67,6 @@ services:
       - 1541:1534
 
   pdocache:
-    container_name: pdocache
     image: redis
     restart: always
     entrypoint: redis-server --appendonly yes
