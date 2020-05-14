@@ -3,8 +3,8 @@
 
 namespace ShardMatrix\DB;
 
-use ShardMatrix\Db\Builder\DB;
-use ShardMatrix\Db\Builder\QueryBuilder;
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Builder\QueryBuilder;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\Exception;
 use ShardMatrix\Node;

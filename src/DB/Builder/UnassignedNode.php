@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 
 use ShardMatrix\DB\Connections;

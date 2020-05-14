@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 
 use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
@@ -10,7 +10,7 @@ use ShardMatrix\ShardMatrix;
 
 /**
  * Class DB
- * @package ShardMatrix\Db\Illuminate
+ * @package ShardMatrix\DB\Illuminate
  * @method static QueryBuilder table( string $table, string $as = null )
  * @method static DBDataRowTransactionsInterface getByUuid( $uuid )
  * @method static bool updateByUuid( $uuid, array $values )

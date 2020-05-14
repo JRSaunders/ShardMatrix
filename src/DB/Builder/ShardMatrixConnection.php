@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 
 use Doctrine\DBAL\Connection as DoctrineConnection;
@@ -22,7 +22,7 @@ use ShardMatrix\Uuid;
 
 /**
  * Class ShardMatrixConnection
- * @package ShardMatrix\Db\Illuminate
+ * @package ShardMatrix\DB\Illuminate
  */
 class ShardMatrixConnection extends Connection {
 

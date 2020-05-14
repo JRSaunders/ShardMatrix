@@ -1,9 +1,9 @@
 <?php
 
-use ShardMatrix\Db\Builder\DB;
-use ShardMatrix\Db\Builder\QueryBuilder;
-use ShardMatrix\Db\Builder\Schema;
-use ShardMatrix\Db\Builder\ShardMatrixConnection;
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Builder\QueryBuilder;
+use ShardMatrix\DB\Builder\Schema;
+use ShardMatrix\DB\Builder\ShardMatrixConnection;
 use ShardMatrix\DB\Connections;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\NodeQuery;
@@ -227,7 +227,7 @@ Schema::create( 'visitors',
 //
 //var_dump($x);
 
-//DB::table( 'users')->whereUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033')->get()->each(function(\ShardMatrix\Db\Illuminate\Model $model){
+//DB::table( 'users')->whereUuid( '06a00233-1ea82fe3-79a2-6b72-98eb-444230303033')->get()->each(function(\ShardMatrix\DB\Illuminate\Model $model){
 //	$model->username = 'harry';
 //	var_dump($model->save() );
 //});

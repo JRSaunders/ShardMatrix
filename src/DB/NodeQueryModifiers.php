@@ -4,7 +4,7 @@
 namespace ShardMatrix\DB;
 
 
-use ShardMatrix\Db\Builder\QueryBuilder;
+use ShardMatrix\DB\Builder\QueryBuilder;
 use ShardMatrix\Node;
 
 class NodeQueryModifiers {

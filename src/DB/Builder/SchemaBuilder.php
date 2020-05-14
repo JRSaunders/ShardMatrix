@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 
 use Closure;
@@ -13,7 +13,7 @@ use ShardMatrix\ShardMatrix;
 
 /**
  * Class SchemaBuilder
- * @package ShardMatrix\Db\Builder
+ * @package ShardMatrix\DB\Builder
  */
 class SchemaBuilder extends Builder {
 	/**

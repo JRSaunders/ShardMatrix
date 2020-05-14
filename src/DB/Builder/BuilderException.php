@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 
 use ShardMatrix\DB\Exception;
@@ -10,7 +10,7 @@ use Throwable;
 
 /**
  * Class BuilderException
- * @package ShardMatrix\Db\Builder
+ * @package ShardMatrix\DB\Builder
  */
 class BuilderException extends Exception {
 	/**

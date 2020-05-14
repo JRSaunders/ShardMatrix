@@ -1,7 +1,7 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 use ShardMatrix\DB\Connections;
 use ShardMatrix\Node;
@@ -10,7 +10,7 @@ use ShardMatrix\ShardMatrix;
 
 /**
  * Class Schema
- * @package ShardMatrix\Db\Builder
+ * @package ShardMatrix\DB\Builder
  * @method static SchemaBuilder silent()
  * @method static SchemaBuilder node( Node $node )
  * @method static SchemaBuilder nodes( Nodes $node )

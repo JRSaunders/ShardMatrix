@@ -1,6 +1,6 @@
 <?php
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
@@ -27,7 +27,7 @@ use ShardMatrix\Uuid;
 
 /**
  * Class QueryBuilder
- * @package ShardMatrix\Db\Illuminate
+ * @package ShardMatrix\DB\Illuminate
  */
 class QueryBuilder extends \Illuminate\Database\Query\Builder {
 

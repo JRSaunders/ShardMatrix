@@ -3,7 +3,7 @@
 namespace ShardMatrix\DB\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use ShardMatrix\Db\Builder\DB;
+use ShardMatrix\DB\Builder\DB;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\Interfaces\ConstructArrayInterface;
 use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;

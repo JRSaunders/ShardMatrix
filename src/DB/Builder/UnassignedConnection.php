@@ -1,14 +1,14 @@
 <?php
 
 
-namespace ShardMatrix\Db\Builder;
+namespace ShardMatrix\DB\Builder;
 
 
 use ShardMatrix\DB\Connections;
 
 /**
  * Class UnassignedConnection
- * @package ShardMatrix\Db\Builder
+ * @package ShardMatrix\DB\Builder
  */
 class UnassignedConnection extends ShardMatrixConnection {
 	/**
