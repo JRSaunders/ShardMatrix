@@ -309,13 +309,13 @@ Once you have initiated it as above - here are some quick examples of usage.
 _If you are familiar with the ORM in Laravel - this is just an extension of that._
 
 ### Create Table
-* Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).  This follows the guidance you have given in your Yaml Config file as to what tables belong what nodes
+* Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).  This follows the guidance you have given in your Yaml Config file as to what tables belong on what nodes
 ```php
 use ShardMatrix\Db\Builder\Schema;
 
 #Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).
 #This follows the guidance you have given in your Yaml Config file as to what tables
-#belong what nodes
+#belong on what nodes
 
 Schema::create( 'users',
     function ( \Illuminate\Database\Schema\Blueprint $table ) {
