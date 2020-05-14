@@ -41,7 +41,7 @@ ShardMatrix needs to know how your tables and columns and databases interact, so
 [Reference Yaml file](shard_matrix.yaml)
 
 ### Example
-
+This is a full example of how a configuration file should look.
 ```yaml
 version: 1
 
@@ -110,6 +110,8 @@ nodes:
       - tracking
 
 ```
+## Anatomy of the Configuration File
+
 ### Version
 Define the version.  The most recent version is 1.
 ```yaml
@@ -300,13 +302,13 @@ ShardMatrix::setPdoCacheService( function () {
 
 ```
 
-## Quick Usage
+# Quick Usage
 
 Once you have initiated it as above - here are some quick examples of usage.
 
 _If you are familiar with the ORM in Laravel - this is just an extension of that._
 
-#### Create Table
+### Create Table
 * Creates Table across all appropriate Nodes.  This follows the guidance given in your Yaml Config file.
 ```php
 use ShardMatrix\Db\Builder\Schema;
@@ -327,7 +329,7 @@ Schema::create( 'users',
 ```
 
 
-#### Insert Record
+### Insert Record
 * Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
 ```php
 use ShardMatrix\Db\Builder\DB;
