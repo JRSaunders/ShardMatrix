@@ -3,6 +3,7 @@
 namespace ShardMatrix\DB\Builder;
 
 use Illuminate\Database\ConnectionInterface;
+use Illuminate\Database\Query\Expression;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Pagination\Paginator;
@@ -417,6 +418,21 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return array|ResultsInterface
 	 */
 	protected function runPaginationCountQuery( $columns = [ '*' ] ) {
+
+		if ( $this->groups || $this->havings ) {
+			$clone = $this->cloneForPaginationCount();
+
+			if ( is_null( $clone->columns ) && ! empty( $this->joins ) ) {
+				$clone->select( $this->from . '.*' );
+			}
+
+			return $this->newQuery()
+			            ->from( new Expression( '(' . $clone->toSql() . ') as ' . $this->grammar->wrap( 'aggregate_table' ) ) )
+			            ->mergeBindings( $clone )
+			            ->setAggregate( 'count', $this->withoutSelectAliases( $columns ) )
+			            ->getStatement();
+		}
+
 		$without = $this->unions ? [ 'orders', 'limit', 'offset' ] : [ 'columns', 'orders', 'limit', 'offset' ];
 
 		return $this->cloneWithout( $without )
