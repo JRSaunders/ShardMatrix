@@ -422,9 +422,15 @@ $collection->each( function(DBDataRowTransactionsInterface $record){
 	if($record->username == 'a-bad-user'){
         
         # Manipulate the record and commit changes
-		$record->delete();
+        $record->delete();
 	}
 
 });
+
+```
+
+### Pagination
+
+```php
 
 ```
