@@ -26,14 +26,15 @@ ShardMatrix::setGoThreadedService( function () {
 //ShardMatrix::setTableToDataRowClassMap( [ 'users' => \ShardMatrix\DB\DataRow::class ] );
 //ShardMatrix::setGeo( 'UK' );
 
-$statement = DB::allNodesTable( 'users' )
-               ->orderBy( 'created', 'desc' )
-               ->getPagination( [ "*" ], 10, 15 );
+$paginate = DB::table( 'users' )->uuidAsNodeReference( '06a00233-1ea82fe3-46ef-6464-8494-444230303031')
+              ->orderBy( 'created', 'desc' )
+              ->paginate();
 
+var_dump( $paginate );
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();
 //$statement = DB::allNodesTable( 'users')->limit('10')->getPagination()->getResults();
 
-var_dump( $statement->getResults()->fetchDataRows() );
+//var_dump( $statement->getResults()->fetchDataRows() );
 
 
 //
@@ -322,45 +323,45 @@ var_dump( $statement->getResults()->fetchDataRows() );
 
 
 //echo json_encode( [ 'node_queries' => $nQs ] ) ;
-
-$uuid = DB::table( 'users' )->insert(
-	[
-		'username'  => 'jack-malone',
-		'password'  => 'poootpooty',
-		'created'   => ( new \DateTime() )->format( 'Y-m-d H:i:s' ),
-		'something' => 5,
-		'email'     => 'jack.malone@yatti.com',
-	]
-);
-
-$uuidString    = $uuid->toString();
-$nodeName      = $uuid->getNode()->getName();
-$uuidTableName = $uuid->getTable()->getName();
-
-$record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
-
-if ( $record && $record instanceof \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface) {
-
-	echo $record->username;
-	# outputs jack-malone
-
-	echo $record->email;
-	# outputs jack.malone@yatti.com
-
-	# overwrite the email attribute
-	$record->email = 'anotheremail@yatti.com';
-
-	# Save the record
-	$record->save();
-}
-
-$collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();
-
-$collection->each( function(\ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record){
-	echo $record->email;
-	echo $record->username;
-	if($record->username == 'a-bad-user'){
-		$record->delete();
-	}
-});
+//
+//$uuid = DB::table( 'users' )->insert(
+//	[
+//		'username'  => 'jack-malone',
+//		'password'  => 'poootpooty',
+//		'created'   => ( new \DateTime() )->format( 'Y-m-d H:i:s' ),
+//		'something' => 5,
+//		'email'     => 'jack.malone@yatti.com',
+//	]
+//);
+//
+//$uuidString    = $uuid->toString();
+//$nodeName      = $uuid->getNode()->getName();
+//$uuidTableName = $uuid->getTable()->getName();
+//
+//$record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
+//
+//if ( $record && $record instanceof \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface) {
+//
+//	echo $record->username;
+//	# outputs jack-malone
+//
+//	echo $record->email;
+//	# outputs jack.malone@yatti.com
+//
+//	# overwrite the email attribute
+//	$record->email = 'anotheremail@yatti.com';
+//
+//	# Save the record
+//	$record->save();
+//}
+//
+//$collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();
+//
+//$collection->each( function(\ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record){
+//	echo $record->email;
+//	echo $record->username;
+//	if($record->username == 'a-bad-user'){
+//		$record->delete();
+//	}
+//});
 

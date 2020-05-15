@@ -377,7 +377,7 @@ something   5
 
 ```php
     use ShardMatrix\DB\Builder\DB;
-    use \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+    use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
 
     # Get the record directly from the correct node (shard)
     $record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
@@ -410,7 +410,7 @@ something   5
 
 ```php
 use ShardMatrix\DB\Builder\DB;
-use \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
 
 # Query all relevant nodes for the data
 $collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();

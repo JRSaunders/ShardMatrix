@@ -5,6 +5,7 @@ namespace ShardMatrix\DB\Builder;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Query\Grammars\Grammar;
 use Illuminate\Database\Query\Processors\Processor;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use ShardMatrix\DB\DataRow;
@@ -120,7 +121,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		if ( is_string( $uuid ) ) {
 			$uuid = new Uuid( $uuid );
 		}
-		if ( ! $uuid instanceof Uuid ) {
+		if ( ! $uuid instanceof Uuid || ! $uuid->isValid() ) {
 			throw new BuilderException( null, 'Uuid Object Required' );
 		}
 		$this->uuid = $uuid;
@@ -518,6 +519,29 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		$this->select( $columns );
 
 		return $this->getShardDB()->paginationByQueryBuilder( $this, $pageNumber, $perPage, $limitPages );
+	}
+
+	/**
+	 * @param int $perPage
+	 * @param string[] $columns
+	 * @param string $pageName
+	 * @param null $page
+	 *
+	 * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Pagination\LengthAwarePaginator
+	 */
+	public function paginate( $perPage = 15, $columns = [ '*' ], $pageName = 'page', $page = null ) {
+		if ( $this->getConnection()->hasNodes() ) {
+			$page = $page ?: Paginator::resolveCurrentPage( $pageName );
+
+			$paginationStatement = $this->getPagination( $columns, $page, $perPage );
+
+			return $this->paginator( $paginationStatement->getResults()->fetchDataRows(), $paginationStatement->countResults(), $perPage, $page, [
+				'path'     => Paginator::resolveCurrentPath(),
+				'pageName' => $pageName,
+			] );
+		}
+
+		return parent::paginate( $perPage, $columns, $pageName, $page );
 	}
 
 	/**
