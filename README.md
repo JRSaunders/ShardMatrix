@@ -432,5 +432,5 @@ $collection->each( function(DBDataRowTransactionsInterface $record){
 ### Pagination
 
 ```php
-  coming soon
+  documentation coming soon
 ```
