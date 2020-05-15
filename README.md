@@ -457,7 +457,7 @@ echo $pagination->nextPageUrl();
 
 echo $pagination->previousPageUrl();
 ```
-### Pagination of Data from all shards
+### Pagination of Data from one shard defined by the UUID location
 
 ```php
 use ShardMatrix\DB\Builder\DB;

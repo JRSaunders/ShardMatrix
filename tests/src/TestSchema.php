@@ -129,5 +129,9 @@ class TestSchema extends TestCase {
 		$collection2 = DB::allNodesTable( 'users' )->where( 'username','like','randy%')->get();
 		$count = $collection2->count();
 		$this->assertTrue( $count==150,$count.' collection of randy% half count');
+
+		/**
+		 * TODO Pagintaion next
+		 */
 	}
 }
