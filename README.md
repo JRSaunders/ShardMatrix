@@ -311,7 +311,7 @@ _If you are familiar with the ORM in Laravel - this is just an extension of that
 ### Create Table
 * Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).  This follows the guidance you have given in your Yaml Config file as to what tables belong on what nodes
 ```php
-use ShardMatrix\Db\Builder\Schema;
+use ShardMatrix\DB\Builder\Schema;
 
 # Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).
 # This follows the guidance you have given in your Yaml Config file as to what tables
@@ -334,7 +334,7 @@ Schema::create( 'users',
 ### Insert Record
 * Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
 ```php
-use ShardMatrix\Db\Builder\DB;
+use ShardMatrix\DB\Builder\DB;
 
 # Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
 
@@ -374,15 +374,19 @@ something   5
 * Get the record directly from the correct node (shard)
 * Manipulate the record
 * Update the record
+
 ```php
-    use ShardMatrix\Db\Builder\DB;
-    
+    use ShardMatrix\DB\Builder\DB;
+    use \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
     # Get the record directly from the correct node (shard)
     $record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
 
     # Manipulate the record
-    if ( $record ) {
+    if ( $record && $record instanceof DBDataRowTransactionsInterface) {
 
+        # As above you could run an additional check for the instance of the record returned, but it should always follow this interface through the query builder
+        
     	echo $record->username;
     	# outputs jack-malone
     	
@@ -395,6 +399,31 @@ something   5
     	# Update the record
     	$record->save();
     }
-   
+
+```
+
+### Where Query Across Nodes and Delete Record
+* Query all relevant nodes for the data
+* Data returns as a Collection that can be iterated through
+* Use data conditionally
+* Manipulate the record
+
+```php
+use ShardMatrix\DB\Builder\DB;
+use \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+# Query all relevant nodes for the data
+$collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();
+
+# Data returns as a Collection that can be iterated through
+$collection->each( function(DBDataRowTransactionsInterface $record){
+
+    # Use data conditionally
+	if($record->username == 'a-bad-user'){
+        
+        # Manipulate the record
+		$record->delete();
+	}
+});
 
 ```

@@ -339,7 +339,8 @@ $uuidTableName = $uuid->getTable()->getName();
 
 $record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
 
-if ( $record ) {
+if ( $record && $record instanceof \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface) {
+
 	echo $record->username;
 	# outputs jack-malone
 
@@ -353,6 +354,13 @@ if ( $record ) {
 	$record->save();
 }
 
+$collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();
 
-
+$collection->each( function(\ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record){
+	echo $record->email;
+	echo $record->username;
+	if($record->username == 'a-bad-user'){
+		$record->delete();
+	}
+});
 
