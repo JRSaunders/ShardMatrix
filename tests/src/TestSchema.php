@@ -5,6 +5,7 @@ use PHPUnit\Framework\TestCase;
 use ShardMatrix\DB\Builder\DB;
 use ShardMatrix\DB\Builder\Schema;
 use ShardMatrix\DB\Connections;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
 use ShardMatrix\ShardMatrix;
 use ShardMatrix\Uuid;
 
@@ -113,5 +114,19 @@ class TestSchema extends TestCase {
 		$this->assertTrue( count( $nodes ) == 4, 'Has Written to different Nodes' );
 		$changeCount = DB::allNodesTable( 'users' )->where( 'password', '=', 'sillybilly69' )->count();
 		$this->assertTrue( $changeCount == 15, $changeCount . ' update via transaction datarow' );
+
+		$collection = DB::allNodesTable( 'users' )->where( 'username','like','randy%')->get();
+		$count = $collection->count();
+		$this->assertTrue( $count==300,$count.' collection of randy%');
+		$i = 0;
+		$collection->each(function (DBDataRowTransactionsInterface $record)use(&$i){
+			$i++;
+			if($i%2==0){
+				$record->delete();
+			}
+		});
+		$collection2 = DB::allNodesTable( 'users' )->where( 'username','like','randy%')->get();
+		$count = $collection2->count();
+		$this->assertTrue( $count==150,$count.' collection of randy% half count');
 	}
 }
