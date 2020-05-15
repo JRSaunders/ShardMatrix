@@ -128,15 +128,15 @@ The table names are attributed to the groups.  A table can only be in one group 
 * Denotes the table name
 
 ```yaml
-#Denotes the table groups section on config
+# Denotes the table groups section on config
 
 table_groups:
 
-  #Denotes the name of a group of tables
+  # Denotes the name of a group of tables
 
   user:
 
-    #Denotes the table name
+    # Denotes the table name
 
     - users
 ```
@@ -181,15 +181,15 @@ The anatomy of the node section.
 * Table groups that use this node must be defined here
 * Table group user (that consists of the users, offers, payments tables)
 ```yaml
-#Denotes the where the nodes are defined
+# Denotes the where the nodes are defined
 
 nodes:
 
-  #Node Name
+  # Node Name
 
   DBUK01:
 
-    #DSN for connection to DB
+    # DSN for connection to DB
 
     dsn: mysql:dbname=shard;host=localhost:3301;user=root;password=password
 
@@ -205,11 +205,11 @@ nodes:
 
     insert_data: false
 
-    #Table groups that use this node must be defined here
+    # Table groups that use this node must be defined here
 
     table_groups:
 
-      #Table group user (that consists of the users, offers, payments tables)
+      # Table group user (that consists of the users, offers, payments tables)
 
       - user
       
@@ -258,12 +258,12 @@ In these examples we have saved our Config file as `shard_matrix.yaml` and place
 use ShardMatrix\ShardMatrix;
 
 
-#Our config file
+# Our config file
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  
 
 
-#Specifying a local directory to write db data to when it needs to
+# Specifying a local directory to write db data to when it needs to
 
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );  
 
@@ -278,23 +278,23 @@ ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 use ShardMatrix\ShardMatrix;
 
 
-#Our config file
+# Our config file
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );  
 
 
-#Changes the service from PHP forking for asynchronous queries to GoThreaded
+# Changes the service from PHP forking for asynchronous queries to GoThreaded
 
 ShardMatrix::useGoThreadedForAsyncQueries();
 
 
-#Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
+# Uses GoThreaded for asynchronous DB calls when we have to query all relevant shards
 
 ShardMatrix::setGoThreadedService( function () {
 	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password' );
 } );
 
-#This overwrites the PdoCache Service that was used to write to file, and now instead uses Redis caching
+# This overwrites the PdoCache Service that was used to write to file, and now instead uses Redis caching
 
 ShardMatrix::setPdoCacheService( function () {
 	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
@@ -313,9 +313,9 @@ _If you are familiar with the ORM in Laravel - this is just an extension of that
 ```php
 use ShardMatrix\Db\Builder\Schema;
 
-#Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).
-#This follows the guidance you have given in your Yaml Config file as to what tables
-#belong on what nodes
+# Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).
+# This follows the guidance you have given in your Yaml Config file as to what tables
+# belong on what nodes
 
 Schema::create( 'users',
     function ( \Illuminate\Database\Schema\Blueprint $table ) {
@@ -336,9 +336,9 @@ Schema::create( 'users',
 ```php
 use ShardMatrix\Db\Builder\DB;
 
-#Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
+# Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
 
-DB::table( 'users' )->insert( 
+$uuid = DB::table( 'users' )->insert( 
     [
 	'username' => 'jack-malone',
 	'password' => 'poootpooty',
@@ -347,6 +347,16 @@ DB::table( 'users' )->insert(
 	'email'    => 'jack.malone@yatti.com',
     ]
 );
+
+echo $uuid->toString();
+# outputs 06a00233-1ea8af83-9b6f-6104-b465-444230303037
+
+echo $uuid->getNode()->getName();
+# outputs DB0007
+
+echo $uuid->getTable()->getName();
+# outputs users
+
 ```
 **Inserted Data**
 ```
@@ -359,3 +369,32 @@ something   5
 ```
 
 * Any further inserts done in this php process will be inserted into the same shard, if in the correct table group
+
+### Get Record By UUID and Update Record
+* Get the record directly from the correct node (shard)
+* Manipulate the record
+* Update the record
+```php
+    use ShardMatrix\Db\Builder\DB;
+    
+    # Get the record directly from the correct node (shard)
+    $record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
+
+    # Manipulate the record
+    if ( $record ) {
+
+    	echo $record->username;
+    	# outputs jack-malone
+    	
+    	echo $record->email;
+    	# outputs jack.malone@yatti.com
+    	
+    	# overwrite the email attribute
+    	$record->email = 'anotheremail@yatti.com';
+    
+    	# Update the record
+    	$record->save();
+    }
+   
+
+```

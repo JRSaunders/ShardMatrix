@@ -12,7 +12,7 @@ use ShardMatrix\ShardMatrix;
  * Class DB
  * @package ShardMatrix\DB\Illuminate
  * @method static QueryBuilder table( string $table, string $as = null )
- * @method static DBDataRowTransactionsInterface getByUuid( $uuid )
+ * @method static null|DBDataRowTransactionsInterface getByUuid( $uuid )
  * @method static bool updateByUuid( $uuid, array $values )
  * @method static QueryBuilder allNodesTable( string $table, string $as = null, bool $useGeo = false )
  * @method static QueryBuilder allNodesThisGeoTable( string $table, $as = null )

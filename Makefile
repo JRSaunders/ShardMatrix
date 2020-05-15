@@ -3,7 +3,7 @@ test:
 
 test-up:
 	make test-down && docker-compose -f ./tests/docker-compose.yaml up -d \
-	&& sleep 40 && make test \
+	&& sleep 25 && make test \
 	&& make test-down
 
 test-down:

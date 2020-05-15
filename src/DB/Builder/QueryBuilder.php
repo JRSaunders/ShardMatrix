@@ -156,7 +156,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @param string $boolean
 	 *
 	 * @return QueryBuilder
-	 * @throws Exceptio
+	 * @throws Exception
 	 */
 	public function where( $column, $operator = null, $value = null, $boolean = 'and' ) {
 		if ( $column == 'uuid' && $operator == '=' ) {

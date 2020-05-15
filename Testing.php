@@ -323,6 +323,36 @@ var_dump( $statement->getResults()->fetchDataRows() );
 
 //echo json_encode( [ 'node_queries' => $nQs ] ) ;
 
+$uuid = DB::table( 'users' )->insert(
+	[
+		'username'  => 'jack-malone',
+		'password'  => 'poootpooty',
+		'created'   => ( new \DateTime() )->format( 'Y-m-d H:i:s' ),
+		'something' => 5,
+		'email'     => 'jack.malone@yatti.com',
+	]
+);
+
+$uuidString    = $uuid->toString();
+$nodeName      = $uuid->getNode()->getName();
+$uuidTableName = $uuid->getTable()->getName();
+
+$record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
+
+if ( $record ) {
+	echo $record->username;
+	# outputs jack-malone
+
+	echo $record->email;
+	# outputs jack.malone@yatti.com
+
+	# overwrite the email attribute
+	$record->email = 'anotheremail@yatti.com';
+
+	# Save the record
+	$record->save();
+}
+
 
 
 
