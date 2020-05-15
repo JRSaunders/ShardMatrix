@@ -8,3 +8,6 @@ test-up:
 
 test-down:
 	docker-compose -f ./tests/docker-compose.yaml down
+
+push:
+	make test-up && git push
