@@ -402,7 +402,7 @@ something   5
 
 ```
 
-### Where Query Across Nodes and Delete Record
+### Query Data and Conditionally Delete a Record
 * Query all relevant nodes for the data
 * Data returns as a Collection that can be iterated through
 * Use data conditionally
