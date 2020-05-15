@@ -547,7 +547,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 			$paginationStatement = $this->getPagination( $columns, $page, $perPage );
 
-			return $this->paginator( $paginationStatement->getResults()->fetchDataRows(), $paginationStatement->countResults(), $perPage, $page, [
+			return $this->paginator( new Collection( $paginationStatement->getResults()->fetchDataRows()->getDataRows() ), $paginationStatement->countResults(), $perPage, $page, [
 				'path'     => Paginator::resolveCurrentPath(),
 				'pageName' => $pageName,
 			] );

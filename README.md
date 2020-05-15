@@ -429,8 +429,59 @@ $collection->each( function(DBDataRowTransactionsInterface $record){
 
 ```
 
-### Pagination
+## Pagination
+
+### Pagination of Data from all shards
+
 
 ```php
-  documentation coming soon
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+$pagination = DB::allNodesTable( 'users' )
+              ->orderBy( 'created', 'desc' )
+              ->paginate();
+
+$pagination->each( function ( DBDataRowTransactionsInterface $record) {
+
+	echo $record->username;
+
+	echo $record->getUuid();
+});
+
+echo $pagination->total();
+
+echo $pagination->perPage();
+
+echo $pagination->nextPageUrl();
+
+echo $pagination->previousPageUrl();
+```
+### Pagination of Data from all shards
+
+```php
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+$uuidFromCurrentUser = "06a00233-1ea8af83-d514-6a76-83ae-444230303037";
+
+$pagination = DB::table( 'users' )
+              ->uuidAsNodeReference($uuidFromCurrentUser)
+              ->orderBy( 'created', 'desc' )
+              ->paginate();
+
+$pagination->each( function ( DBDataRowTransactionsInterface $record) {
+
+	echo $record->username;
+
+	echo $record->getUuid();
+});
+
+echo $pagination->total();
+
+echo $pagination->perPage();
+
+echo $pagination->nextPageUrl();
+
+echo $pagination->previousPageUrl();
 ```

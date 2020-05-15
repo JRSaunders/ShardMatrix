@@ -26,11 +26,24 @@ ShardMatrix::setGoThreadedService( function () {
 //ShardMatrix::setTableToDataRowClassMap( [ 'users' => \ShardMatrix\DB\DataRow::class ] );
 //ShardMatrix::setGeo( 'UK' );
 
-$paginate = DB::table( 'users' )
+$pagination = DB::allNodesTable( 'users' )
               ->orderBy( 'created', 'desc' )
-              ->paginate(2);
+              ->paginate();
 
-$paginate->nextPageUrl();
+$pagination->each( function ( \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record) {
+
+	echo $record->username.PHP_EOL;
+
+	echo $record->getUuid().PHP_EOL;
+});
+
+echo $pagination->total();
+
+echo $pagination->perPage();
+
+echo $pagination->nextPageUrl();
+
+echo $pagination->previousPageUrl();
 
 
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();
