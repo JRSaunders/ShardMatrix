@@ -406,7 +406,7 @@ something   5
 * Query all relevant nodes for the data
 * Data returns as a Collection that can be iterated through
 * Use data conditionally
-* Manipulate the record
+* Manipulate the record and commit changes
 
 ```php
 use ShardMatrix\DB\Builder\DB;
@@ -421,9 +421,10 @@ $collection->each( function(DBDataRowTransactionsInterface $record){
     # Use data conditionally
 	if($record->username == 'a-bad-user'){
         
-        # Manipulate the record
+        # Manipulate the record and commit changes
 		$record->delete();
 	}
+
 });
 
 ```
