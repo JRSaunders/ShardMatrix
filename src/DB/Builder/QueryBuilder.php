@@ -8,7 +8,6 @@ use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use ShardMatrix\DB\DataRow;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
@@ -21,7 +20,6 @@ use ShardMatrix\DB\PreStatement;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\DB\ShardMatrixStatements;
-use ShardMatrix\NodeDistributor;
 use ShardMatrix\ShardMatrix;
 use ShardMatrix\Table;
 use ShardMatrix\Uuid;
@@ -441,11 +439,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			return count( $results->fetchAllArrays() );
 		} elseif ( ! $results->isSuccessful() ) {
 			return 0;
-		} elseif ( $results->fetchDataRow() ) {
-			return (int) $results->sumColumn( 'aggregate' );
 		}
 
-		return (int) array_change_key_case( (array) $results[0] )['aggregate'];
+		return (int) $results->sumColumn( 'aggregate' );
 	}
 
 	/**
@@ -543,6 +539,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return parent::paginate( $perPage, $columns, $pageName, $page );
 	}
+
 
 	/**
 	 * @param string|null $primaryOrderDirection
