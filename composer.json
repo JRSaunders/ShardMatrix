@@ -1,5 +1,6 @@
 {
   "name": "jrsaunders/shard-matrix",
+  "description": "Sharding System",
   "license": "MIT",
   "authors": [
     {
