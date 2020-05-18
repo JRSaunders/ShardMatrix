@@ -330,7 +330,7 @@ class ShardDB {
 				throw $exception;
 			}
 
-			throw new Exception( $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+			throw new Exception( $exception->getMessage(), (int) $exception->getCode(), $exception->getPrevious() );
 		}
 
 		return null;
@@ -480,16 +480,16 @@ class ShardDB {
 			$selectColumns = [];
 			foreach ( $uniqueColumns as $column ) {
 				if ( $dataRow->__columnIsset( $column ) ) {
-					$binds[$column] = $dataRow->$column;
-					$selectColumns[]     = $column;
-					$sqlArray[]          = " {$column} = ? ";
+					$binds[ $column ] = $dataRow->$column;
+					$selectColumns[]  = $column;
+					$sqlArray[]       = " {$column} = ? ";
 				}
 			}
-			$sql            = "select " . join( ', ', $selectColumns ) .
-			                  " from {$dataRow->getUuid()->getTable()->getName()} where";
-			$sql            = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
+			$sql           = "select " . join( ', ', $selectColumns ) .
+			                 " from {$dataRow->getUuid()->getTable()->getName()} where";
+			$sql           = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
 			$binds['uuid'] = $uuid->toString();
-			$nodesResults   = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
+			$nodesResults  = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
 			if ( $nodesResults && $nodesResults->isSuccessful() ) {
 				$columnsIssue = [];
 				foreach ( $nodesResults->fetchDataRows() as $row ) {
@@ -649,7 +649,7 @@ class ShardDB {
 	 * @return PdoCacheInterface
 	 */
 	public function getPdoCache(): PdoCacheInterface {
-		return  ShardMatrix::getPdoCacheService();
+		return ShardMatrix::getPdoCacheService();
 	}
 
 	/**

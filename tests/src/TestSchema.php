@@ -41,6 +41,7 @@ class TestSchema extends TestCase {
 					$table->string( 'uuid', 50 )->primary();
 					$table->string( 'username', 255 )->unique();
 					$table->string( 'email', 255 )->unique();
+					$table->json( 'json_data' )->nullable()->default( '{}' );
 					$table->string( 'password', 255 );
 					$table->integer( 'something' );
 					$table->dateTime( 'created' );
@@ -54,6 +55,7 @@ class TestSchema extends TestCase {
 			[
 				'username'  => 'jack-malone',
 				'password'  => 'poootpooty',
+				'json_data' => '{}',
 				'created'   => ( new \DateTime() )->format( 'Y-m-d H:i:s' ),
 				'something' => 4,
 				'email'     => 'jack.malone@yatti.com',
@@ -81,6 +83,7 @@ class TestSchema extends TestCase {
 				DB::shardTable( 'users' )->insert( [
 					'username'  => $username,
 					'password'  => $password,
+					'json_data' => '{}',
 					'email'     => $email,
 					'created'   => $created,
 					'something' => 4
