@@ -133,13 +133,26 @@ class TestSchema extends TestCase {
 		$pagination = DB::allNodesTable( 'users' )
 		                ->orderBy( 'created', 'desc' )
 		                ->paginate( $perPage = 15, $columns = [ '*' ], $pageName = 'page', $page = null );
+		$uuid= null;
+		$pagination->each( function ( \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record )use(&$uuid) {
 
-		$pagination->each( function ( \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record ) {
-
-			$this->assertTrue( ( $record->getUuid() instanceof Uuid ), 'Pagination UUid instances' );
+			$this->assertTrue( ( $record->getUuid() instanceof Uuid ), 'Pagination Uuid instances' );
+			$uuid = $record->getUuid();
 		} );
 
 		$this->assertTrue( $pagination->total() == 151, $pagination->total() . ' Pagination Total' );
+		$this->assertTrue( $pagination->perPage() == 15, $pagination->perPage() . ' Pagination Per Page' );
+
+		$pagination = DB::table( 'users' )->uuidAsNodeReference( $uuid)
+		                ->orderBy( 'created', 'desc' )
+		                ->paginate( $perPage = 15, $columns = [ '*' ], $pageName = 'page', $page = null );
+
+		$pagination->each( function ( \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record ) {
+
+			$this->assertTrue( ( $record->getUuid() instanceof Uuid ), 'Pagination Uuid instances on one node' );
+		} );
+
+		$this->assertTrue( $pagination->total() > 30, $pagination->total() . ' Pagination Total' );
 		$this->assertTrue( $pagination->perPage() == 15, $pagination->perPage() . ' Pagination Per Page' );
 
 	}
