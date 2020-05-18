@@ -41,7 +41,7 @@ class TestSchema extends TestCase {
 					$table->string( 'uuid', 50 )->primary();
 					$table->string( 'username', 255 )->unique();
 					$table->string( 'email', 255 )->unique();
-					$table->json( 'json_data' )->default( '{}' );
+					$table->json( 'json_data' )->nullable();
 					$table->string( 'password', 255 );
 					$table->integer( 'something' );
 					$table->dateTime( 'created' );
@@ -49,7 +49,7 @@ class TestSchema extends TestCase {
 				}
 			);
 		} catch ( \ShardMatrix\DB\Builder\BuilderException $exception ) {
-			//do nothing
+			echo $exception->getMessage() . PHP_EOL;
 		}
 		$uuid = DB::table( 'users' )->insert(
 			[
