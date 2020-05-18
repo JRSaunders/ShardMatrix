@@ -1,7 +1,24 @@
 {
   "name": "jrsaunders/shard-matrix",
-  "description": "Sharding System",
+  "description": "Database Sharding system for MYSQL and Postgres",
   "license": "MIT",
+  "keywords":
+          [
+            "shards",
+            "sharding",
+            "node",
+            "nodes",
+            "uuid",
+            "database",
+            "mysql",
+            "postgres",
+            "pgsql",
+            "gothreaded",
+            "asynchronous",
+            "laravel",
+            "eloquent",
+            "yaml config"
+          ],
   "authors": [
     {
       "name": "John Saunders",
