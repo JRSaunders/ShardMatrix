@@ -115,23 +115,35 @@ class TestSchema extends TestCase {
 		$changeCount = DB::allNodesTable( 'users' )->where( 'password', '=', 'sillybilly69' )->count();
 		$this->assertTrue( $changeCount == 15, $changeCount . ' update via transaction datarow' );
 
-		$collection = DB::allNodesTable( 'users' )->where( 'username','like','randy%')->get();
-		$count = $collection->count();
-		$this->assertTrue( $count==300,$count.' collection of randy%');
+		$collection = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->get();
+		$count      = $collection->count();
+		$this->assertTrue( $count == 300, $count . ' collection of randy%' );
 		$i = 0;
-		$collection->each(function (DBDataRowTransactionsInterface $record)use(&$i){
-			$i++;
-			if($i%2==0){
+		$collection->each( function ( DBDataRowTransactionsInterface $record ) use ( &$i ) {
+			$i ++;
+			if ( $i % 2 == 0 ) {
 				$record->delete();
 			}
-		});
+		} );
 
-		$collection2 = DB::allNodesTable( 'users' )->where( 'username','like','randy%')->get();
-		$count = $collection2->count();
-		$this->assertTrue( $count==150,$count.' collection of randy% half count');
+		$collection2 = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->get();
+		$count       = $collection2->count();
+		$this->assertTrue( $count == 150, $count . ' collection of randy% half count' );
 
 		/**
 		 * TODO Pagintaion next
 		 */
+		$pagination = DB::allNodesTable( 'users' )
+		                ->orderBy( 'created', 'desc' )
+		                ->paginate( $perPage = 15, $columns = [ '*' ], $pageName = 'page', $page = null );
+
+		$pagination->each( function ( \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record ) {
+
+			$this->assertTrue( ( $record->getUuid() instanceof Uuid ), 'Pagination UUid instances' );
+		} );
+
+		$this->assertTrue( $pagination->total() == 151, $pagination->total() . ' Pagination Total' );
+		$this->assertTrue( $pagination->perPage() == 15, $pagination->perPage() . ' Pagination Per Page' );
+
 	}
 }
