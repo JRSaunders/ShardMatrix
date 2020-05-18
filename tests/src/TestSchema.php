@@ -130,9 +130,6 @@ class TestSchema extends TestCase {
 		$count       = $collection2->count();
 		$this->assertTrue( $count == 150, $count . ' collection of randy% half count' );
 
-		/**
-		 * TODO Pagintaion next
-		 */
 		$pagination = DB::allNodesTable( 'users' )
 		                ->orderBy( 'created', 'desc' )
 		                ->paginate( $perPage = 15, $columns = [ '*' ], $pageName = 'page', $page = null );
