@@ -41,7 +41,7 @@ class TestSchema extends TestCase {
 					$table->string( 'uuid', 50 )->primary();
 					$table->string( 'username', 255 )->unique();
 					$table->string( 'email', 255 )->unique();
-					$table->json( 'json_data' )->nullable()->default( '{}' );
+					$table->json( 'json_data' )->default( '{}' );
 					$table->string( 'password', 255 );
 					$table->integer( 'something' );
 					$table->dateTime( 'created' );
