@@ -3,6 +3,8 @@
 
 namespace ShardMatrix;
 
+use ShardMatrix\DB\Interfaces\PreSerialize;
+use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\ShardDB;
 
 /**
@@ -23,7 +25,12 @@ class PdoCache implements PdoCacheInterface {
 	public function read( string $key ) {
 		$filename = ShardMatrix::getPdoCachePath() . '/' . $key;
 		if ( file_exists( $filename ) ) {
-			return unserialize( gzinflate( file_get_contents( $filename ) ) );
+			$data = unserialize( gzinflate( file_get_contents( $filename ) ) );
+			if ( $data instanceof ResultsInterface ) {
+				$data->setFromCache( true );
+			}
+
+			return $data;
 		}
 
 		return null;
@@ -35,6 +42,9 @@ class PdoCache implements PdoCacheInterface {
 	 */
 	public function write( string $key, $data ): bool {
 		$this->hasWritten = true;
+		if ( $data instanceof PreSerialize ) {
+			$data->__preSerialize();
+		}
 
 		return (bool) file_put_contents( ShardMatrix::getPdoCachePath() . '/' . $key, gzdeflate( serialize( $data ) ) );
 	}
@@ -62,7 +72,11 @@ class PdoCache implements PdoCacheInterface {
 		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $key . '*' ) as $filename ) {
 			$result = unserialize( gzinflate( file_get_contents( $filename ) ) );
 			if ( $result ) {
+				if ( $result instanceof ResultsInterface ) {
+					$result->setFromCache( true );
+				}
 				$results[] = $result;
+
 			}
 		}
 
@@ -98,8 +112,8 @@ class PdoCache implements PdoCacheInterface {
 				if ( ( new \DateTime() )->setTimestamp( filemtime( $filename ) ) < $cutoff ) {
 					@unlink( $filename );
 				}
-
 			}
 		}
 	}
+
 }

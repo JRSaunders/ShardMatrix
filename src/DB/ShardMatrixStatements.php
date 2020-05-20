@@ -13,6 +13,11 @@ use ShardMatrix\Uuid;
  * @package ShardMatrix\DB
  */
 class ShardMatrixStatements implements \Iterator, ResultsInterface {
+
+	/**
+	 * @var bool
+	 */
+	protected bool $fromCache = false;
 	/**
 	 * @var int
 	 */
@@ -413,4 +418,20 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 		return $this;
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isFromCache(): bool {
+		return $this->fromCache;
+	}
+
+	/**
+	 * @param bool $fromCache
+	 */
+	public function setFromCache( bool $fromCache = true ): void {
+		foreach ( $this->getShardMatrixStatements() as $statement ) {
+			$statement->setFromCache( $fromCache );
+		}
+		$this->fromCache = $fromCache;
+	}
 }

@@ -143,7 +143,8 @@ class ShardDB {
 
 		return $this->uuidQuery(
 			$uuid,
-			"select * from {$uuid->getTable()->getName()} where uuid = :uuid limit 1;"
+			"select * from {$uuid->getTable()->getName()} where uuid = ? limit 1;",
+			[ $uuid->toString() ]
 		)->fetchDataRow();
 	}
 
@@ -170,7 +171,8 @@ class ShardDB {
 
 		return $this->uuidQuery(
 			$uuid,
-			"delete from {$uuid->getTable()->getName()} where uuid = :uuid limit 1;"
+			"delete from {$uuid->getTable()->getName()} where uuid = ? limit 1;",
+			[ $uuid->toString() ]
 		)->isSuccessful();
 	}
 
@@ -178,11 +180,15 @@ class ShardDB {
 	 * @param Node $node
 	 * @param string $sql
 	 * @param array|null $bind
+	 * @param Uuid|null $uuid
+	 * @param bool $freshDataOnly
 	 *
 	 * @return ShardMatrixStatement|null
+	 * @throws DuplicateException
+	 * @throws Exception
 	 */
-	public function nodeQuery( Node $node, string $sql, ?array $bind = null ): ?ShardMatrixStatement {
-		return $this->execute( new PreStatement( $node, $sql, $bind, null, null, __METHOD__ ) );
+	public function nodeQuery( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null, $freshDataOnly = false ): ?ShardMatrixStatement {
+		return $this->execute( new PreStatement( $node, $sql, $bind, $uuid, null, __METHOD__, $freshDataOnly ) );
 	}
 
 	/**
@@ -275,7 +281,7 @@ class ShardDB {
 	 * @throws DuplicateException
 	 * @throws Exception
 	 */
-	public function execute(
+	public function __execute(
 		PreStatement $preStatement,
 		bool $useNewConnection = false,
 		bool $rollbacks = false
@@ -334,6 +340,23 @@ class ShardDB {
 		}
 
 		return null;
+	}
+
+	/**
+	 * @param PreStatement $preStatement
+	 * @param bool $useNewConnection
+	 * @param bool $rollbacks
+	 *
+	 * @return ShardMatrixStatement|null
+	 * @throws DuplicateException
+	 * @throws Exception
+	 */
+	public function execute(
+		PreStatement $preStatement,
+		bool $useNewConnection = false,
+		bool $rollbacks = false
+	): ?ShardMatrixStatement {
+		return ShardCache::execute( $preStatement, $useNewConnection, $rollbacks, $this );
 	}
 
 	/**
@@ -480,16 +503,16 @@ class ShardDB {
 			$selectColumns = [];
 			foreach ( $uniqueColumns as $column ) {
 				if ( $dataRow->__columnIsset( $column ) ) {
-					$binds[ $column ] = $dataRow->$column;
-					$selectColumns[]  = $column;
-					$sqlArray[]       = " {$column} = ? ";
+					$binds[]         = $dataRow->$column;
+					$selectColumns[] = $column;
+					$sqlArray[]      = " {$column} = ? ";
 				}
 			}
-			$sql           = "select " . join( ', ', $selectColumns ) .
-			                 " from {$dataRow->getUuid()->getTable()->getName()} where";
-			$sql           = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
-			$binds['uuid'] = $uuid->toString();
-			$nodesResults  = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
+			$sql          = "select " . join( ', ', $selectColumns ) .
+			                " from {$dataRow->getUuid()->getTable()->getName()} where";
+			$sql          = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
+			$binds[]      = $uuid->toString();
+			$nodesResults = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
 			if ( $nodesResults && $nodesResults->isSuccessful() ) {
 				$columnsIssue = [];
 				foreach ( $nodesResults->fetchDataRows() as $row ) {

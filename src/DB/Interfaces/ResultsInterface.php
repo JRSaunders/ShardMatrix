@@ -95,6 +95,14 @@ interface ResultsInterface {
 	 */
 	public function sumColumnByGroup( string $column, string $groupByColumn ): GroupSums;
 
+	/**
+	 * @return bool
+	 */
+	public function isFromCache(): bool;
 
+	/**
+	 * @param bool $fromCache
+	 */
+	public function setFromCache( bool $fromCache = true ): void;
 
 }

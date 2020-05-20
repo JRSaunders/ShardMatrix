@@ -3,6 +3,7 @@
 namespace ShardMatrix;
 
 
+use ShardMatrix\DB\ShardCache;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\GoThreaded\Client;
 use Symfony\Component\Yaml\Yaml;
@@ -233,6 +234,14 @@ class ShardMatrix {
 	 */
 	public static function db(): ShardDB {
 		return ( new ShardDB() )->setDataRowClasses( static::$tableToDataRowMap );
+	}
+
+	/**
+	 * @return ShardCache
+	 * @throws Exception
+	 */
+	public static function cache(): ShardCache {
+		return ( new ShardCache( static::db() ) );
 	}
 
 

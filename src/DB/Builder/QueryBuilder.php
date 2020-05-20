@@ -18,6 +18,7 @@ use ShardMatrix\DB\NodeQuery;
 use ShardMatrix\DB\NodeQueryModifiers;
 use ShardMatrix\DB\PaginationStatement;
 use ShardMatrix\DB\PreStatement;
+use ShardMatrix\DB\ShardCache;
 use ShardMatrix\DB\ShardDB;
 use ShardMatrix\DB\ShardMatrixStatement;
 use ShardMatrix\DB\ShardMatrixStatements;
@@ -30,6 +31,8 @@ use ShardMatrix\Uuid;
  * @package ShardMatrix\DB\Illuminate
  */
 class QueryBuilder extends \Illuminate\Database\Query\Builder {
+
+	protected $useCache = true;
 
 	private ?ShardDB $shardDB = null;
 
@@ -143,7 +146,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			throw new BuilderException( null, 'Uuid Object Required' );
 		}
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
-		parent::where( 'uuid', '=', $uuid->toString() );
+		parent::where( 'uuid', '=', $uuid->toString() )->limit( 1 );
 		$this->uuid = $uuid;
 
 		return $this;
@@ -166,6 +169,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 		return parent::where( $column, $operator, $value, $boolean );
 	}
+
 
 	/**
 	 * @return string
@@ -219,7 +223,6 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @throws \ShardMatrix\DB\DuplicateException
 	 */
 	public function update( array $values ) {
-
 		if ( $this->uuid ) {
 			return $this->getShardDB()->uuidUpdate(
 				$this->uuid,
@@ -239,7 +242,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->getGrammar()->compileUpdate( $queryBuilder, $values ), $this->cleanBindings(
 					$queryBuilder->getGrammar()->prepareBindingsForUpdate( $this->bindings, $values )
-				) );
+				), false );
 			}
 
 			return $this->getShardDB()->nodeQueries( new NodeQueries( $nodeQueries ), null, null, 'update' );
@@ -275,7 +278,8 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			),
 			$dataRow->getUuid(),
 			$dataRow,
-			'update'
+			'update',
+			true
 		) );
 		if ( $update && $update->isSuccessful() ) {
 			return true;
@@ -305,7 +309,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 					}
 				}
 				( new ShardMatrixConnection( $node ) )->prepareQuery( $queryBuilder );
-				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings() );
+				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->toSql(), $queryBuilder->getBindings(), $this->useCache );
 			}
 
 			return $this->getShardDB()->nodeQueries( new NodeQueries( $nodeQueries ), $this->getPrimaryOrderColumn(), $this->getPrimaryOrderDirection(), __METHOD__ );
@@ -316,7 +320,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return ShardMatrixStatement|null
 	 */
 	protected function returnNodeResult(): ?ShardMatrixStatement {
-		return $this->getShardDB()->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings() );
+		return $this->getShardDB()->nodeQuery( $this->getConnection()->getNode(), $this->toSql(), $this->getBindings(), $this->uuid, ! $this->useCache );
 	}
 
 
@@ -351,6 +355,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @throws Exception
 	 */
 	public function delete( $id = null ) {
+		$this->setUseCache( false );
 		$uuid = new Uuid( $id );
 		if ( ! is_null( $uuid ) ) {
 			$this->uuidAsNodeReference( $uuid );
@@ -607,6 +612,21 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		}
 
 		return $this->shardDB = ShardMatrix::db()->setDefaultDataRowClass( $this->getRowDataClass() );
+	}
+
+	protected function getShardCache(): ShardCache {
+		return new ShardCache( $this->getShardDB() );
+	}
+
+	/**
+	 * @param bool $useCache
+	 *
+	 * @return $this
+	 */
+	public function setUseCache( bool $useCache = true ): QueryBuilder {
+		$this->useCache = $useCache;
+
+		return $this;
 	}
 
 

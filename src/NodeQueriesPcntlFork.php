@@ -5,6 +5,7 @@ namespace ShardMatrix;
 
 
 use ShardMatrix\DB\Connections;
+use ShardMatrix\DB\Interfaces\PreSerialize;
 use ShardMatrix\DB\NodeQueries;
 use ShardMatrix\DB\PreStatement;
 use ShardMatrix\DB\ShardDB;
@@ -60,10 +61,8 @@ class NodeQueriesPcntlFork implements NodeQueriesAsyncInterface {
 				$pids[] = $pid;
 
 			} else {
-				$stmt = $this->shardDb->execute( new PreStatement( $nodeQuery->getNode(), $nodeQuery->getSql(), $nodeQuery->getBinds(), null, null, $this->calledMethod ) );
-				if ( $stmt ) {
-					$stmt->__preSerialize();
-				}
+				$stmt = $this->shardDb->execute( new PreStatement( $nodeQuery->getNode(), $nodeQuery->getSql(), $nodeQuery->getBinds(), null, null, $this->calledMethod , ! $nodeQuery->isUseCache()) );
+
 				$this->shardDb->getPdoCache()->write( $queryPidUuid . '-' . getmypid(), $stmt );
 				exit;
 			}
@@ -78,7 +77,7 @@ class NodeQueriesPcntlFork implements NodeQueriesAsyncInterface {
 					unset( $pids[ $key ] );
 				}
 			}
-			usleep( 10000 );
+			usleep( 100000 );
 		}
 
 		$results = $this->shardDb->getPdoCache()->scanAndClean( $queryPidUuid . '-' );

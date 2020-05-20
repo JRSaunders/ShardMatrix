@@ -14,6 +14,7 @@ class NodeQuery implements \JsonSerializable {
 	protected Node $node;
 	protected string $sql;
 	protected ?array $binds;
+	protected bool $useCache;
 
 	/**
 	 * NodeQuery constructor.
@@ -21,11 +22,13 @@ class NodeQuery implements \JsonSerializable {
 	 * @param Node $node
 	 * @param string $sql
 	 * @param array|null $binds
+	 * @param bool $useCache
 	 */
-	public function __construct( Node $node, string $sql, ?array $binds ) {
-		$this->node  = $node;
-		$this->sql   = $sql;
-		$this->binds = $binds;
+	public function __construct( Node $node, string $sql, ?array $binds, $useCache = true ) {
+		$this->node     = $node;
+		$this->sql      = $sql;
+		$this->binds    = $binds;
+		$this->useCache = $useCache;
 	}
 
 	public function getNode(): Node {
@@ -60,5 +63,12 @@ class NodeQuery implements \JsonSerializable {
 			'sql'   => $this->getSql(),
 			'binds' => $bindsArray
 		];
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isUseCache(): bool {
+		return $this->useCache;
 	}
 }

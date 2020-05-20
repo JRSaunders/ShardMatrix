@@ -97,7 +97,7 @@ class SchemaBuilder extends Builder {
 				parent::create( $table, $callback );
 			} catch ( \Exception $exception ) {
 				if ( $this->throwExceptions ) {
-					throw new BuilderException( $node, $exception->getMessage(), (int)$exception->getCode(), $exception->getPrevious() );
+					throw new BuilderException( $node, $exception->getMessage(), (int) $exception->getCode(), $exception->getPrevious() );
 				}
 			}
 		}
@@ -120,7 +120,7 @@ class SchemaBuilder extends Builder {
 				parent::drop( $table );
 			} catch ( \Exception $exception ) {
 				if ( $this->throwExceptions ) {
-					throw new BuilderException( $node, $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+					throw new BuilderException( $node, $exception->getMessage(), (int) $exception->getCode(), $exception->getPrevious() );
 				}
 			}
 		}
@@ -143,7 +143,7 @@ class SchemaBuilder extends Builder {
 				parent::dropIfExists( $table );
 			} catch ( \Exception $exception ) {
 				if ( $this->throwExceptions ) {
-					throw new BuilderException( $node, $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+					throw new BuilderException( $node, $exception->getMessage(), (int) $exception->getCode(), $exception->getPrevious() );
 				}
 			}
 		}
@@ -170,7 +170,7 @@ class SchemaBuilder extends Builder {
 					parent::rename( $from, $to );
 				} catch ( \Exception $exception ) {
 					if ( $this->throwExceptions ) {
-						throw new BuilderException( $node, $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+						throw new BuilderException( $node, $exception->getMessage(), (int) $exception->getCode(), $exception->getPrevious() );
 					}
 				}
 			} else {
@@ -200,7 +200,7 @@ class SchemaBuilder extends Builder {
 				parent::table( $table, $callback );
 			} catch ( \Exception $exception ) {
 				if ( $this->throwExceptions ) {
-					throw new BuilderException( $node, $exception->getMessage(), $exception->getCode(), $exception->getPrevious() );
+					throw new BuilderException( $node, $exception->getMessage(), (int) $exception->getCode(), $exception->getPrevious() );
 				}
 			}
 		}

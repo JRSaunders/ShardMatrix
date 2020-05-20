@@ -20,6 +20,7 @@ class PreStatement {
 	protected ?Uuid $uuid = null;
 	protected ?ShardDataRowInterface $dataRow = null;
 	protected ?string $calledMethod = null;
+	protected bool $freshDataOnly = false;
 
 	/**
 	 * PreStatement constructor.
@@ -30,14 +31,16 @@ class PreStatement {
 	 * @param Uuid|null $uuid
 	 * @param ShardDataRowInterface|null $dataRow
 	 * @param string|null $calledMethod
+	 * @param bool $freshDataOnly
 	 */
-	public function __construct( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null, ?ShardDataRowInterface $dataRow = null, ?string $calledMethod = null ) {
-		$this->node         = $node;
-		$this->sql          = $sql;
-		$this->bind         = $bind;
-		$this->uuid         = $uuid;
-		$this->dataRow      = $dataRow;
-		$this->calledMethod = $calledMethod;
+	public function __construct( Node $node, string $sql, ?array $bind = null, ?Uuid $uuid = null, ?ShardDataRowInterface $dataRow = null, ?string $calledMethod = null, $freshDataOnly = false ) {
+		$this->node          = $node;
+		$this->sql           = $sql;
+		$this->bind          = $bind;
+		$this->uuid          = $uuid;
+		$this->dataRow       = $dataRow;
+		$this->calledMethod  = $calledMethod;
+		$this->freshDataOnly = $freshDataOnly;
 	}
 
 	/**
@@ -104,12 +107,50 @@ class PreStatement {
 		$this->uuid = $uuid;
 
 		return $this;
-}
+	}
 
 	/**
 	 * @return Uuid|null
 	 */
 	public function getUuid(): ?Uuid {
 		return $this->uuid;
+	}
+
+	public function getHashKey(): string {
+		$hashParts = [];
+		if ( $this->getUuid() ) {
+			$hashParts[] = $this->getUuid();
+		} else {
+			$hashParts[] = 'ALL';
+		}
+
+		$hashParts[] = md5( str_replace( [
+			'"',
+			'`',
+			"'",
+			"$",
+			"?",
+			" "
+		], '', strtolower( $this->getSql() . ( join( '-', $this->getBind() ) ) ) ) );
+
+		return join( ':', $hashParts );
+	}
+
+	/**
+	 * @param bool $freshDataOnly
+	 *
+	 * @return PreStatement
+	 */
+	public function setFreshDataOnly( bool $freshDataOnly ): PreStatement {
+		$this->freshDataOnly = $freshDataOnly;
+
+		return $this;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isFreshDataOnly(): bool {
+		return $this->freshDataOnly;
 	}
 }

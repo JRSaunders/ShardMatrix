@@ -32,9 +32,17 @@ class TestSchema extends TestCase {
 		} );
 	}
 
-	public function testSchemas() {
+	public function testAll() {
+
+		$this->initFork();
+		$this->schemas( 'fork' );
 		$this->initGoThreaded();
+		$this->schemas( 'gothread' );
+	}
+
+	public function schemas( $name ) {
 		try {
+
 			Schema::create( 'users',
 				function ( \Illuminate\Database\Schema\Blueprint $table ) {
 
@@ -68,10 +76,11 @@ class TestSchema extends TestCase {
 
 		$this->assertTrue( ( $data->username == 'jack-malone' ), "Username Correct in inserted data" );
 
+		$statement = DB::table( 'users' )->whereUuid( $uuid )->getStatement();
 
-	}
+		$this->assertTrue( $statement->isFromCache(), $statement->fetchDataRow()->username . ' user data from cache' );
 
-	public function testGeneralDBUsage() {
+
 		$i = 0;
 		while ( $i < 300 ) {
 			$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
@@ -118,7 +127,7 @@ class TestSchema extends TestCase {
 		$changeCount = DB::allNodesTable( 'users' )->where( 'password', '=', 'sillybilly69' )->count();
 		$this->assertTrue( $changeCount == 15, $changeCount . ' update via transaction datarow' );
 
-		$collection = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->get();
+		$collection = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->setUseCache( false )->get();
 		$count      = $collection->count();
 		$this->assertTrue( $count == 300, $count . ' collection of randy%' );
 		$i = 0;
@@ -129,7 +138,7 @@ class TestSchema extends TestCase {
 			}
 		} );
 
-		$collection2 = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->get();
+		$collection2 = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->setUseCache( false )->get();
 		$count       = $collection2->count();
 		$this->assertTrue( $count == 150, $count . ' collection of randy% half count' );
 
@@ -158,5 +167,11 @@ class TestSchema extends TestCase {
 		$this->assertTrue( $pagination->total() > 30, $pagination->total() . ' Pagination Total' );
 		$this->assertTrue( $pagination->perPage() == 15, $pagination->perPage() . ' Pagination Per Page' );
 
+		Schema::drop( 'users' );
+
+//		sleep( 5 );
+//		array_map( 'unlink', glob( __DIR__ . '/shard_matrix_cache/*' ) );
+//		rmdir( __DIR__ . '/shard_matrix_cache' );
+		echo $name . ' FINISHED' . PHP_EOL;
 	}
 }

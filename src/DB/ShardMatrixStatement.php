@@ -4,6 +4,7 @@
 namespace ShardMatrix\DB;
 
 use mysql_xdevapi\RowResult;
+use ShardMatrix\DB\Interfaces\PreSerialize;
 use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
 use ShardMatrix\GoThreaded\NodeResult;
@@ -16,7 +17,12 @@ use ShardMatrix\Uuid;
  * Class ShardMatrixStatement
  * @package ShardMatrix\DB
  */
-class ShardMatrixStatement implements ResultsInterface {
+class ShardMatrixStatement implements ResultsInterface, PreSerialize {
+	/**
+	 * @var bool
+	 */
+	protected bool $fromCache = false;
+
 	/**
 	 * @var \PDOStatement|null
 	 */
@@ -201,11 +207,16 @@ class ShardMatrixStatement implements ResultsInterface {
 		return count( $this->data );
 	}
 
-	public function __preSerialize() {
-		$this->data         = $this->fetchAllArrays();
-		$this->queryString  = $this->getPdoStatement()->queryString;
+	public function __preSerialize(): void {
+		if ( $this->isSelectQuery() || $this->isShowQuery() ) {
+			$this->data = $this->fetchAllArrays();
+		} else if ( $this->isInsertQuery() || $this->isUpdateQuery() ) {
+			$this->dataSuccess = $this->isSuccessful();
+		}
+		if($this->getPdoStatement()) {
+			$this->queryString = $this->getPdoStatement()->queryString;
+		}
 		$this->pdoStatement = null;
-
 	}
 
 	/**
@@ -336,6 +347,10 @@ class ShardMatrixStatement implements ResultsInterface {
 	 */
 	public function isSelectQuery(): bool {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'select' ) === 0;
+	}
+
+	public function isShowQuery(): bool {
+		return strpos( strtolower( trim( $this->getQueryString() ) ), 'show' ) === 0;
 	}
 
 	/**
@@ -479,5 +494,17 @@ class ShardMatrixStatement implements ResultsInterface {
 		return $this;
 	}
 
+	/**
+	 * @return bool
+	 */
+	public function isFromCache(): bool {
+		return $this->fromCache;
+	}
 
+	/**
+	 * @param bool $fromCache
+	 */
+	public function setFromCache( bool $fromCache = true ): void {
+		$this->fromCache = $fromCache;
+	}
 }

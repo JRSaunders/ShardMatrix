@@ -7,6 +7,8 @@ namespace ShardMatrix;
 use DevPledge\Integrations\Cache\CacheException;
 use Predis\Client;
 use Predis\Collection\Iterator\Keyspace;
+use ShardMatrix\DB\Interfaces\PreSerialize;
+use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\ShardDB;
 
 /**
@@ -14,16 +16,35 @@ use ShardMatrix\DB\ShardDB;
  * @package ShardMatrix
  */
 class PdoCacheRedis implements PdoCacheInterface {
+	/**
+	 * @var Client
+	 */
 	protected Client $redis;
+	/**
+	 * @var int
+	 */
+	protected int $cacheTime;
 
-	public function __construct( Client $redis ) {
-		$this->redis = $redis;
+	/**
+	 * PdoCacheRedis constructor.
+	 *
+	 * @param Client $redis
+	 * @param int $cacheTime
+	 */
+	public function __construct( Client $redis, int $cacheTime = 600 ) {
+		$this->cacheTime = $cacheTime;
+		$this->redis     = $redis;
 	}
 
 	public function read( string $key ) {
 		$raw = $this->redis->get( $key );
 		if ( strlen( $raw ) ) {
-			return unserialize( gzinflate( $raw ) );
+			$data = unserialize( gzinflate( $raw ) );
+			if ( $data instanceof ResultsInterface ) {
+				$data->setFromCache( true );
+			}
+
+			return $data;
 		}
 
 		return null;
@@ -54,7 +75,11 @@ class PdoCacheRedis implements PdoCacheInterface {
 	}
 
 	public function write( string $key, $data ): bool {
-		return (bool) $this->redis->setex( $key, 600, gzdeflate( serialize( $data ) ) );
+		if ( $data instanceof PreSerialize ) {
+			$data->__preSerialize();
+		}
+
+		return (bool) $this->redis->setex( $key, $this->cacheTime, gzdeflate( serialize( $data ) ) );
 	}
 
 	public function clean( string $key ): bool {
