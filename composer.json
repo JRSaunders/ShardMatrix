@@ -1,24 +1,23 @@
 {
   "name": "jrsaunders/shard-matrix",
-  "description": "Database Sharding system for MYSQL and Postgres",
+  "description": "A Complete Database Sharding system for MYSQL and/or Postgres. Using Laravels Query Builder easily scale up your application.  Configure your whole solution in one Yaml Config file.",
   "license": "MIT",
-  "keywords":
-          [
-            "shards",
-            "sharding",
-            "node",
-            "nodes",
-            "uuid",
-            "database",
-            "mysql",
-            "postgres",
-            "pgsql",
-            "gothreaded",
-            "asynchronous",
-            "laravel",
-            "eloquent",
-            "yaml config"
-          ],
+  "keywords": [
+    "shards",
+    "sharding",
+    "node",
+    "nodes",
+    "uuid",
+    "database",
+    "mysql",
+    "postgres",
+    "pgsql",
+    "gothreaded",
+    "asynchronous",
+    "laravel",
+    "eloquent",
+    "yaml config"
+  ],
   "authors": [
     {
       "name": "John Saunders",
