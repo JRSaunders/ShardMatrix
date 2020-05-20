@@ -33,16 +33,15 @@ class TestSchema extends TestCase {
 	}
 
 	public function testAll() {
-
-		$this->initFork();
-		$this->schemas( 'fork' );
 		$this->initGoThreaded();
 		$this->schemas( 'gothread' );
+		$this->initFork();
+		$this->schemas( 'fork' );
+
 	}
 
-	public function schemas( $name ) {
+	private function schemas( $name ) {
 		try {
-
 			Schema::create( 'users',
 				function ( \Illuminate\Database\Schema\Blueprint $table ) {
 
@@ -80,9 +79,12 @@ class TestSchema extends TestCase {
 
 		$this->assertTrue( $statement->isFromCache(), $statement->fetchDataRow()->username . ' user data from cache' );
 
-
+		$inserts = 300;
+		if ( $name == 'fork' ) {
+			$inserts = 200;
+		}
 		$i = 0;
-		while ( $i < 300 ) {
+		while ( $i < $inserts ) {
 			$username = 'randy' . rand( 5000, 10000000 ) . uniqid();
 			$password = 'cool!!' . rand( 5000, 100000 );
 			$email    = 'timmy' . rand( 1, 10000000 ) . uniqid() . '@google.com';
@@ -102,14 +104,15 @@ class TestSchema extends TestCase {
 			}
 		}
 		$count = DB::allNodesTable( 'users' )->count();
-		$this->assertTrue( $count == 301, $count . ' inserted records' );
+		$this->assertTrue( $count == ( $inserts + 1 ), $count . ' inserted records' );
 		$avg = DB::allNodesTable( 'users' )->avg( 'something' );
 		$this->assertTrue( $avg == 4, $avg . ' average of something column' );
 		$sum = DB::allNodesTable( 'users' )->sum( 'something' );
-		$this->assertTrue( $sum == ( 300 * 4 ) + 4, $sum . ' sum of something column' );
+		$this->assertTrue( $sum == ( $inserts * 4 ) + 4, $sum . ' sum of something column' );
 
 		$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 3, 15, 10 );
 		$results    = $pagination->countResults();
+
 		$this->assertTrue( $results == 152, $results . ' pagination results count' );
 		$pages = $pagination->countPages();
 		$this->assertTrue( $pages == 11, $pages . ' pagination pages count' );
@@ -122,14 +125,14 @@ class TestSchema extends TestCase {
 			$result->save();
 			$this->uuid = $result->getUuid();
 		}
-
-		$this->assertTrue( count( $nodes ) == 4, 'Has Written to different Nodes' );
+		$count = count( $nodes );
+		$this->assertTrue( $count == 4, $count . ' Has Written to different Nodes' );
 		$changeCount = DB::allNodesTable( 'users' )->where( 'password', '=', 'sillybilly69' )->count();
 		$this->assertTrue( $changeCount == 15, $changeCount . ' update via transaction datarow' );
 
 		$collection = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->setUseCache( false )->get();
 		$count      = $collection->count();
-		$this->assertTrue( $count == 300, $count . ' collection of randy%' );
+		$this->assertTrue( $count == $inserts, $count . ' collection of randy%' );
 		$i = 0;
 		$collection->each( function ( DBDataRowTransactionsInterface $record ) use ( &$i ) {
 			$i ++;
@@ -140,7 +143,7 @@ class TestSchema extends TestCase {
 
 		$collection2 = DB::allNodesTable( 'users' )->where( 'username', 'like', 'randy%' )->setUseCache( false )->get();
 		$count       = $collection2->count();
-		$this->assertTrue( $count == 150, $count . ' collection of randy% half count' );
+		$this->assertTrue( $count == ( $inserts / 2 ), $count . ' collection of randy% half count' );
 
 		$pagination = DB::allNodesTable( 'users' )
 		                ->orderBy( 'created', 'desc' )
@@ -152,7 +155,7 @@ class TestSchema extends TestCase {
 			$uuid = $record->getUuid();
 		} );
 
-		$this->assertTrue( $pagination->total() == 151, $pagination->total() . ' Pagination Total' );
+		$this->assertTrue( $pagination->total() == ( ( $inserts / 2 ) + 1 ), $pagination->total() . ' Pagination Total' );
 		$this->assertTrue( $pagination->perPage() == 15, $pagination->perPage() . ' Pagination Per Page' );
 
 		$pagination = DB::table( 'users' )->uuidAsNodeReference( $uuid )
@@ -164,14 +167,15 @@ class TestSchema extends TestCase {
 			$this->assertTrue( ( $record->getUuid() instanceof Uuid ), 'Pagination Uuid instances on one node' );
 		} );
 
-		$this->assertTrue( $pagination->total() > 30, $pagination->total() . ' Pagination Total' );
+		$this->assertTrue( $pagination->total() > ( $inserts / 10 ), $pagination->total() . ' Pagination Total' );
 		$this->assertTrue( $pagination->perPage() == 15, $pagination->perPage() . ' Pagination Per Page' );
 
 		Schema::drop( 'users' );
+		if ( $name == 'fork' ) {
 
-//		sleep( 5 );
-//		array_map( 'unlink', glob( __DIR__ . '/shard_matrix_cache/*' ) );
-//		rmdir( __DIR__ . '/shard_matrix_cache' );
-		echo $name . ' FINISHED' . PHP_EOL;
+			array_map( 'unlink', glob( __DIR__ . '/shard_matrix_cache/*' ) );
+			rmdir( __DIR__ . '/shard_matrix_cache' );
+		}
+
 	}
 }

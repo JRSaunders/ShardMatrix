@@ -28,7 +28,7 @@ class ShardCache {
 	) {
 		$method = $preStatement->getCalledMethod() ? strtolower( $preStatement->getCalledMethod() ) : '';
 		$remove = false;
-		if ( strpos( $method, 'update' ) !== false || strpos( $method, 'delete' ) ) {
+		if ( $preStatement->isUpdateQuery() || $preStatement->isDeleteQuery() ) {
 			$remove = true;
 		}
 		if ( strpos( $method, 'insert' ) !== false ) {
@@ -44,7 +44,7 @@ class ShardCache {
 			}
 		}
 		$returnValue = $shardDb->__execute( $preStatement, $useNewConnection, $rollbacks );
-		if ( $returnValue instanceof ResultsInterface ) {
+		if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() ) {
 			$shardDb->getPdoCache()->write( $key, $returnValue );
 		}
 

@@ -16,34 +16,31 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-ShardMatrix::useGoThreadedForAsyncQueries();
-ShardMatrix::setPdoCacheService( function () {
-	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
-} );
-ShardMatrix::setGoThreadedService( function () {
-	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
-} );
+//ShardMatrix::useGoThreadedForAsyncQueries();
+//ShardMatrix::setPdoCacheService( function () {
+//	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
+//} );
+//ShardMatrix::setGoThreadedService( function () {
+//	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
+//} );
 //ShardMatrix::setTableToDataRowClassMap( [ 'users' => \ShardMatrix\DB\DataRow::class ] );
 //ShardMatrix::setGeo( 'UK' );
 
-$pagination = DB::allNodesTable( 'users' )
-              ->orderBy( 'created', 'desc' )
-              ->paginate();
+$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 3, 15, 10 );
+$results    = $pagination->countResults();
 
-$pagination->each( function ( \ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface $record) {
 
-	echo $record->username.PHP_EOL;
+$pages = $pagination->countPages();
 
-	echo $record->getUuid().PHP_EOL;
-});
-
-echo $pagination->total();
-
-echo $pagination->perPage();
-
-echo $pagination->nextPageUrl();
-
-echo $pagination->previousPageUrl();
+$nodes = [];
+foreach ( $pagination->getResults()->fetchDataRows() as $result ) {
+	$uuid = $result->getUuid();
+	$nodes[ $uuid->getNode()->getName() ] = $uuid->getNode()->getName();
+	$result->password                     = 'sillybilly69';
+	$result->save();
+	$result->getUuid();
+}
+echo $count = count( $nodes );
 
 
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();

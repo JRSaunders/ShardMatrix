@@ -213,7 +213,7 @@ class ShardMatrixStatement implements ResultsInterface, PreSerialize {
 		} else if ( $this->isInsertQuery() || $this->isUpdateQuery() ) {
 			$this->dataSuccess = $this->isSuccessful();
 		}
-		if($this->getPdoStatement()) {
+		if ( ! $this->queryString ) {
 			$this->queryString = $this->getPdoStatement()->queryString;
 		}
 		$this->pdoStatement = null;
@@ -345,6 +345,13 @@ class ShardMatrixStatement implements ResultsInterface, PreSerialize {
 	/**
 	 * @return bool
 	 */
+	public function isDeleteQuery(): bool {
+		return strpos( strtolower( trim( $this->getQueryString() ) ), 'delete' ) === 0;
+	}
+
+	/**
+	 * @return bool
+	 */
 	public function isSelectQuery(): bool {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'select' ) === 0;
 	}
@@ -367,12 +374,6 @@ class ShardMatrixStatement implements ResultsInterface, PreSerialize {
 		return strpos( strtolower( trim( $this->getQueryString() ) ), 'insert' ) === 0;
 	}
 
-	/**
-	 * @return bool
-	 */
-	public function isDeleteQuery(): bool {
-		return strpos( strtolower( trim( $this->getQueryString() ) ), 'delete' ) === 0;
-	}
 
 	/**
 	 * @param string $column

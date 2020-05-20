@@ -236,13 +236,5 @@ class ShardMatrix {
 		return ( new ShardDB() )->setDataRowClasses( static::$tableToDataRowMap );
 	}
 
-	/**
-	 * @return ShardCache
-	 * @throws Exception
-	 */
-	public static function cache(): ShardCache {
-		return ( new ShardCache( static::db() ) );
-	}
-
 
 }

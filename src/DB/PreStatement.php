@@ -121,7 +121,7 @@ class PreStatement {
 		if ( $this->getUuid() ) {
 			$hashParts[] = $this->getUuid();
 		} else {
-			$hashParts[] = 'ALL';
+			$hashParts[] = $this->getNode()->getName();
 		}
 
 		$hashParts[] = md5( str_replace( [
@@ -132,6 +132,10 @@ class PreStatement {
 			"?",
 			" "
 		], '', strtolower( $this->getSql() . ( join( '-', $this->getBind() ) ) ) ) );
+
+		if ( count( $hashParts ) == 1 ) {
+			return $hashParts[0] . ':0';
+		}
 
 		return join( ':', $hashParts );
 	}
@@ -152,5 +156,34 @@ class PreStatement {
 	 */
 	public function isFreshDataOnly(): bool {
 		return $this->freshDataOnly;
+	}
+
+	public function isDeleteQuery(): bool {
+		return strpos( strtolower( trim( $this->getSql() ) ), 'delete' ) === 0;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isSelectQuery(): bool {
+		return strpos( strtolower( trim( $this->getSql() ) ), 'select' ) === 0;
+	}
+
+	public function isShowQuery(): bool {
+		return strpos( strtolower( trim( $this->getSql() ) ), 'show' ) === 0;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isUpdateQuery(): bool {
+		return strpos( strtolower( trim( $this->getSql() ) ), 'update' ) === 0;
+	}
+
+	/**
+	 * @return bool
+	 */
+	public function isInsertQuery(): bool {
+		return strpos( strtolower( trim( $this->getSql() ) ), 'insert' ) === 0;
 	}
 }
