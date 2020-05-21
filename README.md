@@ -3,8 +3,10 @@
 # ShardMatrix for PHP
 
 ### Database Sharding system for MYSQL and Postgres
+
 * Requirements
     * PHP 7.4^
+    
 * Supports:
     * **A single Yaml configuration file**
     * **Multiple Nodes** (DB servers)
@@ -12,7 +14,7 @@
     * **Postgres**
     * **Mysql & Postgres can be used together** and hot swapped
     * **Multiple Geo Locations**
-    * **UUIDs** bakes in all relevant data for tables and on which node it belongs
+    * **UUIDs** bakes in all relevant data for tables and to which node it belongs
     * **Docker**
     * **Kubernetes**
     * **Fast Asynchronous DB queries** (using a purpose built GoThreaded service https://github.com/jrsaunders/go-threaded | https://hub.docker.com/r/jrsaunders/gothreaded or PHP Forking for crons or dev work)
@@ -24,7 +26,192 @@
     * Efficient pagination system across Nodes using caching
     * Raw SQL Queries
     
-# Installation
+## Quick Usage
+
+Once you have initiated it as outlined in the [INSTALLATION](#installation) section below - here are some quick examples of usage.
+
+_If you are familiar with the ORM in Laravel - this is just an extension of that._
+
+### Create Table
+* Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).  This follows the guidance you have given in your Yaml Config file as to what tables belong on what nodes
+```php
+use ShardMatrix\DB\Builder\Schema;
+
+# Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).
+# This follows the guidance you have given in your Yaml Config file as to what tables
+# belong on what nodes
+
+Schema::create( 'users',
+    function ( \Illuminate\Database\Schema\Blueprint $table ) {
+          
+        $table->string( 'uuid', 50 )->primary();
+        $table->string('username',255)->unique();
+        $table->string('email',255)->unique();
+        $table->integer('something');
+        $table->dateTime( 'created' );
+
+    } 
+);
+```
+
+
+### Insert Record
+* Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
+```php
+use ShardMatrix\DB\Builder\DB;
+
+# Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
+
+$uuid = DB::table( 'users' )->insert( 
+    [
+	'username' => 'jack-malone',
+	'password' => 'poootpooty',
+	'created'   => (new \DateTime())->format('Y-m-d H:i:s'),
+	'something' => 5,
+	'email'    => 'jack.malone@yatti.com',
+    ]
+);
+
+echo $uuid->toString();
+# outputs 06a00233-1ea8af83-9b6f-6104-b465-444230303037
+
+echo $uuid->getNode()->getName();
+# outputs DB0007
+
+echo $uuid->getTable()->getName();
+# outputs users
+
+```
+**Inserted Data**
+```
+uuid        06a00233-1ea8af83-9b6f-6104-b465-444230303037
+username    jack-malone
+password    poootpooty
+email       jack.malone@yatti.com
+created     2020-04-30 15:35:31.000000
+something   5
+```
+
+* Any further inserts done in this php process will be inserted into the same shard, if in the correct table group
+
+### Get Record By UUID and Update Record
+* Get the record directly from the correct node (shard)
+* Manipulate the record
+* Update the record
+
+```php
+    use ShardMatrix\DB\Builder\DB;
+    use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+    # Get the record directly from the correct node (shard)
+    $record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
+
+    # Manipulate the record
+    if ( $record && $record instanceof DBDataRowTransactionsInterface) {
+
+        # As above you could run an additional check for the instance of the record returned, but it should always follow this interface through the query builder
+        
+    	echo $record->username;
+    	# outputs jack-malone
+    	
+    	echo $record->email;
+    	# outputs jack.malone@yatti.com
+    	
+    	# overwrite the email attribute
+    	$record->email = 'anotheremail@yatti.com';
+    
+    	# Update the record
+    	$record->save();
+    }
+
+```
+
+### Query Data and Conditionally Delete a Record
+* Query all relevant nodes for the data
+* Data returns as a Collection that can be iterated through
+* Use data conditionally
+* Manipulate the record and commit changes
+
+```php
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+# Query all relevant nodes for the data
+$collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();
+
+# Data returns as a Collection that can be iterated through
+$collection->each( function(DBDataRowTransactionsInterface $record){
+
+    # Use data conditionally
+	if($record->username == 'a-bad-user'){
+        
+        # Manipulate the record and commit changes
+        $record->delete();
+	}
+
+});
+
+```
+
+## Pagination
+
+### Pagination of Data from all shards
+
+
+```php
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+$pagination = DB::allNodesTable( 'users' )
+              ->orderBy( 'created', 'desc' )
+              ->paginate();
+
+$pagination->each( function ( DBDataRowTransactionsInterface $record) {
+
+	echo $record->username;
+
+	echo $record->getUuid();
+});
+
+echo $pagination->total();
+
+echo $pagination->perPage();
+
+echo $pagination->nextPageUrl();
+
+echo $pagination->previousPageUrl();
+```
+### Pagination of Data from one shard defined by the UUID location
+
+```php
+use ShardMatrix\DB\Builder\DB;
+use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
+
+$uuidFromCurrentUser = "06a00233-1ea8af83-d514-6a76-83ae-444230303037";
+
+$pagination = DB::table( 'users' )
+              ->uuidAsNodeReference($uuidFromCurrentUser)
+              ->orderBy( 'created', 'desc' )
+              ->paginate();
+
+$pagination->each( function ( DBDataRowTransactionsInterface $record) {
+
+	echo $record->username;
+
+	echo $record->getUuid();
+});
+
+echo $pagination->total();
+
+echo $pagination->perPage();
+
+echo $pagination->nextPageUrl();
+
+echo $pagination->previousPageUrl();
+```
+
+    
+# <a id="installation"></a> Installation
 
 ## Installing ShardMatrix for PHP
 
@@ -302,186 +489,3 @@ ShardMatrix::setPdoCacheService( function () {
 
 ```
 
-# Quick Usage
-
-Once you have initiated it as above - here are some quick examples of usage.
-
-_If you are familiar with the ORM in Laravel - this is just an extension of that._
-
-### Create Table
-* Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).  This follows the guidance you have given in your Yaml Config file as to what tables belong on what nodes
-```php
-use ShardMatrix\DB\Builder\Schema;
-
-# Creates Table across all appropriate Nodes (Mysql and Postgres simultaneously).
-# This follows the guidance you have given in your Yaml Config file as to what tables
-# belong on what nodes
-
-Schema::create( 'users',
-    function ( \Illuminate\Database\Schema\Blueprint $table ) {
-          
-        $table->string( 'uuid', 50 )->primary();
-        $table->string('username',255)->unique();
-        $table->string('email',255)->unique();
-        $table->integer('something');
-        $table->dateTime( 'created' );
-
-    } 
-);
-```
-
-
-### Insert Record
-* Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
-```php
-use ShardMatrix\DB\Builder\DB;
-
-# Insert Data - the system will choose an appropriate shard node and create a UUID for it that will be attributed to an appropriate node
-
-$uuid = DB::table( 'users' )->insert( 
-    [
-	'username' => 'jack-malone',
-	'password' => 'poootpooty',
-	'created'   => (new \DateTime())->format('Y-m-d H:i:s'),
-	'something' => 5,
-	'email'    => 'jack.malone@yatti.com',
-    ]
-);
-
-echo $uuid->toString();
-# outputs 06a00233-1ea8af83-9b6f-6104-b465-444230303037
-
-echo $uuid->getNode()->getName();
-# outputs DB0007
-
-echo $uuid->getTable()->getName();
-# outputs users
-
-```
-**Inserted Data**
-```
-uuid        06a00233-1ea8af83-9b6f-6104-b465-444230303037
-username    jack-malone
-password    poootpooty
-email       jack.malone@yatti.com
-created     2020-04-30 15:35:31.000000
-something   5
-```
-
-* Any further inserts done in this php process will be inserted into the same shard, if in the correct table group
-
-### Get Record By UUID and Update Record
-* Get the record directly from the correct node (shard)
-* Manipulate the record
-* Update the record
-
-```php
-    use ShardMatrix\DB\Builder\DB;
-    use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
-
-    # Get the record directly from the correct node (shard)
-    $record = DB::getByUuid( '06a00233-1ea8af83-9b6f-6104-b465-444230303037' );
-
-    # Manipulate the record
-    if ( $record && $record instanceof DBDataRowTransactionsInterface) {
-
-        # As above you could run an additional check for the instance of the record returned, but it should always follow this interface through the query builder
-        
-    	echo $record->username;
-    	# outputs jack-malone
-    	
-    	echo $record->email;
-    	# outputs jack.malone@yatti.com
-    	
-    	# overwrite the email attribute
-    	$record->email = 'anotheremail@yatti.com';
-    
-    	# Update the record
-    	$record->save();
-    }
-
-```
-
-### Query Data and Conditionally Delete a Record
-* Query all relevant nodes for the data
-* Data returns as a Collection that can be iterated through
-* Use data conditionally
-* Manipulate the record and commit changes
-
-```php
-use ShardMatrix\DB\Builder\DB;
-use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
-
-# Query all relevant nodes for the data
-$collection = DB::allNodesTable( 'users')->where('email','like','%yatti%')->limit(50)->get();
-
-# Data returns as a Collection that can be iterated through
-$collection->each( function(DBDataRowTransactionsInterface $record){
-
-    # Use data conditionally
-	if($record->username == 'a-bad-user'){
-        
-        # Manipulate the record and commit changes
-        $record->delete();
-	}
-
-});
-
-```
-
-## Pagination
-
-### Pagination of Data from all shards
-
-
-```php
-use ShardMatrix\DB\Builder\DB;
-use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
-
-$pagination = DB::allNodesTable( 'users' )
-              ->orderBy( 'created', 'desc' )
-              ->paginate();
-
-$pagination->each( function ( DBDataRowTransactionsInterface $record) {
-
-	echo $record->username;
-
-	echo $record->getUuid();
-});
-
-echo $pagination->total();
-
-echo $pagination->perPage();
-
-echo $pagination->nextPageUrl();
-
-echo $pagination->previousPageUrl();
-```
-### Pagination of Data from one shard defined by the UUID location
-
-```php
-use ShardMatrix\DB\Builder\DB;
-use ShardMatrix\DB\Interfaces\DBDataRowTransactionsInterface;
-
-$uuidFromCurrentUser = "06a00233-1ea8af83-d514-6a76-83ae-444230303037";
-
-$pagination = DB::table( 'users' )
-              ->uuidAsNodeReference($uuidFromCurrentUser)
-              ->orderBy( 'created', 'desc' )
-              ->paginate();
-
-$pagination->each( function ( DBDataRowTransactionsInterface $record) {
-
-	echo $record->username;
-
-	echo $record->getUuid();
-});
-
-echo $pagination->total();
-
-echo $pagination->perPage();
-
-echo $pagination->nextPageUrl();
-
-echo $pagination->previousPageUrl();
-```
