@@ -77,4 +77,4 @@ services:
     image: memcached
     restart: always
     ports:
-      - 11211:11211
+      - 11218:11211

@@ -13,20 +13,20 @@ use ShardMatrix\DB\ShardDB;
  */
 class PdoCacheMemcached implements PdoCacheInterface {
 
-	protected \Memcached $memcache;
+	protected \Memcached $memcached;
 	/**
 	 * @var int
 	 */
 	protected int $cacheTime;
 
-	public function __construct( \Memcached $memcache, int $cacheTime = 600 ) {
+	public function __construct( \Memcached $memcached, int $cacheTime = 600 ) {
 		$this->cacheTime = $cacheTime;
-		$this->memcache  = $memcache;
+		$this->memcached  = $memcached;
 	}
 
 
 	public function read( string $key ) {
-		$raw = $this->memcache->get( $key );
+		$raw = $this->memcached->get( $key );
 		if ( strlen( $raw ) ) {
 			$data = unserialize( gzinflate( $raw ) );
 			if ( $data instanceof ResultsInterface ) {
@@ -41,7 +41,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 
 	public function scan( string $key ): array {
 		$results = [];
-		$keys    = $this->memcache->get( $key );
+		$keys    = $this->memcached->get( $key );
 		if ( is_array( $keys ) ) {
 			foreach ( $keys as $key ) {
 				$results[] = $this->read( $key );
@@ -53,7 +53,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 
 	public function scanAndClean( string $key ): array {
 		$results = [];
-		$keys    = $this->memcache->get( $key );
+		$keys    = $this->memcached->get( $key );
 		if ( is_array( $keys ) ) {
 			foreach ( $keys as $key ) {
 				$results[] = $this->read( $key );
@@ -70,7 +70,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 		}
 		$this->setKeysArray( $key );
 
-		return (bool) $this->memcache->set( $key, gzdeflate( serialize( $data ) ), $this->cacheTime );
+		return (bool) $this->memcached->set( $key, gzdeflate( serialize( $data ) ), $this->cacheTime );
 	}
 
 	/**
@@ -86,14 +86,14 @@ class PdoCacheMemcached implements PdoCacheInterface {
 				if ( $i == count( $keySplit ) ) {
 					$partKey .= $delimiter;
 				}
-				$existingKeys = $this->memcache->get( $partKey ) ;
+				$existingKeys = $this->memcached->get( $partKey ) ;
 				if (  ! is_array( $existingKeys ) ) {
 					$existingKeys = [];
 				}
 
 				$existingKeys[] = $key;
 
-				$this->memcache->set( $partKey,  array_unique( $existingKeys ) , $this->cacheTime );
+				$this->memcached->set( $partKey,  array_unique( $existingKeys ) , $this->cacheTime );
 			}
 		};
 		$splitKey( explode( '-', $key ), '-', $key );
@@ -102,7 +102,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 	}
 
 	public function clean( string $key ): bool {
-		return (bool) $this->memcache->delete( $key );
+		return (bool) $this->memcached->delete( $key );
 	}
 
 	public function runCleanPolicy( ShardDB $shardDb ): void {

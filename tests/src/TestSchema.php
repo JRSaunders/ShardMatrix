@@ -32,7 +32,24 @@ class TestSchema extends TestCase {
 		} );
 	}
 
+	protected function initMemcached() {
+		ShardMatrix::initFromYaml( __DIR__ . '/../shard_matrix.yaml' );
+		ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
+		ShardMatrix::useGoThreadedForAsyncQueries();
+		ShardMatrix::setPdoCacheService( function () {
+			$memcached = new Memcached();
+			$memcached->addServer( 'localhost', 11218 );
+
+			return new \ShardMatrix\PdoCacheMemcached( $memcached );
+		} );
+		ShardMatrix::setGoThreadedService( function () {
+			return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1541, 'gothreaded', 'password', 20 );
+		} );
+	}
+
 	public function testAll() {
+		$this->initMemcached();
+		$this->schemas( 'memcached' );
 		$this->initGoThreaded();
 		$this->schemas( 'gothread' );
 		$this->initFork();
