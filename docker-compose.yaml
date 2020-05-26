@@ -86,13 +86,22 @@ services:
     ports:
       - 1534:1534
 
-  pdocache:
+  redis:
     image: redis
     restart: always
     volumes:
-      - ./data:/data
+      - ./data/redis:/data
     entrypoint: redis-server --appendonly yes
     ports:
       - 6379:6379
+
+  memcached:
+    image: memcached
+    restart: always
+    volumes:
+      - ./data/memcached:/data
+    ports:
+      - 11211:11211
+
 
 

@@ -66,11 +66,15 @@ services:
     ports:
       - 1541:1534
 
-  pdocache:
+  redis:
     image: redis
     restart: always
     entrypoint: redis-server --appendonly yes
     ports:
       - 6386:6379
 
-
+  memcached:
+    image: memcached
+    restart: always
+    ports:
+      - 11211:11211

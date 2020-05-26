@@ -16,17 +16,20 @@ include './vendor/autoload.php';
 
 ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
 ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-//ShardMatrix::useGoThreadedForAsyncQueries();
-//ShardMatrix::setPdoCacheService( function () {
-//	return new \ShardMatrix\PdoCacheRedis( new \Predis\Client( 'tcp://127.0.0.1:6379' ) );
-//} );
-//ShardMatrix::setGoThreadedService( function () {
-//	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
-//} );
+ShardMatrix::useGoThreadedForAsyncQueries();
+ShardMatrix::setPdoCacheService( function () {
+	$memcached = new Memcached();
+	$memcached->addServer( 'localhost', 11211 );
+
+	return new \ShardMatrix\PdoCacheMemcached( $memcached );
+} );
+ShardMatrix::setGoThreadedService( function () {
+	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
+} );
 //ShardMatrix::setTableToDataRowClassMap( [ 'users' => \ShardMatrix\DB\DataRow::class ] );
 //ShardMatrix::setGeo( 'UK' );
 
-$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 3, 15, 10 );
+$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 1, 15, 12 );
 $results    = $pagination->countResults();
 
 
@@ -35,13 +38,16 @@ $pages = $pagination->countPages();
 $nodes = [];
 foreach ( $pagination->getResults()->fetchDataRows() as $result ) {
 	$uuid = $result->getUuid();
+	echo $uuid;
 	$nodes[ $uuid->getNode()->getName() ] = $uuid->getNode()->getName();
 	$result->password                     = 'sillybilly69';
-	$result->save();
+//	$result->save();
 	$result->getUuid();
 }
-echo $count = count( $nodes );
-
+//echo $count = count( $nodes );
+//ShardMatrix::getPdoCacheService()->write( 'poo-hoo-do2', 'hello1' );
+//ShardMatrix::getPdoCacheService()->write( 'poo-hoo-do1', 'hello3' );
+//var_dump( ShardMatrix::getPdoCacheService()->scan( 'poo' ));
 
 //$statement = DB::allNodesTable( 'users')->where('username','like','randy%')->getPagination();
 //$statement = DB::allNodesTable( 'users')->limit('10')->getPagination()->getResults();

@@ -18,7 +18,7 @@
     * **Docker**
     * **Kubernetes**
     * **Fast Asynchronous DB queries** (using a purpose built GoThreaded service https://github.com/jrsaunders/go-threaded | https://hub.docker.com/r/jrsaunders/gothreaded or PHP Forking for crons or dev work)
-    * Caching results to File or to Redis (Expandable to use any caching solution as Interfaces for this are available)
+    * Caching to File or to Redis or MemcacheD
     * Unique table columns across nodes
     * Table Grouping to ensure data is kept in the right shards so joins can be done
     * Using popular ORM from Laravel ( though your project does **not** need be in Laravel ) https://laravel.com/docs/7.x
