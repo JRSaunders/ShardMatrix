@@ -13,6 +13,7 @@ class TestSchema extends TestCase {
 	protected $uuid;
 
 	protected function initGoThreaded() {
+		ShardMatrix::clearServiceInstances();
 		ShardMatrix::initFromYaml( __DIR__ . '/../shard_matrix.yaml' );
 		ShardMatrix::useGoThreadedForAsyncQueries();
 		ShardMatrix::setPdoCacheService( function () {
@@ -24,6 +25,7 @@ class TestSchema extends TestCase {
 	}
 
 	protected function initFork() {
+		ShardMatrix::clearServiceInstances();
 		ShardMatrix::initFromYaml( __DIR__ . '/../shard_matrix.yaml' );
 		ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 		ShardMatrix::usePhpForkingForAsyncQueries();
@@ -33,6 +35,7 @@ class TestSchema extends TestCase {
 	}
 
 	protected function initMemcached() {
+		ShardMatrix::clearServiceInstances();
 		ShardMatrix::initFromYaml( __DIR__ . '/../shard_matrix.yaml' );
 		ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
 		ShardMatrix::useGoThreadedForAsyncQueries();
