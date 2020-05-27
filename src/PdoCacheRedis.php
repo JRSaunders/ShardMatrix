@@ -37,7 +37,7 @@ class PdoCacheRedis implements PdoCacheInterface {
 	}
 
 	public function read( string $key ) {
-		$raw = $this->redis->get( $key );
+		$raw = $this->redis->get( $this->prefixKey( $key ) );
 		if ( strlen( $raw ) ) {
 			$data = unserialize( gzinflate( $raw ) );
 			if ( $data instanceof ResultsInterface ) {
@@ -53,19 +53,23 @@ class PdoCacheRedis implements PdoCacheInterface {
 	public function scan( string $key ): array {
 		$key     = rtrim( $key, "*" );
 		$results = [];
-		foreach ( new Keyspace( $this->redis, $key . '*', 1000 ) as $matchKey ) {
+		foreach ( new Keyspace( $this->redis, $this->prefixKey( $key ) . '*', 1000 ) as $matchKey ) {
 			$results[] = $this->read( $matchKey );
 		}
 
 		return $results;
 	}
 
+	protected function prefixKey( $key ): string {
+		return static::PREFIX . ltrim( $key, static::PREFIX );
+	}
+
 	public function scanAndClean( string $key ): array {
 		$key     = rtrim( $key, "*" );
 		$matches = [];
 		$results = [];
-		foreach ( new Keyspace( $this->redis, $key . '*', 1000 ) as $matchKey ) {
-			$matches[] = $matchKey;
+		foreach ( new Keyspace( $this->redis, $this->prefixKey( $key ) . '*', 1000 ) as $matchKey ) {
+			$matches[] = $this->prefixKey( $matchKey );
 			$results[] = $this->read( $matchKey );
 		}
 
@@ -79,11 +83,11 @@ class PdoCacheRedis implements PdoCacheInterface {
 			$data->__preSerialize();
 		}
 
-		return (bool) $this->redis->setex( $key, $this->cacheTime, gzdeflate( serialize( $data ) ) );
+		return (bool) $this->redis->setex( $this->prefixKey( $key ), $this->cacheTime, gzdeflate( serialize( $data ) ) );
 	}
 
 	public function clean( string $key ): bool {
-		return (bool) $this->redis->del( [ $key ] );
+		return (bool) $this->redis->del( [ $this->prefixKey( $key ) ] );
 	}
 
 	public function runCleanPolicy( ShardDB $shardDb ): void {

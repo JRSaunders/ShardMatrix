@@ -21,12 +21,15 @@ class PdoCacheMemcached implements PdoCacheInterface {
 
 	public function __construct( \Memcached $memcached, int $cacheTime = 600 ) {
 		$this->cacheTime = $cacheTime;
-		$this->memcached  = $memcached;
+		$this->memcached = $memcached;
 	}
 
+	protected function prefixKey( $key ): string {
+		return static::PREFIX . ltrim( $key, static::PREFIX );
+	}
 
 	public function read( string $key ) {
-		$raw = $this->memcached->get( $key );
+		$raw = $this->memcached->get( $this->prefixKey( $key ) );
 		if ( strlen( $raw ) ) {
 			$data = unserialize( gzinflate( $raw ) );
 			if ( $data instanceof ResultsInterface ) {
@@ -41,7 +44,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 
 	public function scan( string $key ): array {
 		$results = [];
-		$keys    = $this->memcached->get( $key );
+		$keys    = $this->memcached->get( $this->prefixKey( $key ) );
 		if ( is_array( $keys ) ) {
 			foreach ( $keys as $key ) {
 				$results[] = $this->read( $key );
@@ -53,12 +56,12 @@ class PdoCacheMemcached implements PdoCacheInterface {
 
 	public function scanAndClean( string $key ): array {
 		$results = [];
-		$keys    = $this->memcached->get( $key );
+		$keys    = $this->memcached->get( $this->prefixKey( $key ) );
 		if ( is_array( $keys ) ) {
 			foreach ( $keys as $key ) {
 				$results[] = $this->read( $key );
-				$this->clean( $key );
 			}
+			$this->memcached->deleteMulti( $keys );
 		}
 
 		return $results;
@@ -70,7 +73,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 		}
 		$this->setKeysArray( $key );
 
-		return (bool) $this->memcached->set( $key, gzdeflate( serialize( $data ) ), $this->cacheTime );
+		return (bool) $this->memcached->set( $this->prefixKey( $key), gzdeflate( serialize( $data ) ), $this->cacheTime );
 	}
 
 	/**
@@ -86,14 +89,14 @@ class PdoCacheMemcached implements PdoCacheInterface {
 				if ( $i == count( $keySplit ) ) {
 					$partKey .= $delimiter;
 				}
-				$existingKeys = $this->memcached->get( $partKey ) ;
-				if (  ! is_array( $existingKeys ) ) {
+				$existingKeys = $this->memcached->get( $this->prefixKey( $partKey ));
+				if ( ! is_array( $existingKeys ) ) {
 					$existingKeys = [];
 				}
 
 				$existingKeys[] = $key;
 
-				$this->memcached->set( $partKey,  array_unique( $existingKeys ) , $this->cacheTime );
+				$this->memcached->set( $this->prefixKey( $partKey), array_unique( $existingKeys ), $this->cacheTime );
 			}
 		};
 		$splitKey( explode( '-', $key ), '-', $key );
@@ -102,7 +105,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 	}
 
 	public function clean( string $key ): bool {
-		return (bool) $this->memcached->delete( $key );
+		return (bool) $this->memcached->delete( $this->prefixKey( $key ) );
 	}
 
 	public function runCleanPolicy( ShardDB $shardDb ): void {

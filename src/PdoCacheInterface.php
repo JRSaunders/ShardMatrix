@@ -7,6 +7,8 @@ namespace ShardMatrix;
 use ShardMatrix\DB\ShardDB;
 
 interface PdoCacheInterface {
+
+	const PREFIX = '~SM~';
 	/**
 	 * @param string $key
 	 *
