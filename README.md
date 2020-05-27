@@ -1,5 +1,8 @@
 
-
+[![Latest Stable Version](https://poser.pugx.org/jrsaunders/shard-matrix/v/stable)](https://packagist.org/packages/jrsaunders/shard-matrix)
+[![Total Downloads](https://poser.pugx.org/jrsaunders/shard-matrix/downloads)](https://packagist.org/packages/jrsaunders/shard-matrix)
+[![Latest Unstable Version](https://poser.pugx.org/jrsaunders/shard-matrix/v/unstable)](https://packagist.org/packages/jrsaunders/shard-matrix)
+[![License](https://poser.pugx.org/jrsaunders/shard-matrix/license)](https://packagist.org/packages/jrsaunders/shard-matrix)
 # ShardMatrix for PHP
 
 ### Database Sharding system for MYSQL and Postgres
