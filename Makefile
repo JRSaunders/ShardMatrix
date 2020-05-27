@@ -8,7 +8,7 @@ test-up:
 
 test-down:
 	docker-compose -f ./tests/docker-compose.yaml down
-	# && make docker-clean && make docker-prune
+# 	&& make docker-clean && make docker-prune
 
 push:
 	make test-up && git push
