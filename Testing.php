@@ -383,6 +383,8 @@ include './vendor/autoload.php';
 //	}
 //});
 
-$c = new \ShardMatrix\GoThreaded\Client();
+//$c = new \ShardMatrix\GoThreaded\Client();
+//
+//$c->execQueries( new NodeQueries( []));
 
-$c->execQueries( new NodeQueries( []));
+$m = new Memcached();

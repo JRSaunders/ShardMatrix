@@ -79,6 +79,7 @@ class Client {
 	 * @throws GoThreadedException
 	 */
 	public function __killClient(): Client {
+		$this->close();
 		$this->connect();
 		fwrite( $this->resource, json_encode( [
 			'auth' => [
@@ -87,7 +88,7 @@ class Client {
 			],
 			'kill' => 1
 		] ) );
-
+		$this->close();
 		return $this;
 	}
 
