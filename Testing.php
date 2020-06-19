@@ -14,36 +14,36 @@ use ShardMatrix\ShardMatrix;
 
 include './vendor/autoload.php';
 
-ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
-ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
-ShardMatrix::useGoThreadedForAsyncQueries();
-ShardMatrix::setPdoCacheService( function () {
-	$memcached = new Memcached();
-	$memcached->addServer( 'localhost', 11211 );
-
-	return new \ShardMatrix\PdoCacheMemcached( $memcached );
-} );
-ShardMatrix::setGoThreadedService( function () {
-	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
-} );
+//ShardMatrix::initFromYaml( __DIR__ . '/shard_matrix.yaml' );
+//ShardMatrix::setPdoCachePath( __DIR__ . '/shard_matrix_cache' );
+//ShardMatrix::useGoThreadedForAsyncQueries();
+//ShardMatrix::setPdoCacheService( function () {
+//	$memcached = new Memcached();
+//	$memcached->addServer( 'localhost', 11211 );
+//
+//	return new \ShardMatrix\PdoCacheMemcached( $memcached );
+//} );
+//ShardMatrix::setGoThreadedService( function () {
+//	return new \ShardMatrix\GoThreaded\Client( '127.0.0.1', 1534, 'gothreaded', 'password', 10 );
+//} );
 //ShardMatrix::setTableToDataRowClassMap( [ 'users' => \ShardMatrix\DB\DataRow::class ] );
 //ShardMatrix::setGeo( 'UK' );
-
-$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 1, 15, 12 );
-$results    = $pagination->countResults();
-
-
-$pages = $pagination->countPages();
-
-$nodes = [];
-foreach ( $pagination->getResults()->fetchDataRows() as $result ) {
-	$uuid = $result->getUuid();
-	echo $uuid;
-	$nodes[ $uuid->getNode()->getName() ] = $uuid->getNode()->getName();
-	$result->password                     = 'sillybilly69';
-//	$result->save();
-	$result->getUuid();
-}
+//
+//$pagination = DB::allNodesTable( 'users' )->getPagination( [ "*" ], 1, 15, 12 );
+//$results    = $pagination->countResults();
+//
+//
+//$pages = $pagination->countPages();
+//
+//$nodes = [];
+//foreach ( $pagination->getResults()->fetchDataRows() as $result ) {
+//	$uuid = $result->getUuid();
+//	echo $uuid;
+//	$nodes[ $uuid->getNode()->getName() ] = $uuid->getNode()->getName();
+//	$result->password                     = 'sillybilly69';
+////	$result->save();
+//	$result->getUuid();
+//}
 //echo $count = count( $nodes );
 //ShardMatrix::getPdoCacheService()->write( 'poo-hoo-do2', 'hello1' );
 //ShardMatrix::getPdoCacheService()->write( 'poo-hoo-do1', 'hello3' );
@@ -383,3 +383,6 @@ foreach ( $pagination->getResults()->fetchDataRows() as $result ) {
 //	}
 //});
 
+$c = new \ShardMatrix\GoThreaded\Client();
+
+$c->execQueries( new NodeQueries( []));

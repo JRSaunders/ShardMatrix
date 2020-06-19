@@ -74,6 +74,23 @@ class Client {
 		}
 	}
 
+	/**
+	 * @return $this
+	 * @throws GoThreadedException
+	 */
+	public function __killClient(): Client {
+		$this->connect();
+		fwrite( $this->resource, json_encode( [
+			'auth' => [
+				'username' => $this->username,
+				'password' => $this->password
+			],
+			'kill' => 1
+		] ) );
+
+		return $this;
+	}
+
 	public function execQueries( NodeQueries $nodeQueries ): Client {
 		$this->connect();
 		fwrite( $this->resource, json_encode( [
