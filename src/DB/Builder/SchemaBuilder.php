@@ -7,7 +7,7 @@ namespace ShardMatrix\DB\Builder;
 use Closure;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Builder;
-use ShardMatrix\DB\Exception;
+use ShardMatrix\Node;
 use ShardMatrix\Nodes;
 use ShardMatrix\ShardMatrix;
 
