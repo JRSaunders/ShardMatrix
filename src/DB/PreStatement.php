@@ -123,7 +123,7 @@ class PreStatement {
 		} else {
 			$hashParts[] = $this->getNode()->getName();
 		}
-
+		$bind        = $this->getBind() ?? [];
 		$hashParts[] = md5( str_replace( [
 			'"',
 			'`',
@@ -131,7 +131,7 @@ class PreStatement {
 			"$",
 			"?",
 			" "
-		], '', strtolower( $this->getSql() . ( join( '-', $this->getBind() ) ) ) ) );
+		], '', strtolower( $this->getSql() . ( join( '-', $bind ) ) ) ) );
 
 		if ( count( $hashParts ) == 1 ) {
 			return $hashParts[0] . ':0';
