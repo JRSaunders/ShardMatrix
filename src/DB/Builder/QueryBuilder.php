@@ -351,22 +351,44 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	/**
 	 * @param null $id
 	 *
-	 * @return int
+	 * @return int|ShardMatrixStatements|null
 	 * @throws Exception
+	 * @throws \ShardMatrix\DB\DuplicateException
+	 * @throws \ShardMatrix\Exception
 	 */
 	public function delete( $id = null ) {
 		$this->setUseCache( false );
-		$uuid = new Uuid( $id );
-		if ( ! is_null( $uuid ) ) {
-			$this->uuidAsNodeReference( $uuid );
-			$this->where( $this->from . '.uuid', '=', $uuid->toString() );
+		if(isset($id)) {
+			$uuid = new Uuid( $id );
+			if ( $uuid->isValid() ) {
+				$this->uuidAsNodeReference( $uuid );
+				$this->where( $this->from . '.uuid', '=', $uuid->toString() );
+
+
+				return $this->connection->delete(
+					$this->grammar->compileDelete( $this ), $this->cleanBindings(
+					$this->grammar->prepareBindingsForDelete( $this->bindings )
+				)
+				);
+			}
+			return 0;
 		}
 
-		return $this->connection->delete(
-			$this->grammar->compileDelete( $this ), $this->cleanBindings(
-			$this->grammar->prepareBindingsForDelete( $this->bindings )
-		)
-		);
+		if ( $this->getConnection()->hasNodes() && ( $nodes = $this->getConnection()->getNodes() ) ) {
+			$nodeQueries = [];
+			foreach ( $nodes as $node ) {
+				$queryBuilder = clone( $this );
+				( new ShardMatrixConnection( $node ) )->prepareQuery( $queryBuilder );
+
+				$nodeQueries[] = new NodeQuery( $node, $queryBuilder->getGrammar()->compileDelete( $queryBuilder ), $this->cleanBindings(
+					$queryBuilder->getGrammar()->prepareBindingsForDelete( $this->bindings )
+				), false );
+			}
+
+			return (int) $this->getShardDB()->nodeQueries( new NodeQueries( $nodeQueries ), null, null, 'delete' )->isSuccessful();
+		}
+
+		return parent::delete( $id );
 	}
 
 	/**
