@@ -61,7 +61,9 @@ class PdoCacheMemcached implements PdoCacheInterface {
 			foreach ( $keys as $key ) {
 				$results[] = $this->read( $key );
 			}
-			$this->memcached->deleteMulti( $keys );
+			if ( $keys ) {
+				$this->memcached->deleteMulti( $keys );
+			}
 		}
 
 		return $results;
@@ -73,7 +75,7 @@ class PdoCacheMemcached implements PdoCacheInterface {
 		}
 		$this->setKeysArray( $key );
 
-		return (bool) $this->memcached->set( $this->prefixKey( $key), gzdeflate( serialize( $data ) ), $this->cacheTime );
+		return (bool) $this->memcached->set( $this->prefixKey( $key ), gzdeflate( serialize( $data ) ), $this->cacheTime );
 	}
 
 	/**
@@ -89,14 +91,14 @@ class PdoCacheMemcached implements PdoCacheInterface {
 				if ( $i == count( $keySplit ) ) {
 					$partKey .= $delimiter;
 				}
-				$existingKeys = $this->memcached->get( $this->prefixKey( $partKey ));
+				$existingKeys = $this->memcached->get( $this->prefixKey( $partKey ) );
 				if ( ! is_array( $existingKeys ) ) {
 					$existingKeys = [];
 				}
 
 				$existingKeys[] = $key;
 
-				$this->memcached->set( $this->prefixKey( $partKey), array_unique( $existingKeys ), $this->cacheTime );
+				$this->memcached->set( $this->prefixKey( $partKey ), array_unique( $existingKeys ), $this->cacheTime );
 			}
 		};
 		$splitKey( explode( '-', $key ), '-', $key );
