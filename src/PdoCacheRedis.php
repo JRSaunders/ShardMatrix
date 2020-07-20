@@ -72,9 +72,9 @@ class PdoCacheRedis implements PdoCacheInterface {
 			$matches[] = $this->prefixKey( $matchKey );
 			$results[] = $this->read( $matchKey );
 		}
-
-		$this->redis->del( $matches );
-
+		if($matches) {
+			$this->redis->del( $matches );
+		}
 		return $results;
 	}
 
