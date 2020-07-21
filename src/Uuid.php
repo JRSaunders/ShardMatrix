@@ -10,7 +10,7 @@ use Ramsey\Uuid\UuidInterface;
  * Class Uuid
  * @package ShardMatrix
  */
-class Uuid {
+class Uuid implements \JsonSerializable {
 	protected ?string $uuid = null;
 	protected Table $table;
 	protected Node $node;
@@ -135,4 +135,10 @@ class Uuid {
 		return false;
 	}
 
+	/**
+	 * @return mixed|string|null
+	 */
+	public function jsonSerialize() {
+		return $this->uuid;
+	}
 }
