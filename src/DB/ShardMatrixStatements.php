@@ -120,10 +120,10 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
 
-					return strcmp( $b->$orderByColumn, $a->$orderByColumn );
+					return strcmp( strtolower( $b->$orderByColumn ), strtolower( $a->$orderByColumn ) );
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
-					return strcmp( $a->$orderByColumn, $b->$orderByColumn );
+					return strcmp( strtolower( $a->$orderByColumn ), strtolower( $b->$orderByColumn ) );
 				}
 
 			} );
