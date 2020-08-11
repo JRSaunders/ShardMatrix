@@ -584,7 +584,8 @@ class ShardDB {
 			$paginationQuery->limit      = null;
 			$paginationQuery->unionLimit = null;
 		}
-		$queryHash = 'pag-' . $paginationQuery->toSqlHash() . '-' . $perPage;
+		$queryTable = ( $paginationQuery->from ?? 'na' ) . ':';
+		$queryHash  = $queryTable . 'pag-' . $paginationQuery->toSqlHash() . '-' . $perPage;
 
 
 		$markerData = $this->getPdoCache()->read( $queryHash );
@@ -635,6 +636,24 @@ class ShardDB {
 		return $paginationStatement;
 
 
+	}
+
+	/**
+	 * @param string $table
+	 *
+	 * @return bool
+	 */
+	public function clearTableCache( string $table ): bool {
+		return (bool) $this->getPdoCache()->scanAndClean( $table . ':' );
+	}
+
+	/**
+	 * @param string $table
+	 *
+	 * @return bool
+	 */
+	public function clearTablePaginationCache( string $table ): bool {
+		return (bool) $this->getPdoCache()->scanAndClean( $table . ':pag-' );
 	}
 
 	/**
