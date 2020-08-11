@@ -86,4 +86,11 @@ class PaginationStatement {
 
 		return $this;
 	}
+
+	/**
+	 * @return int
+	 */
+	public function getResultsPerPage(): int {
+		return $this->resultsPerPage;
+	}
 }
