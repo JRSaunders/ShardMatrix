@@ -562,7 +562,12 @@ class ShardDB {
 	public function paginationByQueryBuilder(
 		QueryBuilder $queryBuilder, int $pageNumber = 1, int $perPage = 15, ?int $limitPages = null
 	): PaginationStatement {
-
+		$paginationStatementHash = ( $queryBuilder->from ?? 'na' ) . ':pagstat-' . $queryBuilder->toSqlHash() . '-' . $perPage . '-' . $pageNumber . '-' . $limitPages ?? 0;
+		if ( $queryBuilder->isUseCache() ) {
+			if ( $cachedPaginationStatement = $this->getPdoCache()->read( $paginationStatementHash ) ) {
+				return $cachedPaginationStatement;
+			}
+		}
 		$paginationQuery    = clone( $queryBuilder );
 		$uuidOrderDirection = null;
 
@@ -631,6 +636,9 @@ class ShardDB {
 				return $modifiedBuilder;
 			} );
 			$paginationStatement->setResults( $queryBuilder->getNodeModifierStatement( $queryBuilder->columns, $modifiers ) );
+		}
+		if ( $queryBuilder->isUseCache() ) {
+			$this->getPdoCache()->write( $paginationStatementHash, $paginationStatement );
 		}
 
 		return $paginationStatement;

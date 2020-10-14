@@ -32,7 +32,7 @@ use ShardMatrix\Uuid;
  */
 class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
-	protected $useCache = true;
+	protected bool $useCache = true;
 
 	private ?ShardDB $shardDB = null;
 
@@ -43,7 +43,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	/**
 	 * @var Uuid|null
 	 */
-	protected ? Uuid $uuid = null;
+	protected ?Uuid $uuid = null;
 
 	protected string $rowDataClass = EloquentDataRowModel::class;
 
@@ -358,7 +358,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	public function delete( $id = null ) {
 		$this->setUseCache( false );
-		if(isset($id)) {
+		if ( isset( $id ) ) {
 			$uuid = new Uuid( $id );
 			if ( $uuid->isValid() ) {
 				$this->uuidAsNodeReference( $uuid );
@@ -371,6 +371,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 				)
 				);
 			}
+
 			return 0;
 		}
 
@@ -636,6 +637,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		return $this->shardDB = ShardMatrix::db()->setDefaultDataRowClass( $this->getRowDataClass() );
 	}
 
+	/**
+	 * @return ShardCache
+	 * @throws \ShardMatrix\Exception
+	 */
 	protected function getShardCache(): ShardCache {
 		return new ShardCache( $this->getShardDB() );
 	}
@@ -649,6 +654,10 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		$this->useCache = $useCache;
 
 		return $this;
+	}
+
+	public function isUseCache(): bool {
+		return $this->useCache;
 	}
 
 

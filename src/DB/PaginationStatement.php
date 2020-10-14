@@ -4,6 +4,7 @@
 namespace ShardMatrix\DB;
 
 
+use ShardMatrix\DB\Interfaces\PreSerialize;
 use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\Uuid;
 
@@ -11,7 +12,7 @@ use ShardMatrix\Uuid;
  * Class PaginationStatement
  * @package ShardMatrix\DB
  */
-class PaginationStatement {
+class PaginationStatement implements PreSerialize {
 
 	protected int $currentPageNumber = 1;
 	protected int $resultsPerPage = 15;
@@ -92,5 +93,12 @@ class PaginationStatement {
 	 */
 	public function getResultsPerPage(): int {
 		return $this->resultsPerPage;
+	}
+
+
+	public function __preSerialize(): void {
+		if($this->results instanceof PreSerialize){
+			$this->results->__preSerialize();
+		}
 	}
 }
