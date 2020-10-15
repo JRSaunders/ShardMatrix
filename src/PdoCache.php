@@ -116,4 +116,19 @@ class PdoCache implements PdoCacheInterface {
 		}
 	}
 
+	/**
+	 * @param string $key
+	 *
+	 * @return bool
+	 */
+	public function cleanAllMatching( string $key ): bool {
+		$key     = rtrim( $key, "*" );
+		$cleaned = false;
+		foreach ( glob( ShardMatrix::getPdoCachePath() . '/' . $key . '*' ) as $filename ) {
+			$cleaned = true;
+			unlink( $filename );
+		}
+
+		return $cleaned;
+	}
 }

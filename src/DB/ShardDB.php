@@ -652,7 +652,7 @@ class ShardDB {
 	 * @return bool
 	 */
 	public function clearTableCache( string $table ): bool {
-		return (bool) $this->getPdoCache()->scanAndClean( $table . ':' );
+		return (bool) $this->getPdoCache()->cleanAllMatching( $table . ':' );
 	}
 
 	/**
@@ -661,7 +661,7 @@ class ShardDB {
 	 * @return bool
 	 */
 	public function clearTablePaginationCache( string $table ): bool {
-		return (bool) $this->getPdoCache()->scanAndClean( $table . ':pag-' );
+		return (bool) $this->getPdoCache()->cleanAllMatching( $table . ':pag-' );
 	}
 
 	/**

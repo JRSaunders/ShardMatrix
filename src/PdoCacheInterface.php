@@ -46,6 +46,12 @@ interface PdoCacheInterface {
 	public function clean( string $key ): bool;
 
 	/**
+	 * @param string $key
+	 *
+	 * @return bool
+	 */
+	public function cleanAllMatching(string $key): bool;
+	/**
 	 * @param ShardDB $shardDb
 	 */
 	public function runCleanPolicy( ShardDB $shardDb ): void;

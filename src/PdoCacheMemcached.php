@@ -113,4 +113,21 @@ class PdoCacheMemcached implements PdoCacheInterface {
 	public function runCleanPolicy( ShardDB $shardDb ): void {
 		//do nothing
 	}
+
+	/**
+	 * @param string $key
+	 *
+	 * @return bool
+	 */
+	public function cleanAllMatching( string $key ): bool {
+		$keys    = $this->memcached->get( $this->prefixKey( $key ) );
+		if ( is_array( $keys ) ) {
+			if ( $keys ) {
+				$this->memcached->deleteMulti( $keys );
+				return true;
+			}
+		}
+
+		return false;
+	}
 }

@@ -68,13 +68,14 @@ class PdoCacheRedis implements PdoCacheInterface {
 		$key     = rtrim( $key, "*" );
 		$matches = [];
 		$results = [];
-		foreach ( new Keyspace( $this->redis, $this->prefixKey( $key ) . '*', 1000 ) as $matchKey ) {
+		foreach ( new Keyspace( $this->redis, $this->prefixKey( $key ) . '*', 10000 ) as $matchKey ) {
 			$matches[] = $this->prefixKey( $matchKey );
 			$results[] = $this->read( $matchKey );
 		}
-		if($matches) {
+		if ( $matches ) {
 			$this->redis->del( $matches );
 		}
+
 		return $results;
 	}
 
@@ -92,5 +93,25 @@ class PdoCacheRedis implements PdoCacheInterface {
 
 	public function runCleanPolicy( ShardDB $shardDb ): void {
 		//do nothing
+	}
+
+	/**
+	 * @param string $key
+	 *
+	 * @return bool
+	 */
+	public function cleanAllMatching( string $key ): bool {
+		$key     = rtrim( $key, "*" );
+		$matches = [];
+		foreach ( new Keyspace( $this->redis, $this->prefixKey( $key ) . '*', null ) as $matchKey ) {
+			$matches[] = $this->prefixKey( $matchKey );
+		}
+		if ( $matches ) {
+			$this->redis->del( $matches );
+
+			return true;
+		}
+
+		return false;
 	}
 }
