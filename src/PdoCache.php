@@ -59,6 +59,7 @@ class PdoCache implements PdoCacheInterface {
 		if ( file_exists( $filename ) ) {
 			return unlink( $filename );
 		}
+		return false;
 	}
 
 	/**
