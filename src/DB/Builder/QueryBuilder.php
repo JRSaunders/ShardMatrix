@@ -186,12 +186,13 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 
 	/**
 	 * @param array $values
+	 * @param Uuid|null $uuid
 	 *
 	 * @return Uuid|null
 	 * @throws \ShardMatrix\Exception
 	 */
-	public function insert( array $values ): ?Uuid {
-		$uuid   = Uuid::make( $this->getConnection()->getNode(), new Table( $this->from ) );
+	public function insert( array $values , ?Uuid $uuid = null): ?Uuid {
+		$uuid   = $uuid ?? Uuid::make( $this->getConnection()->getNode(), new Table( $this->from ) );
 		$values = array_merge( [ 'uuid' => $uuid->toString() ], $values );
 
 		if ( empty( $values ) ) {
