@@ -9,6 +9,7 @@ use Illuminate\Database\Query\Processors\Processor;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use ShardMatrix\DB\DataRow;
 use ShardMatrix\DB\Exception;
 use ShardMatrix\DB\Interfaces\ResultsInterface;
 use ShardMatrix\DB\Interfaces\ShardDataRowInterface;
@@ -191,7 +192,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @return Uuid|null
 	 * @throws \ShardMatrix\Exception
 	 */
-	public function insert( array $values , ?Uuid $uuid = null): ?Uuid {
+	public function insert( array $values, ?Uuid $uuid = null ): ?Uuid {
 		$uuid   = $uuid ?? Uuid::make( $this->getConnection()->getNode(), new Table( $this->from ) );
 		$values = array_merge( [ 'uuid' => $uuid->toString() ], $values );
 
@@ -225,12 +226,18 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 */
 	public function update( array $values ) {
 		if ( $this->uuid ) {
+
+			$rowData       = (object) $values;
+			$rowData->uuid = $this->uuid->toString();
+			$dataRow       = new DataRow( $rowData );
+
 			return $this->getShardDB()->uuidUpdate(
 				$this->uuid,
 				$this->grammar->compileUpdate( $this, $values ),
 				$this->cleanBindings(
 					$this->grammar->prepareBindingsForUpdate( $this->bindings, $values )
-				)
+				),
+				$dataRow
 			);
 		}
 
