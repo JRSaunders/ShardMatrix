@@ -123,6 +123,7 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 				$asc   = is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc';
 				$desc  = is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc';
 				$int   = $aComp == (string) ( (int) $aComp );
+
 				if ( $int ) {
 					$aInt = (int) $aComp;
 					$bInt = (int) $bComp;
@@ -133,6 +134,8 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 						return ( $bInt < $aInt ) ? - 1 : ( ( $bInt > $aInt ) ? 1 : 0 );
 					}
 				}
+				$aComp = substr( $aComp, 0, 72 );
+				$bComp = substr( $bComp, 0, 72 );
 				if ( $desc ) {
 					return strcmp( strtolower( $bComp ), strtolower( $aComp ) );
 				}
