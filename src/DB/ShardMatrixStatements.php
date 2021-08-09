@@ -118,12 +118,21 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 				if ( ! $b instanceof \stdClass ) {
 					$b = (object) $b;
 				}
+				$aComp = $a->$orderByColumn;
+				$bComp = $b->$orderByColumn;
+				if ( is_int( $aComp ) && is_int( $bComp ) ) {
+					if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
+						return ( $aComp < $bComp ) ? - 1 : ( ( $aComp > $bComp ) ? 1 : 0 );
+					}
+					if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
+						return ( $bComp < $aComp ) ? - 1 : ( ( $bComp > $aComp ) ? 1 : 0 );
+					}
+				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
-
-					return strcmp( strtolower( $b->$orderByColumn ), strtolower( $a->$orderByColumn ) );
+					return strcmp( strtolower( $bComp ), strtolower( $aComp ) );
 				}
 				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
-					return strcmp( strtolower( $a->$orderByColumn ), strtolower( $b->$orderByColumn ) );
+					return strcmp( strtolower( $aComp ), strtolower( $bComp ) );
 				}
 
 			} );
