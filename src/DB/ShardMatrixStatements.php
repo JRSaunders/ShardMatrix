@@ -120,18 +120,23 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 				}
 				$aComp = $a->$orderByColumn;
 				$bComp = $b->$orderByColumn;
-				if ( is_int( $aComp ) && is_int( $bComp ) ) {
-					if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
-						return ( $aComp < $bComp ) ? - 1 : ( ( $aComp > $bComp ) ? 1 : 0 );
+				$asc   = is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc';
+				$desc  = is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc';
+				$int   = $aComp == (string) ( (int) $aComp );
+				if ( $int ) {
+					$aInt = (int) $aComp;
+					$bInt = (int) $bComp;
+					if ( $asc ) {
+						return ( $aInt < $bInt ) ? - 1 : ( ( $aInt > $bInt ) ? 1 : 0 );
 					}
-					if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
-						return ( $bComp < $aComp ) ? - 1 : ( ( $bComp > $aComp ) ? 1 : 0 );
+					if ( $desc ) {
+						return ( $bInt < $aInt ) ? - 1 : ( ( $bInt > $aInt ) ? 1 : 0 );
 					}
 				}
-				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'desc' ) {
+				if ( $desc ) {
 					return strcmp( strtolower( $bComp ), strtolower( $aComp ) );
 				}
-				if ( is_string( $this->orderByDirection ) && strtolower( $this->orderByDirection ) == 'asc' ) {
+				if ( $asc ) {
 					return strcmp( strtolower( $aComp ), strtolower( $bComp ) );
 				}
 
