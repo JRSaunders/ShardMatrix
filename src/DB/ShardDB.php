@@ -603,7 +603,7 @@ class ShardDB {
 				$orderColumns[] = $order['column'];
 			}
 			$concatString = join( ",'-',", $orderColumns );
-			$stmt         = $paginationQuery->getStatement( array_merge( [ "uuid" ], [ DB::raw( "CONCAT({$concatString}) as pag_hash" ) ] ) );
+			$stmt         = $paginationQuery->getStatement( array_merge( [ "uuid" ], [ DB::raw( "LPAD(CONCAT({$concatString}),72,'0') as pag_hash" ) ] ) );
 			if ( $stmt instanceof ShardMatrixStatements ) {
 				$stmt->setOrderByColumn( 'pag_hash' );
 			}
