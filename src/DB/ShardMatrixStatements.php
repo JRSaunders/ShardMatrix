@@ -134,8 +134,8 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 						return ( $bInt < $aInt ) ? - 1 : ( ( $bInt > $aInt ) ? 1 : 0 );
 					}
 				}
-				$aComp = substr( $aComp, 0, 72 );
-				$bComp = substr( $bComp, 0, 72 );
+				$aComp = substr( $aComp, 0, 26 );
+				$bComp = substr( $bComp, 0, 26 );
 				if ( ! ctype_digit( $aComp ) ) {
 					$aComp = ltrim( $aComp, '0' );
 				}
