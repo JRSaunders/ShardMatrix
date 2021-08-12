@@ -136,6 +136,12 @@ class ShardMatrixStatements implements \Iterator, ResultsInterface {
 				}
 				$aComp = substr( $aComp, 0, 72 );
 				$bComp = substr( $bComp, 0, 72 );
+				if ( ! ctype_digit( $aComp ) ) {
+					$aComp = ltrim( $aComp, '0' );
+				}
+				if ( ! ctype_digit( $bComp ) ) {
+					$bComp = ltrim( $bComp, '0' );
+				}
 				if ( $desc ) {
 					return strcmp( strtolower( $bComp ), strtolower( $aComp ) );
 				}
