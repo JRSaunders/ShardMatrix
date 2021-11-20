@@ -508,23 +508,25 @@ class ShardDB {
 					$sqlArray[]      = " {$column} = ? ";
 				}
 			}
-			$sql          = "select " . join( ', ', $selectColumns ) .
-			                " from {$dataRow->getUuid()->getTable()->getName()} where";
-			$sql          = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
-			$binds[]      = $uuid->toString();
-			$nodesResults = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
-			if ( $nodesResults && $nodesResults->isSuccessful() ) {
-				$columnsIssue = [];
-				foreach ( $nodesResults->fetchDataRows() as $row ) {
-					foreach ( $selectColumns as $column ) {
-						if ( $dataRow->$column == $row->$column ) {
-							$columnsIssue[ $column ] = $dataRow->$column;
+			if ( $selectColumns ) {
+				$sql          = "select " . join( ', ', $selectColumns ) .
+				                " from {$dataRow->getUuid()->getTable()->getName()} where";
+				$sql          = $sql . " ( " . join( 'or', $sqlArray ) . " ) and uuid != ? limit 1;";
+				$binds[]      = $uuid->toString();
+				$nodesResults = $this->allNodesQuery( $uuid->getTable()->getName(), $sql, $binds );
+				if ( $nodesResults && $nodesResults->isSuccessful() ) {
+					$columnsIssue = [];
+					foreach ( $nodesResults->fetchDataRows() as $row ) {
+						foreach ( $selectColumns as $column ) {
+							if ( $dataRow->$column == $row->$column ) {
+								$columnsIssue[ $column ] = $dataRow->$column;
+							}
 						}
 					}
+
+					$handleDuplicateColumns( $dataRow, $columnsIssue );
+
 				}
-
-				$handleDuplicateColumns( $dataRow, $columnsIssue );
-
 			}
 		}
 	}
