@@ -387,4 +387,8 @@ include './vendor/autoload.php';
 //
 //$c->execQueries( new NodeQueries( []));
 
-$m = new Memcached();
+//$m = new Memcached();
+
+//echo strcmp( 'b','a');
+echo substr(str_pad('2021-08-09 10:27:17.142179-0fca0384-1ebf8fc5-32e9-6b78-a44a-444230303033', 72, "0", STR_PAD_LEFT),0,72);
+echo substr(str_pad('00000000000000000000000000-0fca0384-1ebf8fc5-32e9-6b78-a44a-444230303033', 72, "0", STR_PAD_LEFT),0,72);

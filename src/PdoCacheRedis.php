@@ -25,23 +25,48 @@ class PdoCacheRedis implements PdoCacheInterface {
 	 */
 	protected int $cacheTime;
 
+	public ?\Closure $errorHandler = null;
+
 	/**
 	 * PdoCacheRedis constructor.
 	 *
 	 * @param Client $redis
 	 * @param int $cacheTime
 	 */
-	public function __construct( Client $redis, int $cacheTime = 600 ) {
-		$this->cacheTime = $cacheTime;
-		$this->redis     = $redis;
+	public function __construct( Client $redis, int $cacheTime = 600, ?\Closure $errorHandler = null ) {
+		$this->cacheTime    = $cacheTime;
+		$this->redis        = $redis;
+		$this->errorHandler = $errorHandler;
 	}
 
+	/**
+	 * @param \Error $error
+	 */
+	private function __handleError( \Error $error ) {
+		if ( $this->errorHandler ) {
+			call_user_func_array( $this->errorHandler, [ $error ] );
+		} else {
+			throw $error;
+		}
+	}
+
+	/**
+	 * @param string $key
+	 *
+	 * @return mixed|ResultsInterface|null
+	 */
 	public function read( string $key ) {
 		$raw = $this->redis->get( $this->prefixKey( $key ) );
 		if ( strlen( $raw ) ) {
-			$data = unserialize( gzinflate( $raw ) );
-			if ( $data instanceof ResultsInterface ) {
-				$data->setFromCache( true );
+			try {
+				$raw  = gzinflate( $raw );
+				$data = unserialize( $raw );
+				unset( $raw );
+				if ( $data instanceof ResultsInterface ) {
+					$data->setFromCache( true );
+				}
+			} catch ( \Error $error ) {
+				$this->__handleError( $error );
 			}
 
 			return $data;
