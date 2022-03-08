@@ -36,7 +36,6 @@ class ShardCache {
 		}
 		$key = $preStatement->getHashKey();
 		if ( $remove && $preStatement->getUuid() ) {
-			$shardDb->getPdoCache()->cleanAllMatching( $preStatement->getUuid() . ':' );
 			$shardDb->getPdoCache()->clean( $preStatement->getUuid() );
 		} elseif ( ! $preStatement->isFreshDataOnly() && ! $useNewConnection ) {
 			$cacheRead = $shardDb->getPdoCache()->read( $key );
