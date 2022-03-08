@@ -47,7 +47,7 @@ class ShardCache {
 		} elseif ( ! $preStatement->isFreshDataOnly() && ! $useNewConnection ) {
 			if ( $preStatement->getUuid() ) {
 				$cacheRead = $shardDb->getPdoCache()->read( $preStatement->getUuid() );
-				if ( $cacheRead instanceof ResultsInterface && $cacheRead->isSuccessful() ) {
+				if ( $cacheRead instanceof ResultsInterface && $cacheRead->isSuccessful() && $cacheRead->rowCount() == 1 ) {
 					return $cacheRead;
 				}
 			} else {
@@ -60,7 +60,7 @@ class ShardCache {
 		$returnValue = $shardDb->__execute( $preStatement, $useNewConnection, $rollbacks );
 		if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() && ! $preStatement->getUuid() ) {
 			$shardDb->getPdoCache()->write( $key, $returnValue );
-		} else if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() && $preStatement->getUuid() ) {
+		} else if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() && $preStatement->getUuid() && $returnValue->rowCount() == 1 ) {
 			$shardDb->getPdoCache()->write( $preStatement->getUuid(), $returnValue );
 		}
 

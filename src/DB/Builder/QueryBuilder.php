@@ -45,7 +45,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 	 * @var Uuid|null
 	 */
 	protected ?Uuid $uuid = null;
-
+	protected ?Uuid $nodeReferenceUuid = null;
 	protected string $rowDataClass = EloquentDataRowModel::class;
 
 	/**
@@ -127,8 +127,9 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 		if ( ! $uuid instanceof Uuid || ! $uuid->isValid() ) {
 			throw new BuilderException( null, 'Uuid Object Required' );
 		}
-		$this->uuid = $uuid;
+
 		$this->setShardMatrixConnection( new ShardMatrixConnection( $uuid->getNode() ) );
+		$this->nodeReferenceUuid = $uuid;
 
 		return $this;
 	}
@@ -370,6 +371,7 @@ class QueryBuilder extends \Illuminate\Database\Query\Builder {
 			$uuid = new Uuid( $id );
 			if ( $uuid->isValid() ) {
 				$this->uuidAsNodeReference( $uuid );
+				$this->uuid = $uuid;
 				$this->where( $this->from . '.uuid', '=', $uuid->toString() );
 
 
