@@ -35,17 +35,33 @@ class ShardCache {
 			return $shardDb->__execute( $preStatement, $useNewConnection, $rollbacks );
 		}
 		$key = $preStatement->getHashKey();
-		if ( $remove && $preStatement->getUuid() ) {
-			$shardDb->getPdoCache()->clean( $preStatement->getUuid() );
+		if ( $remove ) {
+			if ( $preStatement->getUuid() ) {
+				$shardDb->getPdoCache()->clean( $preStatement->getUuid() );
+				if ( $preStatement->isFreshDataOnly() ) {
+					$shardDb->getPdoCache()->cleanAllMatching( $preStatement->getUuid() );
+				}
+			} else {
+				$shardDb->getPdoCache()->clean( $key );
+			}
 		} elseif ( ! $preStatement->isFreshDataOnly() && ! $useNewConnection ) {
-			$cacheRead = $shardDb->getPdoCache()->read( $key );
-			if ( $cacheRead instanceof ResultsInterface && $cacheRead->isSuccessful() ) {
-				return $cacheRead;
+			if ( $preStatement->getUuid() ) {
+				$cacheRead = $shardDb->getPdoCache()->read( $preStatement->getUuid() );
+				if ( $cacheRead instanceof ResultsInterface && $cacheRead->isSuccessful() ) {
+					return $cacheRead;
+				}
+			} else {
+				$cacheRead = $shardDb->getPdoCache()->read( $key );
+				if ( $cacheRead instanceof ResultsInterface && $cacheRead->isSuccessful() ) {
+					return $cacheRead;
+				}
 			}
 		}
 		$returnValue = $shardDb->__execute( $preStatement, $useNewConnection, $rollbacks );
-		if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() ) {
+		if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() && ! $preStatement->getUuid() ) {
 			$shardDb->getPdoCache()->write( $key, $returnValue );
+		} else if ( $returnValue instanceof ResultsInterface && $preStatement->isSelectQuery() && $preStatement->getUuid() ) {
+			$shardDb->getPdoCache()->write( $preStatement->getUuid(), $returnValue );
 		}
 
 		return $returnValue;
