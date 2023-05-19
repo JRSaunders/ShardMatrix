@@ -28,7 +28,7 @@
     "php": "^7.4",
     "symfony/yaml": "^5.0",
     "ramsey/uuid": "^4.0",
-    "laravel/framework": "7.13",
+    "laravel/framework": "7.30.4",
     "doctrine/dbal": "^2.10",
     "predis/predis": "^1.1",
     "ext-zlib": "*"
